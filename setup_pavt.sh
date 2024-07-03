@@ -1,11 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import AttributeManager from './AttributeManager';
+#!/bin/bash
+
+# Create project directory
+mkdir -p pavt
+cd pavt
+
+# Initialize npm and create package.json
+npm init -y
+
+# Update package.json
+cat > package.json << EOL
+{
+  "name": "pavt",
+  "version": "1.0.0",
+  "description": "Product Attribute Verifier Tool",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "dev": "react-scripts start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=14.x"
+  }
+}
+EOL
+
+# Install dependencies
+npm install
+
+# Create public directory and index.html
+mkdir -p public
+cat > public/index.html << EOL
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Product Attribute Verifier Tool</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+EOL
+
+# Create src directory and App.js
+mkdir -p src
+cat > src/App.js << EOL
+import React, { useState } from 'react';
 
 const App = () => {
   const [products, setProducts] = useState([]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [attributes, setAttributes] = useState({});
-  const [showAttributeManager, setShowAttributeManager] = useState(false);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -23,13 +93,6 @@ const App = () => {
         return product;
       });
       setProducts(productsData);
-
-      // Initialize attributes
-      const initialAttributes = {};
-      headers.slice(1).forEach(header => {
-        initialAttributes[header] = [...new Set(productsData.map(p => p.attributes.find(a => a.name === header)?.value).filter(Boolean))];
-      });
-      setAttributes(initialAttributes);
     };
     reader.readAsText(file);
   };
@@ -49,28 +112,12 @@ const App = () => {
     }
   };
 
-  const handleAddNewVariable = (attributeName, newVariable) => {
-    setAttributes(prevAttributes => ({
-      ...prevAttributes,
-      [attributeName]: [...prevAttributes[attributeName], newVariable]
-    }));
-  };
-
   const currentProduct = products[currentProductIndex];
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
       <h1>Product Attribute Verifier Tool (PAVT)</h1>
       <input type="file" onChange={handleFileUpload} accept=".csv" />
-      <button onClick={() => setShowAttributeManager(!showAttributeManager)}>
-        {showAttributeManager ? 'Hide' : 'Show'} Attribute Manager
-      </button>
-      {showAttributeManager && (
-        <AttributeManager 
-          attributes={attributes} 
-          onUpdateAttributes={setAttributes}
-        />
-      )}
       {products.length > 0 && (
         <div>
           <h2>{currentProduct.name}</h2>
@@ -86,19 +133,12 @@ const App = () => {
                 <tr key={index}>
                   <td style={{ border: '1px solid black', padding: '8px' }}>{attr.name}</td>
                   <td style={{ border: '1px solid black', padding: '8px' }}>
-                    <select
+                    <input
+                      type="text"
                       value={attr.value}
                       onChange={(e) => handleAttributeChange(index, e.target.value)}
                       style={{ width: '100%' }}
-                    >
-                      {attributes[attr.name].map(option => (
-                        <option key={option} value={option}>{option}</option>
-                      ))}
-                    </select>
-                    <button onClick={() => {
-                      const newVariable = prompt(`Enter new variable for ${attr.name}`);
-                      if (newVariable) handleAddNewVariable(attr.name, newVariable);
-                    }}>+</button>
+                    />
                   </td>
                 </tr>
               ))}
@@ -113,3 +153,53 @@ const App = () => {
 };
 
 export default App;
+EOL
+
+# Create src/index.js
+cat > src/index.js << EOL
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+
+const root = createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+EOL
+
+# Create server.js
+cat > server.js << EOL
+const express = require('express');
+const path = require('path');
+const app = express();
+
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('*', function (req, res) {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(\`Server is running on port \${port}\`);
+});
+EOL
+
+# Create .gitignore
+cat > .gitignore << EOL
+node_modules
+build
+.env
+EOL
+
+# Initialize git repository
+git init
+git add .
+git commit -m "Initial commit of PAVT"
+
+echo "PAVT project has been set up successfully!"
+echo "To start the development server, run: npm run dev"
+echo "To build the project for production, run: npm run build"
+echo "To start the production server, run: npm start"

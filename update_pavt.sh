@@ -1,3 +1,7 @@
+#!/bin/bash
+
+# Update App.js
+cat > src/App.js << EOL
 import React, { useState, useEffect } from 'react';
 import AttributeManager from './AttributeManager';
 
@@ -96,7 +100,7 @@ const App = () => {
                       ))}
                     </select>
                     <button onClick={() => {
-                      const newVariable = prompt(`Enter new variable for ${attr.name}`);
+                      const newVariable = prompt(\`Enter new variable for \${attr.name}\`);
                       if (newVariable) handleAddNewVariable(attr.name, newVariable);
                     }}>+</button>
                   </td>
@@ -113,3 +117,70 @@ const App = () => {
 };
 
 export default App;
+EOL
+
+# Create AttributeManager.js
+cat > src/AttributeManager.js << EOL
+import React, { useState, useEffect } from 'react';
+
+const AttributeManager = ({ attributes, onUpdateAttributes }) => {
+  const [localAttributes, setLocalAttributes] = useState(attributes);
+
+  useEffect(() => {
+    setLocalAttributes(attributes);
+  }, [attributes]);
+
+  const handleAddVariable = (attributeName, newVariable) => {
+    const updatedAttributes = {...localAttributes};
+    if (!updatedAttributes[attributeName].includes(newVariable)) {
+      updatedAttributes[attributeName] = [...updatedAttributes[attributeName], newVariable];
+      setLocalAttributes(updatedAttributes);
+      onUpdateAttributes(updatedAttributes);
+    }
+  };
+
+  const handleRemoveVariable = (attributeName, variable) => {
+    const updatedAttributes = {...localAttributes};
+    updatedAttributes[attributeName] = updatedAttributes[attributeName].filter(v => v !== variable);
+    setLocalAttributes(updatedAttributes);
+    onUpdateAttributes(updatedAttributes);
+  };
+
+  return (
+    <div>
+      <h2>Attribute Manager</h2>
+      {Object.entries(localAttributes).map(([attributeName, variables]) => (
+        <div key={attributeName}>
+          <h3>{attributeName}</h3>
+          <ul>
+            {variables.map(variable => (
+              <li key={variable}>
+                {variable}
+                <button onClick={() => handleRemoveVariable(attributeName, variable)}>Remove</button>
+              </li>
+            ))}
+          </ul>
+          <input
+            type="text"
+            placeholder="New variable"
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                handleAddVariable(attributeName, e.target.value);
+                e.target.value = '';
+              }
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export default AttributeManager;
+EOL
+
+# Update package.json to ensure all necessary dependencies are included
+npm install react@latest react-dom@latest react-scripts@latest
+
+echo "PAVT project has been updated successfully!"
+echo "To start the development server, run: npm start"
