@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { fetchAttributes, updateAttributes } from '../api/api';
+import { fetchAttributes, updateAttributes, fetchSubcategories } from '../api/api';
 
 const AttributeEditor = () => {
   const [attributes, setAttributes] = useState({});
-  const [newAttribute, setNewAttribute] = useState({ name: '', values: '' });
+  const [newAttribute, setNewAttribute] = useState({ name: '', values: '', subcategory: '' });
+  const [subcategories, setSubcategories] = useState([]);
 
   useEffect(() => {
     loadAttributes();
+    loadSubcategories();
   }, []);
 
   const loadAttributes = async () => {
@@ -18,30 +20,42 @@ const AttributeEditor = () => {
     }
   };
 
+  const loadSubcategories = async () => {
+    try {
+      const subcategoriesData = await fetchSubcategories();
+      setSubcategories(subcategoriesData);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAttribute({ ...newAttribute, [name]: value });
   };
 
   const handleAddAttribute = async () => {
-    if (newAttribute.name && newAttribute.values) {
+    if (newAttribute.name && newAttribute.values && newAttribute.subcategory) {
       const updatedAttributes = {
         ...attributes,
-        [newAttribute.name]: newAttribute.values.split(',').map(value => value.trim())
+        [newAttribute.subcategory]: {
+          ...attributes[newAttribute.subcategory],
+          [newAttribute.name]: newAttribute.values.split(',').map(value => value.trim())
+        }
       };
       try {
         await updateAttributes(updatedAttributes);
         setAttributes(updatedAttributes);
-        setNewAttribute({ name: '', values: '' });
+        setNewAttribute({ name: '', values: '', subcategory: '' });
       } catch (error) {
         console.error('Error adding attribute:', error);
       }
     }
   };
 
-  const handleDeleteAttribute = async (attributeName) => {
+  const handleDeleteAttribute = async (subcategory, attributeName) => {
     const updatedAttributes = { ...attributes };
-    delete updatedAttributes[attributeName];
+    delete updatedAttributes[subcategory][attributeName];
     try {
       await updateAttributes(updatedAttributes);
       setAttributes(updatedAttributes);
@@ -55,6 +69,17 @@ const AttributeEditor = () => {
       <h2 className="text-2xl font-bold mb-4">Attribute Editor</h2>
       
       <div className="mb-4">
+        <select
+          name="subcategory"
+          value={newAttribute.subcategory}
+          onChange={handleInputChange}
+          className="w-full p-2 mb-2 border rounded"
+        >
+          <option value="">Select Subcategory</option>
+          {subcategories.map(subcategory => (
+            <option key={subcategory.id} value={subcategory.name}>{subcategory.name}</option>
+          ))}
+        </select>
         <input
           type="text"
           name="name"
@@ -81,16 +106,21 @@ const AttributeEditor = () => {
 
       <div>
         <h3 className="text-xl font-semibold mb-2">Existing Attributes</h3>
-        {Object.entries(attributes).map(([name, values]) => (
-          <div key={name} className="mb-4 p-4 border rounded">
-            <h4 className="font-bold">{name}</h4>
-            <p className="mb-2">{values.join(', ')}</p>
-            <button
-              onClick={() => handleDeleteAttribute(name)}
-              className="bg-red-500 text-white px-2 py-1 rounded"
-            >
-              Delete
-            </button>
+        {Object.entries(attributes).map(([subcategory, subcategoryAttributes]) => (
+          <div key={subcategory} className="mb-4">
+            <h4 className="font-bold">{subcategory}</h4>
+            {Object.entries(subcategoryAttributes).map(([name, values]) => (
+              <div key={name} className="ml-4 mb-2 p-2 border rounded">
+                <h5 className="font-semibold">{name}</h5>
+                <p className="mb-2">{values.join(', ')}</p>
+                <button
+                  onClick={() => handleDeleteAttribute(subcategory, name)}
+                  className="bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </div>
+            ))}
           </div>
         ))}
       </div>
