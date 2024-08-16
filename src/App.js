@@ -6,10 +6,12 @@ import AdminPanel from './components/AdminPanel';
 import PromptManagement from './components/PromptManagement';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import UserManagement from './components/UserManagement';
+import AttributeEditor from './components/AttributeEditor';
 import { fetchProducts, fetchAttributes } from './api/api';
+import { coffeeProducts } from './data/coffeeProducts';
 
 const App = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(coffeeProducts);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [attributes, setAttributes] = useState({});
 
@@ -17,7 +19,7 @@ const App = () => {
     const loadInitialData = async () => {
       try {
         const productsData = await fetchProducts();
-        setProducts(productsData);
+        setProducts(productsData.length > 0 ? productsData : coffeeProducts);
         const attributesData = await fetchAttributes();
         setAttributes(attributesData);
       } catch (error) {
@@ -39,6 +41,7 @@ const App = () => {
             <li><Link to="/prompts" className="text-blue-500 hover:text-blue-700">Prompt Management</Link></li>
             <li><Link to="/metrics" className="text-blue-500 hover:text-blue-700">Performance Metrics</Link></li>
             <li><Link to="/users" className="text-blue-500 hover:text-blue-700">User Management</Link></li>
+            <li><Link to="/attributes" className="text-blue-500 hover:text-blue-700">Attribute Editor</Link></li>
           </ul>
         </nav>
 
@@ -68,6 +71,9 @@ const App = () => {
           <Route path="/users">
             <UserManagement />
           </Route>
+          <Route path="/attributes">
+            <AttributeEditor />
+          </Route>
         </Switch>
       </div>
     </Router>
@@ -75,4 +81,3 @@ const App = () => {
 };
 
 export default App;
-
