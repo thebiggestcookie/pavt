@@ -1,13 +1,20 @@
 import React from 'react';
+import { updateProduct, updateAttributes } from '../api/api';
 
 const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProductIndex, attributes, setAttributes, setProducts }) => {
   const currentProduct = products[currentProductIndex];
 
-  const handleAttributeChange = (attributeIndex, newValue) => {
+  const handleAttributeChange = async (attributeIndex, newValue) => {
     const updatedProducts = [...products];
     updatedProducts[currentProductIndex].attributes[attributeIndex].value = newValue;
     updatedProducts[currentProductIndex].attributes[attributeIndex].correct = true;
-    setProducts(updatedProducts);
+    
+    try {
+      await updateProduct(currentProduct.id, updatedProducts[currentProductIndex]);
+      setProducts(updatedProducts);
+    } catch (error) {
+      console.error('Error updating product:', error);
+    }
   };
 
   const moveToNextProduct = () => {
@@ -18,11 +25,18 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
     }
   };
 
-  const handleAddNewVariable = (attributeName, newVariable) => {
-    setAttributes(prevAttributes => ({
-      ...prevAttributes,
-      [attributeName]: [...prevAttributes[attributeName], newVariable]
-    }));
+  const handleAddNewVariable = async (attributeName, newVariable) => {
+    const updatedAttributes = {
+      ...attributes,
+      [attributeName]: [...attributes[attributeName], newVariable]
+    };
+
+    try {
+      await updateAttributes(updatedAttributes);
+      setAttributes(updatedAttributes);
+    } catch (error) {
+      console.error('Error updating attributes:', error);
+    }
   };
 
   if (!currentProduct) {
