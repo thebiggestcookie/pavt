@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchLlmConfigs, updateLlmConfig, fetchSubcategories, addSubcategory, deleteSubcategory } from '../api/api';
+import debugLogger from '../utils/debugLogger';
 
 const AdminPanel = () => {
   const [llmConfigs, setLlmConfigs] = useState([]);
@@ -39,20 +40,28 @@ const AdminPanel = () => {
 
   const handleUpdateLlmConfig = async (index) => {
     try {
-      await updateLlmConfig(llmConfigs[index]);
+      const configToUpdate = llmConfigs[index];
+      debugLogger('Updating LLM config:', configToUpdate);
+      if (!configToUpdate.id) {
+        throw new Error('LLM config ID is undefined');
+      }
+      await updateLlmConfig(configToUpdate);
       alert('LLM configuration updated successfully');
     } catch (error) {
       console.error('Error updating LLM config:', error);
+      alert(`Error updating LLM config: ${error.message}`);
     }
   };
 
   const handleAddLlmConfig = async () => {
     try {
+      debugLogger('Adding new LLM config:', newLlmConfig);
       const addedConfig = await updateLlmConfig(newLlmConfig);
       setLlmConfigs([...llmConfigs, addedConfig]);
       setNewLlmConfig({ name: '', apiKey: '', maxTokens: 0 });
     } catch (error) {
       console.error('Error adding LLM config:', error);
+      alert(`Error adding LLM config: ${error.message}`);
     }
   };
 
