@@ -100,7 +100,7 @@ const AdminPanel = () => {
             </tr>
           </thead>
           <tbody>
-            {llmConfigs.map((config, index) => (
+            {llmConfigs && llmConfigs.map((config, index) => (
               <tr key={config.id}>
                 <td className="border p-2">
                   <input
@@ -175,7 +175,7 @@ const AdminPanel = () => {
       <div>
         <h3 className="text-xl font-semibold mb-2">Subcategories</h3>
         <ul className="list-disc list-inside">
-          {subcategories.map((subcategory) => (
+          {subcategories && subcategories.map((subcategory) => (
             <li key={subcategory.id}>
               {subcategory.name}
               <button
@@ -208,4 +208,3 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
-
