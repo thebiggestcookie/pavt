@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { fetchAttributes, updateAttributes, fetchSubcategories } from '../api/api';
+import { fetchAttributes, updateAttributes, fetchSubcategories, addSubcategory } from '../api/api';
 
 const AttributeEditor = () => {
   const [attributes, setAttributes] = useState({});
   const [newAttribute, setNewAttribute] = useState({ name: '', values: '', subcategory: '' });
   const [subcategories, setSubcategories] = useState([]);
+  const [newSubcategory, setNewSubcategory] = useState('');
 
   useEffect(() => {
     loadAttributes();
@@ -64,11 +65,41 @@ const AttributeEditor = () => {
     }
   };
 
+  const handleAddSubcategory = async () => {
+    if (newSubcategory) {
+      try {
+        const addedSubcategory = await addSubcategory({ name: newSubcategory, parentCategory: 'Coffee' });
+        setSubcategories([...subcategories, addedSubcategory]);
+        setNewSubcategory('');
+      } catch (error) {
+        console.error('Error adding subcategory:', error);
+      }
+    }
+  };
+
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Attribute Editor</h2>
       
       <div className="mb-4">
+        <h3 className="text-xl font-semibold mb-2">Add New Subcategory</h3>
+        <input
+          type="text"
+          value={newSubcategory}
+          onChange={(e) => setNewSubcategory(e.target.value)}
+          placeholder="New Subcategory Name"
+          className="w-full p-2 mb-2 border rounded"
+        />
+        <button
+          onClick={handleAddSubcategory}
+          className="bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Add Subcategory
+        </button>
+      </div>
+
+      <div className="mb-4">
+        <h3 className="text-xl font-semibold mb-2">Add New Attribute</h3>
         <select
           name="subcategory"
           value={newAttribute.subcategory}
@@ -129,4 +160,3 @@ const AttributeEditor = () => {
 };
 
 export default AttributeEditor;
-
