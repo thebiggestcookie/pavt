@@ -6,29 +6,27 @@ import AdminPanel from './components/AdminPanel';
 import PromptManagement from './components/PromptManagement';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import UserManagement from './components/UserManagement';
+import { fetchProducts, fetchAttributes } from './api/api';
 
 const App = () => {
-  const [products, setProducts] = useState([
-    {
-      name: "Mountain Blend Coffee",
-      attributes: [
-        { name: "Origin", value: "Colombia", correct: null },
-        { name: "OrganicStatus", value: "Yes", correct: null },
-        { name: "Intensity", value: "7", correct: null },
-        { name: "FlavorProfile", value: "Nutty, Chocolate", correct: null },
-        { name: "RoastLevel", value: "Medium", correct: null }
-      ]
-    },
-    // ... (other product entries)
-  ]);
+  const [products, setProducts] = useState([]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [attributes, setAttributes] = useState({
-    Origin: ['Colombia', 'Brazil', 'Ethiopia', 'Indonesia', 'Guatemala', 'Costa Rica', 'Hawaii', 'Switzerland', 'Iceland', 'Italy'],
-    OrganicStatus: ['Yes', 'No'],
-    Intensity: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-    FlavorProfile: ['Nutty', 'Chocolate', 'Caramel', 'Citrus', 'Fruity', 'Floral', 'Vanilla', 'Smoky', 'Earthy', 'Balanced', 'Smooth', 'Mild', 'Rich', 'Bold'],
-    RoastLevel: ['Light', 'Medium', 'Dark']
-  });
+  const [attributes, setAttributes] = useState({});
+
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        const productsData = await fetchProducts();
+        setProducts(productsData);
+        const attributesData = await fetchAttributes();
+        setAttributes(attributesData);
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   return (
     <Router>
@@ -77,3 +75,4 @@ const App = () => {
 };
 
 export default App;
+
