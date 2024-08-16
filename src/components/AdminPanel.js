@@ -12,22 +12,21 @@ const AdminPanel = () => {
     { id: 3, name: 'Instant Coffee' },
   ]);
 
+  const [newLlmConfig, setNewLlmConfig] = useState({ name: '', apiKey: '', maxTokens: 0 });
+  const [newSubcategory, setNewSubcategory] = useState('');
+
   const addLlmConfig = () => {
-    const newConfig = {
-      id: llmConfigs.length + 1,
-      name: '',
-      apiKey: '',
-      maxTokens: 0,
-    };
-    setLlmConfigs([...llmConfigs, newConfig]);
+    if (newLlmConfig.name && newLlmConfig.apiKey) {
+      setLlmConfigs([...llmConfigs, { ...newLlmConfig, id: llmConfigs.length + 1 }]);
+      setNewLlmConfig({ name: '', apiKey: '', maxTokens: 0 });
+    }
   };
 
   const addSubcategory = () => {
-    const newSubcategory = {
-      id: subcategories.length + 1,
-      name: '',
-    };
-    setSubcategories([...subcategories, newSubcategory]);
+    if (newSubcategory) {
+      setSubcategories([...subcategories, { id: subcategories.length + 1, name: newSubcategory }]);
+      setNewSubcategory('');
+    }
   };
 
   return (
@@ -54,12 +53,35 @@ const AdminPanel = () => {
             ))}
           </tbody>
         </table>
-        <button
-          onClick={addLlmConfig}
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Add LLM Config
-        </button>
+        <div className="mt-2">
+          <input
+            type="text"
+            placeholder="Name"
+            value={newLlmConfig.name}
+            onChange={(e) => setNewLlmConfig({...newLlmConfig, name: e.target.value})}
+            className="border p-1 mr-2"
+          />
+          <input
+            type="text"
+            placeholder="API Key"
+            value={newLlmConfig.apiKey}
+            onChange={(e) => setNewLlmConfig({...newLlmConfig, apiKey: e.target.value})}
+            className="border p-1 mr-2"
+          />
+          <input
+            type="number"
+            placeholder="Max Tokens"
+            value={newLlmConfig.maxTokens}
+            onChange={(e) => setNewLlmConfig({...newLlmConfig, maxTokens: parseInt(e.target.value)})}
+            className="border p-1 mr-2"
+          />
+          <button
+            onClick={addLlmConfig}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Add LLM Config
+          </button>
+        </div>
       </div>
 
       <div>
@@ -69,12 +91,21 @@ const AdminPanel = () => {
             <li key={subcategory.id}>{subcategory.name}</li>
           ))}
         </ul>
-        <button
-          onClick={addSubcategory}
-          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Add Subcategory
-        </button>
+        <div className="mt-2">
+          <input
+            type="text"
+            placeholder="New Subcategory"
+            value={newSubcategory}
+            onChange={(e) => setNewSubcategory(e.target.value)}
+            className="border p-1 mr-2"
+          />
+          <button
+            onClick={addSubcategory}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Add Subcategory
+          </button>
+        </div>
       </div>
     </div>
   );
