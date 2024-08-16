@@ -233,4 +233,3 @@ export const deleteSubcategory = async (subcategoryId) => {
     throw error;
   }
 };
-
