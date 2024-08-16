@@ -7,6 +7,7 @@ import PromptManagement from './components/PromptManagement';
 import PerformanceMetrics from './components/PerformanceMetrics';
 import UserManagement from './components/UserManagement';
 import AttributeEditor from './components/AttributeEditor';
+import InvestorDashboard from './components/InvestorDashboard';
 import { fetchProducts, fetchAttributes } from './api/api';
 import { coffeeProducts } from './data/coffeeProducts';
 
@@ -42,6 +43,7 @@ const App = () => {
             <li><Link to="/metrics" className="text-blue-500 hover:text-blue-700">Performance Metrics</Link></li>
             <li><Link to="/users" className="text-blue-500 hover:text-blue-700">User Management</Link></li>
             <li><Link to="/attributes" className="text-blue-500 hover:text-blue-700">Attribute Editor</Link></li>
+            <li><Link to="/investor" className="text-blue-500 hover:text-blue-700">Investor Dashboard</Link></li>
           </ul>
         </nav>
 
@@ -73,6 +75,9 @@ const App = () => {
           </Route>
           <Route path="/attributes">
             <AttributeEditor />
+          </Route>
+          <Route path="/investor">
+            <InvestorDashboard />
           </Route>
         </Switch>
       </div>
