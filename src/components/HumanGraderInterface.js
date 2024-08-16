@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { updateProduct, fetchSubcategories, updateAttributes } from '../api/api';
+import { updateProduct, fetchSubcategories, updateAttributes, fetchProducts } from '../api/api';
 
-const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProductIndex, attributes, setAttributes, setProducts }) => {
+const HumanGraderInterface = () => {
+  const [products, setProducts] = useState([]);
+  const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [subcategories, setSubcategories] = useState([]);
-  const [currentProduct, setCurrentProduct] = useState(null);
+  const [attributes, setAttributes] = useState({});
 
   useEffect(() => {
     loadSubcategories();
-    if (products.length > 0) {
-      setCurrentProduct(products[currentProductIndex]);
-    }
-  }, [products, currentProductIndex]);
+    loadProducts();
+  }, []);
 
   const loadSubcategories = async () => {
     try {
@@ -21,21 +21,28 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
     }
   };
 
+  const loadProducts = async () => {
+    try {
+      const productsData = await fetchProducts();
+      setProducts(productsData);
+    } catch (error) {
+      console.error('Error loading products:', error);
+    }
+  };
+
   const handleAttributeChange = async (attributeName, newValue) => {
-    if (!currentProduct) return;
+    if (!products[currentProductIndex]) return;
 
     const updatedProduct = {
-      ...currentProduct,
+      ...products[currentProductIndex],
       attributes: {
-        ...currentProduct.attributes,
+        ...products[currentProductIndex].attributes,
         [attributeName]: newValue
       }
     };
 
     try {
-      await updateProduct(currentProduct.id, updatedProduct);
-      setCurrentProduct(updatedProduct);
-      
+      await updateProduct(updatedProduct.id, updatedProduct);
       const updatedProducts = [...products];
       updatedProducts[currentProductIndex] = updatedProduct;
       setProducts(updatedProducts);
@@ -45,17 +52,15 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
   };
 
   const handleSubcategoryChange = async (newSubcategory) => {
-    if (!currentProduct) return;
+    if (!products[currentProductIndex]) return;
 
     const updatedProduct = {
-      ...currentProduct,
+      ...products[currentProductIndex],
       subcategory: newSubcategory
     };
 
     try {
-      await updateProduct(currentProduct.id, updatedProduct);
-      setCurrentProduct(updatedProduct);
-      
+      await updateProduct(updatedProduct.id, updatedProduct);
       const updatedProducts = [...products];
       updatedProducts[currentProductIndex] = updatedProduct;
       setProducts(updatedProducts);
@@ -73,13 +78,13 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
   };
 
   const handleAddNewVariable = async (attributeName, newVariable) => {
-    if (!currentProduct || !currentProduct.subcategory) return;
+    if (!products[currentProductIndex] || !products[currentProductIndex].subcategory) return;
 
     const updatedAttributes = {
       ...attributes,
-      [currentProduct.subcategory]: {
-        ...attributes[currentProduct.subcategory],
-        [attributeName]: [...(attributes[currentProduct.subcategory]?.[attributeName] || []), newVariable]
+      [products[currentProductIndex].subcategory]: {
+        ...attributes[products[currentProductIndex].subcategory],
+        [attributeName]: [...(attributes[products[currentProductIndex].subcategory]?.[attributeName] || []), newVariable]
       }
     };
 
@@ -91,9 +96,11 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
     }
   };
 
-  if (!currentProduct) {
+  if (products.length === 0) {
     return <div className="mt-8">No products to review. Please upload data first.</div>;
   }
+
+  const currentProduct = products[currentProductIndex];
 
   return (
     <div className="mt-8">
@@ -122,21 +129,16 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
           </tr>
         </thead>
         <tbody>
-          {currentProduct.subcategory && attributes[currentProduct.subcategory] && 
-           Object.entries(attributes[currentProduct.subcategory]).map(([attrName, attrValues]) => (
+          {Object.entries(currentProduct.attributes).map(([attrName, attrValue]) => (
             <tr key={attrName}>
               <td className="border p-2">{attrName}</td>
               <td className="border p-2">
-                <select
-                  value={currentProduct.attributes[attrName] || ''}
+                <input
+                  type="text"
+                  value={attrValue}
                   onChange={(e) => handleAttributeChange(attrName, e.target.value)}
                   className="w-full p-1"
-                >
-                  <option value="">Select {attrName}</option>
-                  {attrValues.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
+                />
                 <button
                   onClick={() => {
                     const newVariable = prompt(`Enter new variable for ${attrName}`);
@@ -163,4 +165,3 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
 };
 
 export default HumanGraderInterface;
-

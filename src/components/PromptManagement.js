@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { fetchPrompts, addPrompt, updatePrompt, deletePrompt, fetchApiKeys, updateApiKey } from '../api/api';
+import { fetchPrompts, addPrompt, updatePrompt, deletePrompt } from '../api/api';
 
 const PromptManagement = () => {
   const [prompts, setPrompts] = useState([]);
   const [newPrompt, setNewPrompt] = useState({ name: '', content: '', model: 'gpt-4' });
-  const [apiKeys, setApiKeys] = useState({
-    openai: '',
-    anthropic: '',
-    perplexity: ''
-  });
 
   useEffect(() => {
     loadPrompts();
-    loadApiKeys();
   }, []);
 
   const loadPrompts = async () => {
@@ -24,28 +18,9 @@ const PromptManagement = () => {
     }
   };
 
-  const loadApiKeys = async () => {
-    try {
-      const keys = await fetchApiKeys();
-      setApiKeys(keys);
-    } catch (error) {
-      console.error('Error loading API keys:', error);
-    }
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPrompt({ ...newPrompt, [name]: value });
-  };
-
-  const handleApiKeyChange = async (e) => {
-    const { name, value } = e.target;
-    try {
-      await updateApiKey(name, value);
-      setApiKeys({ ...apiKeys, [name]: value });
-    } catch (error) {
-      console.error('Error updating API key:', error);
-    }
   };
 
   const handleAddPrompt = async () => {
@@ -82,25 +57,6 @@ const PromptManagement = () => {
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Prompt Management</h2>
       
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-2">API Keys</h3>
-        <div className="grid grid-cols-3 gap-4">
-          {Object.entries(apiKeys).map(([provider, key]) => (
-            <div key={provider}>
-              <label className="block mb-2">{provider.charAt(0).toUpperCase() + provider.slice(1)} API Key</label>
-              <input
-                type="password"
-                name={provider}
-                value={key}
-                onChange={handleApiKeyChange}
-                className="w-full p-2 border rounded"
-                placeholder={`Enter ${provider} API key`}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="mb-4">
         <input
           type="text"
