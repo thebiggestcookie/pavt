@@ -77,3 +77,27 @@ export const getTokenUsage = async () => {
   return response.data;
 };
 
+export const fetchLlmConfigs = async () => {
+  const response = await axios.get(`${API_BASE_URL}/llm-configs`);
+  return response.data;
+};
+
+export const updateLlmConfig = async (configData) => {
+  const response = await axios.put(`${API_BASE_URL}/llm-configs/${configData.id}`, configData);
+  return response.data;
+};
+
+export const fetchSubcategories = async () => {
+  const response = await axios.get(`${API_BASE_URL}/subcategories`);
+  return response.data;
+};
+
+export const addSubcategory = async (subcategoryData) => {
+  const response = await axios.post(`${API_BASE_URL}/subcategories`, subcategoryData);
+  return response.data;
+};
+
+export const deleteSubcategory = async (subcategoryId) => {
+  const response = await axios.delete(`${API_BASE_URL}/subcategories/${subcategoryId}`);
+  return response.data;
+};
