@@ -1,11 +1,50 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 
+const asciiCollection = [
+  `
+   ___________
+  /           \\
+ /  ^     ^    \\
+|  (o)   (o)    |
+|      <        |
+ \\    ___/     /
+  \\__________/
+  `,
+  `
+    _____
+   /     \\
+  | O   O |
+  |   <   |
+   \\_____/
+  `,
+  `
+   /\\_/\\
+  ( o.o )
+   > ^ <
+  `,
+  `
+   _____
+  /     \\
+ | -   - |
+ |   O   |
+  \\_____/
+  `,
+  `
+    ____
+   / o o \\
+  (   "   )
+   \\__^__/
+  `
+];
+
 const App = () => {
   const [rotation, setRotation] = useState(0);
   const [size, setSize] = useState(1);
   const [color, setColor] = useState('black');
   const [actions, setActions] = useState([]);
+  const [currentAsciiIndex, setCurrentAsciiIndex] = useState(0);
+  const [transformCount, setTransformCount] = useState(0);
 
   const addAction = (actionType) => {
     const newAction = {
@@ -32,9 +71,15 @@ const App = () => {
     addAction('Colorize');
   };
 
+  const transform = () => {
+    setCurrentAsciiIndex((prevIndex) => (prevIndex + 1) % asciiCollection.length);
+    setTransformCount((prevCount) => prevCount + 1);
+    addAction('Transform');
+  };
+
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-      <h1 style={{ textAlign: 'center', color: '#333' }}>Interactive Smiley Face</h1>
+      <h1 style={{ textAlign: 'center', color: '#333' }}>Interactive ASCII Art</h1>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
         <div>
           <pre
@@ -45,22 +90,18 @@ const App = () => {
               transition: 'all 0.3s ease',
             }}
           >
-            {`
-   ___________
-  /           \\
- /  ^     ^    \\
-|  (o)   (o)    |
-|      <        |
- \\    ___/     /
-  \\__________/
-            `}
+            {asciiCollection[currentAsciiIndex]}
           </pre>
         </div>
         <div>
           <button onClick={rotate} style={buttonStyle}>Rotate</button>
           <button onClick={enlarge} style={buttonStyle}>Enlarge</button>
           <button onClick={colorize} style={buttonStyle}>Colorize</button>
+          <button onClick={transform} style={buttonStyle}>Transform</button>
         </div>
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <strong>Transform Count:</strong> {transformCount}
       </div>
       <table style={tableStyle}>
         <thead>
