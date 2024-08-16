@@ -42,3 +42,38 @@ export const updateAttributes = async (updatedAttributes) => {
   return response.data;
 };
 
+export const fetchPrompts = async () => {
+  const response = await axios.get(`${API_BASE_URL}/prompts`);
+  return response.data;
+};
+
+export const addPrompt = async (promptData) => {
+  const response = await axios.post(`${API_BASE_URL}/prompts`, promptData);
+  return response.data;
+};
+
+export const updatePrompt = async (promptId, updatedData) => {
+  const response = await axios.put(`${API_BASE_URL}/prompts/${promptId}`, updatedData);
+  return response.data;
+};
+
+export const deletePrompt = async (promptId) => {
+  const response = await axios.delete(`${API_BASE_URL}/prompts/${promptId}`);
+  return response.data;
+};
+
+export const fetchApiKeys = async () => {
+  const response = await axios.get(`${API_BASE_URL}/api-keys`);
+  return response.data;
+};
+
+export const updateApiKey = async (provider, apiKey) => {
+  const response = await axios.put(`${API_BASE_URL}/api-keys/${provider}`, { apiKey });
+  return response.data;
+};
+
+export const getTokenUsage = async () => {
+  const response = await axios.get(`${API_BASE_URL}/token-usage`);
+  return response.data;
+};
+
