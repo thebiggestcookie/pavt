@@ -1,103 +1,231 @@
 import axios from 'axios';
+import debugLogger from '../utils/debugLogger';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+api.interceptors.request.use(
+  (config) => {
+    debugLogger(`API Request: ${config.method.toUpperCase()} ${config.url}`, config.data);
+    return config;
+  },
+  (error) => {
+    debugLogger('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+api.interceptors.response.use(
+  (response) => {
+    debugLogger(`API Response: ${response.status}`, response.data);
+    return response;
+  },
+  (error) => {
+    debugLogger('API Response Error:', error.response ? error.response.data : error.message);
+    return Promise.reject(error);
+  }
+);
 
 export const fetchProducts = async () => {
-  const response = await axios.get(`${API_BASE_URL}/products`);
-  return response.data;
+  try {
+    const response = await api.get('/products');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in fetchProducts:', error);
+    throw error;
+  }
 };
 
 export const updateProduct = async (productId, updatedData) => {
-  const response = await axios.put(`${API_BASE_URL}/products/${productId}`, updatedData);
-  return response.data;
+  try {
+    const response = await api.put(`/products/${productId}`, updatedData);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in updateProduct:', error);
+    throw error;
+  }
 };
 
 export const fetchUsers = async () => {
-  const response = await axios.get(`${API_BASE_URL}/users`);
-  return response.data;
+  try {
+    const response = await api.get('/users');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in fetchUsers:', error);
+    throw error;
+  }
 };
 
 export const addUser = async (userData) => {
-  const response = await axios.post(`${API_BASE_URL}/users`, userData);
-  return response.data;
+  try {
+    const response = await api.post('/users', userData);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in addUser:', error);
+    throw error;
+  }
 };
 
 export const removeUser = async (userId) => {
-  const response = await axios.delete(`${API_BASE_URL}/users/${userId}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/users/${userId}`);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in removeUser:', error);
+    throw error;
+  }
 };
 
 export const resetPassword = async (userId) => {
-  const response = await axios.post(`${API_BASE_URL}/users/${userId}/reset-password`);
-  return response.data;
+  try {
+    const response = await api.post(`/users/${userId}/reset-password`);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in resetPassword:', error);
+    throw error;
+  }
 };
 
 export const fetchAttributes = async () => {
-  const response = await axios.get(`${API_BASE_URL}/attributes`);
-  return response.data;
+  try {
+    const response = await api.get('/attributes');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in fetchAttributes:', error);
+    throw error;
+  }
 };
 
 export const updateAttributes = async (updatedAttributes) => {
-  const response = await axios.put(`${API_BASE_URL}/attributes`, updatedAttributes);
-  return response.data;
+  try {
+    const response = await api.put('/attributes', updatedAttributes);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in updateAttributes:', error);
+    throw error;
+  }
 };
 
 export const fetchPrompts = async () => {
-  const response = await axios.get(`${API_BASE_URL}/prompts`);
-  return response.data;
+  try {
+    const response = await api.get('/prompts');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in fetchPrompts:', error);
+    throw error;
+  }
 };
 
 export const addPrompt = async (promptData) => {
-  const response = await axios.post(`${API_BASE_URL}/prompts`, promptData);
-  return response.data;
+  try {
+    const response = await api.post('/prompts', promptData);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in addPrompt:', error);
+    throw error;
+  }
 };
 
 export const updatePrompt = async (promptId, updatedData) => {
-  const response = await axios.put(`${API_BASE_URL}/prompts/${promptId}`, updatedData);
-  return response.data;
+  try {
+    const response = await api.put(`/prompts/${promptId}`, updatedData);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in updatePrompt:', error);
+    throw error;
+  }
 };
 
 export const deletePrompt = async (promptId) => {
-  const response = await axios.delete(`${API_BASE_URL}/prompts/${promptId}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/prompts/${promptId}`);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in deletePrompt:', error);
+    throw error;
+  }
 };
 
 export const fetchApiKeys = async () => {
-  const response = await axios.get(`${API_BASE_URL}/api-keys`);
-  return response.data;
+  try {
+    const response = await api.get('/api-keys');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in fetchApiKeys:', error);
+    throw error;
+  }
 };
 
 export const updateApiKey = async (provider, apiKey) => {
-  const response = await axios.put(`${API_BASE_URL}/api-keys/${provider}`, { apiKey });
-  return response.data;
+  try {
+    const response = await api.put(`/api-keys/${provider}`, { apiKey });
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in updateApiKey:', error);
+    throw error;
+  }
 };
 
 export const getTokenUsage = async () => {
-  const response = await axios.get(`${API_BASE_URL}/token-usage`);
-  return response.data;
+  try {
+    const response = await api.get('/token-usage');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in getTokenUsage:', error);
+    throw error;
+  }
 };
 
 export const fetchLlmConfigs = async () => {
-  const response = await axios.get(`${API_BASE_URL}/llm-configs`);
-  return response.data;
+  try {
+    const response = await api.get('/llm-configs');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in fetchLlmConfigs:', error);
+    throw error;
+  }
 };
 
 export const updateLlmConfig = async (configData) => {
-  const response = await axios.put(`${API_BASE_URL}/llm-configs/${configData.id}`, configData);
-  return response.data;
+  try {
+    const response = await api.put(`/llm-configs/${configData.id}`, configData);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in updateLlmConfig:', error);
+    throw error;
+  }
 };
 
 export const fetchSubcategories = async () => {
-  const response = await axios.get(`${API_BASE_URL}/subcategories`);
-  return response.data;
+  try {
+    const response = await api.get('/subcategories');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in fetchSubcategories:', error);
+    throw error;
+  }
 };
 
 export const addSubcategory = async (subcategoryData) => {
-  const response = await axios.post(`${API_BASE_URL}/subcategories`, subcategoryData);
-  return response.data;
+  try {
+    const response = await api.post('/subcategories', subcategoryData);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in addSubcategory:', error);
+    throw error;
+  }
 };
 
 export const deleteSubcategory = async (subcategoryId) => {
-  const response = await axios.delete(`${API_BASE_URL}/subcategories/${subcategoryId}`);
-  return response.data;
+  try {
+    const response = await api.delete(`/subcategories/${subcategoryId}`);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in deleteSubcategory:', error);
+    throw error;
+  }
 };
+
