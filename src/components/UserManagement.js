@@ -1,26 +1,51 @@
 import React, { useState, useEffect } from 'react';
+import { fetchUsers, addUser, removeUser, resetPassword } from '../api/api';
 
 const UserManagement = () => {
-  const [users, setUsers] = useState([
-    { id: 1, username: 'admin', lastLogin: '2023-05-01 10:30:00' },
-    { id: 2, username: 'user1', lastLogin: '2023-05-02 14:45:00' },
-  ]);
+  const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({ username: '', password: '' });
 
-  const addUser = () => {
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        const usersData = await fetchUsers();
+        setUsers(usersData);
+      } catch (error) {
+        console.error('Error loading users:', error);
+      }
+    };
+
+    loadUsers();
+  }, []);
+
+  const handleAddUser = async () => {
     if (newUser.username && newUser.password) {
-      setUsers([...users, { id: users.length + 1, username: newUser.username, lastLogin: 'Never' }]);
-      setNewUser({ username: '', password: '' });
+      try {
+        const addedUser = await addUser(newUser);
+        setUsers([...users, addedUser]);
+        setNewUser({ username: '', password: '' });
+      } catch (error) {
+        console.error('Error adding user:', error);
+      }
     }
   };
 
-  const removeUser = (id) => {
-    setUsers(users.filter(user => user.id !== id));
+  const handleRemoveUser = async (id) => {
+    try {
+      await removeUser(id);
+      setUsers(users.filter(user => user.id !== id));
+    } catch (error) {
+      console.error('Error removing user:', error);
+    }
   };
 
-  const resetPassword = (id) => {
-    // In a real application, this would trigger a password reset email or generate a temporary password
-    alert(`Password reset for user with ID ${id}`);
+  const handleResetPassword = async (id) => {
+    try {
+      await resetPassword(id);
+      alert(`Password reset for user with ID ${id}`);
+    } catch (error) {
+      console.error('Error resetting password:', error);
+    }
   };
 
   return (
@@ -44,7 +69,7 @@ const UserManagement = () => {
           className="w-full p-2 mb-2 border rounded"
         />
         <button
-          onClick={addUser}
+          onClick={handleAddUser}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Add User
@@ -68,13 +93,13 @@ const UserManagement = () => {
                 <td className="border p-2">{user.lastLogin}</td>
                 <td className="border p-2">
                   <button
-                    onClick={() => resetPassword(user.id)}
+                    onClick={() => handleResetPassword(user.id)}
                     className="mr-2 bg-yellow-500 text-white px-2 py-1 rounded"
                   >
                     Reset Password
                   </button>
                   <button
-                    onClick={() => removeUser(user.id)}
+                    onClick={() => handleRemoveUser(user.id)}
                     className="bg-red-500 text-white px-2 py-1 rounded"
                   >
                     Remove
