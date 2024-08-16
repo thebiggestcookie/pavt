@@ -6,17 +6,17 @@ const UserManagement = () => {
   const [newUser, setNewUser] = useState({ username: '', password: '' });
 
   useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const usersData = await fetchUsers();
-        setUsers(usersData);
-      } catch (error) {
-        console.error('Error loading users:', error);
-      }
-    };
-
     loadUsers();
   }, []);
+
+  const loadUsers = async () => {
+    try {
+      const usersData = await fetchUsers();
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error loading users:', error);
+    }
+  };
 
   const handleAddUser = async () => {
     if (newUser.username && newUser.password) {
