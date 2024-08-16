@@ -1,6 +1,22 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App';
+
+const App = () => (
+  <div>
+    <h1>Hello, World!</h1>
+    <pre>
+      {`
+   ___________
+  /           \\
+ /  ^     ^    \\
+|  (o)   (o)    |
+|      <        |
+ \\    ___/     /
+  \\__________/
+      `}
+    </pre>
+  </div>
+);
 
 ReactDOM.render(
   <React.StrictMode>
