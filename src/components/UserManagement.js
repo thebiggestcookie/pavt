@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { fetchUsers, addUser, removeUser, resetPassword } from '../api/api';
+import predictGraderAccuracy from '../utils/mlPredictor';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ username: '', password: '' });
+  const [newUser, setNewUser] = useState({ username: '', password: '', experience: 0, pastAccuracy: 0 });
 
   useEffect(() => {
     loadUsers();
@@ -23,7 +24,7 @@ const UserManagement = () => {
       try {
         const addedUser = await addUser(newUser);
         setUsers([...users, addedUser]);
-        setNewUser({ username: '', password: '' });
+        setNewUser({ username: '', password: '', experience: 0, pastAccuracy: 0 });
       } catch (error) {
         console.error('Error adding user:', error);
       }
@@ -68,6 +69,20 @@ const UserManagement = () => {
           placeholder="Password"
           className="w-full p-2 mb-2 border rounded"
         />
+        <input
+          type="number"
+          value={newUser.experience}
+          onChange={(e) => setNewUser({ ...newUser, experience: parseInt(e.target.value) })}
+          placeholder="Experience (years)"
+          className="w-full p-2 mb-2 border rounded"
+        />
+        <input
+          type="number"
+          value={newUser.pastAccuracy}
+          onChange={(e) => setNewUser({ ...newUser, pastAccuracy: parseFloat(e.target.value) })}
+          placeholder="Past Accuracy (%)"
+          className="w-full p-2 mb-2 border rounded"
+        />
         <button
           onClick={handleAddUser}
           className="bg-blue-500 text-white px-4 py-2 rounded"
@@ -83,6 +98,9 @@ const UserManagement = () => {
             <tr>
               <th className="border p-2">Username</th>
               <th className="border p-2">Last Login</th>
+              <th className="border p-2">Experience</th>
+              <th className="border p-2">Past Accuracy</th>
+              <th className="border p-2">Predicted Accuracy</th>
               <th className="border p-2">Actions</th>
             </tr>
           </thead>
@@ -91,6 +109,9 @@ const UserManagement = () => {
               <tr key={user.id}>
                 <td className="border p-2">{user.username}</td>
                 <td className="border p-2">{user.lastLogin}</td>
+                <td className="border p-2">{user.experience} years</td>
+                <td className="border p-2">{user.pastAccuracy}%</td>
+                <td className="border p-2">{predictGraderAccuracy(user)}%</td>
                 <td className="border p-2">
                   <button
                     onClick={() => handleResetPassword(user.id)}
@@ -115,4 +136,3 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
-
