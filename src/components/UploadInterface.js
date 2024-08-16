@@ -82,9 +82,16 @@ const UploadInterface = ({ setProducts, setAttributes }) => {
       </div>
       {isLoading && <p className="mt-4">Loading...</p>}
       {error && <p className="mt-4 text-red-500">{error}</p>}
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold mb-2">Sample CSV Format:</h3>
+        <pre className="bg-gray-100 p-2 rounded">
+          Name,Origin,OrganicStatus,Intensity,FlavorProfile,RoastLevel
+          Mountain Blend Coffee,Colombia,Yes,7,"Nutty, Chocolate",Medium
+          Sunrise Espresso,Brazil,No,9,"Caramel, Citrus",Dark
+        </pre>
+      </div>
     </div>
   );
 };
 
 export default UploadInterface;
-

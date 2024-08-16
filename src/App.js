@@ -5,15 +5,28 @@ import HumanGraderInterface from './components/HumanGraderInterface';
 import AdminPanel from './components/AdminPanel';
 import PromptManagement from './components/PromptManagement';
 import PerformanceMetrics from './components/PerformanceMetrics';
+import UserManagement from './components/UserManagement';
 
 const App = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([
+    {
+      name: "Mountain Blend Coffee",
+      attributes: [
+        { name: "Origin", value: "Colombia", correct: null },
+        { name: "OrganicStatus", value: "Yes", correct: null },
+        { name: "Intensity", value: "7", correct: null },
+        { name: "FlavorProfile", value: "Nutty, Chocolate", correct: null },
+        { name: "RoastLevel", value: "Medium", correct: null }
+      ]
+    },
+    // ... (other product entries)
+  ]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [attributes, setAttributes] = useState({
-    Origin: [],
+    Origin: ['Colombia', 'Brazil', 'Ethiopia', 'Indonesia', 'Guatemala', 'Costa Rica', 'Hawaii', 'Switzerland', 'Iceland', 'Italy'],
     OrganicStatus: ['Yes', 'No'],
     Intensity: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-    FlavorProfile: [],
+    FlavorProfile: ['Nutty', 'Chocolate', 'Caramel', 'Citrus', 'Fruity', 'Floral', 'Vanilla', 'Smoky', 'Earthy', 'Balanced', 'Smooth', 'Mild', 'Rich', 'Bold'],
     RoastLevel: ['Light', 'Medium', 'Dark']
   });
 
@@ -27,6 +40,7 @@ const App = () => {
             <li><Link to="/admin" className="text-blue-500 hover:text-blue-700">Admin Panel</Link></li>
             <li><Link to="/prompts" className="text-blue-500 hover:text-blue-700">Prompt Management</Link></li>
             <li><Link to="/metrics" className="text-blue-500 hover:text-blue-700">Performance Metrics</Link></li>
+            <li><Link to="/users" className="text-blue-500 hover:text-blue-700">User Management</Link></li>
           </ul>
         </nav>
 
@@ -41,6 +55,7 @@ const App = () => {
               setCurrentProductIndex={setCurrentProductIndex}
               attributes={attributes}
               setAttributes={setAttributes}
+              setProducts={setProducts}
             />
           </Route>
           <Route path="/admin">
@@ -52,6 +67,9 @@ const App = () => {
           <Route path="/metrics">
             <PerformanceMetrics />
           </Route>
+          <Route path="/users">
+            <UserManagement />
+          </Route>
         </Switch>
       </div>
     </Router>
@@ -59,4 +77,3 @@ const App = () => {
 };
 
 export default App;
-
