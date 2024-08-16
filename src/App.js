@@ -33,56 +33,61 @@ const App = () => {
 
   return (
     <Router>
-      <div className="container mx-auto px-4">
-        <nav className="mb-4">
-          <ul className="flex space-x-4">
-            <li><Link to="/" className="text-blue-500 hover:text-blue-700">Upload</Link></li>
-            <li><Link to="/grader" className="text-blue-500 hover:text-blue-700">Human Grader</Link></li>
-            <li><Link to="/admin" className="text-blue-500 hover:text-blue-700">Admin Panel</Link></li>
-            <li><Link to="/prompts" className="text-blue-500 hover:text-blue-700">Prompt Management</Link></li>
-            <li><Link to="/metrics" className="text-blue-500 hover:text-blue-700">Performance Metrics</Link></li>
-            <li><Link to="/users" className="text-blue-500 hover:text-blue-700">User Management</Link></li>
-            <li><Link to="/attributes" className="text-blue-500 hover:text-blue-700">Attribute Editor</Link></li>
-            <li><Link to="/investor" className="text-blue-500 hover:text-blue-700">Investor Dashboard</Link></li>
-          </ul>
+      <div className="min-h-screen bg-gray-100">
+        <nav className="bg-white shadow-md">
+          <div className="container mx-auto px-6 py-3">
+            <ul className="flex space-x-4">
+              <li><Link to="/" className="text-blue-600 hover:text-blue-800 font-medium">Upload</Link></li>
+              <li><Link to="/grader" className="text-blue-600 hover:text-blue-800 font-medium">Human Grader</Link></li>
+              <li><Link to="/admin" className="text-blue-600 hover:text-blue-800 font-medium">Admin Panel</Link></li>
+              <li><Link to="/prompts" className="text-blue-600 hover:text-blue-800 font-medium">Prompt Management</Link></li>
+              <li><Link to="/metrics" className="text-blue-600 hover:text-blue-800 font-medium">Performance Metrics</Link></li>
+              <li><Link to="/users" className="text-blue-600 hover:text-blue-800 font-medium">User Management</Link></li>
+              <li><Link to="/attributes" className="text-blue-600 hover:text-blue-800 font-medium">Attribute Editor</Link></li>
+              <li><Link to="/investor" className="text-blue-600 hover:text-blue-800 font-medium">Investor Dashboard</Link></li>
+            </ul>
+          </div>
         </nav>
 
-        <Switch>
-          <Route exact path="/">
-            <UploadInterface setProducts={setProducts} setAttributes={setAttributes} />
-          </Route>
-          <Route path="/grader">
-            <HumanGraderInterface
-              products={products}
-              currentProductIndex={currentProductIndex}
-              setCurrentProductIndex={setCurrentProductIndex}
-              attributes={attributes}
-              setAttributes={setAttributes}
-              setProducts={setProducts}
-            />
-          </Route>
-          <Route path="/admin">
-            <AdminPanel />
-          </Route>
-          <Route path="/prompts">
-            <PromptManagement />
-          </Route>
-          <Route path="/metrics">
-            <PerformanceMetrics />
-          </Route>
-          <Route path="/users">
-            <UserManagement />
-          </Route>
-          <Route path="/attributes">
-            <AttributeEditor />
-          </Route>
-          <Route path="/investor">
-            <InvestorDashboard />
-          </Route>
-        </Switch>
+        <div className="container mx-auto px-6 py-8">
+          <Switch>
+            <Route exact path="/">
+              <UploadInterface setProducts={setProducts} setAttributes={setAttributes} />
+            </Route>
+            <Route path="/grader">
+              <HumanGraderInterface
+                products={products}
+                currentProductIndex={currentProductIndex}
+                setCurrentProductIndex={setCurrentProductIndex}
+                attributes={attributes}
+                setAttributes={setAttributes}
+                setProducts={setProducts}
+              />
+            </Route>
+            <Route path="/admin">
+              <AdminPanel />
+            </Route>
+            <Route path="/prompts">
+              <PromptManagement />
+            </Route>
+            <Route path="/metrics">
+              <PerformanceMetrics />
+            </Route>
+            <Route path="/users">
+              <UserManagement />
+            </Route>
+            <Route path="/attributes">
+              <AttributeEditor />
+            </Route>
+            <Route path="/investor">
+              <InvestorDashboard />
+            </Route>
+          </Switch>
+        </div>
       </div>
     </Router>
   );
 };
 
 export default App;
+
