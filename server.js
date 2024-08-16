@@ -17,6 +17,42 @@ let llmConfigs = [];
 let prompts = [];
 let subcategories = [];
 let attributes = {};
+let users = [];
+let products = [
+  {
+    id: 1,
+    name: "Mountain Blend Coffee",
+    attributes: {
+      Origin: "Colombia",
+      OrganicStatus: "Yes",
+      Intensity: "7",
+      FlavorProfile: "Nutty, Chocolate",
+      RoastLevel: "Medium"
+    }
+  },
+  {
+    id: 2,
+    name: "Sunrise Espresso",
+    attributes: {
+      Origin: "Brazil",
+      OrganicStatus: "No",
+      Intensity: "9",
+      FlavorProfile: "Caramel, Citrus",
+      RoastLevel: "Dark"
+    }
+  },
+  {
+    id: 3,
+    name: "Tropical Paradise Coffee",
+    attributes: {
+      Origin: "Hawaii",
+      OrganicStatus: "Yes",
+      Intensity: "5",
+      FlavorProfile: "Fruity, Floral",
+      RoastLevel: "Light"
+    }
+  }
+];
 
 // LLM Configs endpoints
 app.get('/api/llm-configs', (req, res) => {
@@ -112,6 +148,59 @@ app.get('/api/attributes', (req, res) => {
 app.put('/api/attributes', (req, res) => {
   attributes = req.body;
   res.json(attributes);
+});
+
+// User management endpoints
+app.get('/api/users', (req, res) => {
+  res.json(users);
+});
+
+app.post('/api/users', (req, res) => {
+  const newUser = {
+    id: Date.now().toString(),
+    ...req.body,
+    lastLogin: new Date().toISOString()
+  };
+  users.push(newUser);
+  res.status(201).json(newUser);
+});
+
+app.delete('/api/users/:id', (req, res) => {
+  const { id } = req.params;
+  const index = users.findIndex(user => user.id === id);
+  if (index !== -1) {
+    users.splice(index, 1);
+    res.status(204).send();
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
+app.post('/api/users/:id/reset-password', (req, res) => {
+  const { id } = req.params;
+  const user = users.find(user => user.id === id);
+  if (user) {
+    // In a real application, you would generate a new password or send a reset link
+    res.json({ message: 'Password reset initiated' });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
+// Products endpoints
+app.get('/api/products', (req, res) => {
+  res.json(products);
+});
+
+app.put('/api/products/:id', (req, res) => {
+  const { id } = req.params;
+  const index = products.findIndex(product => product.id === parseInt(id));
+  if (index !== -1) {
+    products[index] = { ...products[index], ...req.body };
+    res.json(products[index]);
+  } else {
+    res.status(404).json({ message: 'Product not found' });
+  }
 });
 
 // The "catchall" handler: for any request that doesn't
