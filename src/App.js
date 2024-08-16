@@ -7,13 +7,114 @@ import PromptManagement from './components/PromptManagement';
 import PerformanceMetrics from './components/PerformanceMetrics';
 
 const App = () => {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState([
+    {
+      name: "Mountain Blend Coffee",
+      attributes: [
+        { name: "Origin", value: "Colombia", correct: null },
+        { name: "OrganicStatus", value: "Yes", correct: null },
+        { name: "Intensity", value: "7", correct: null },
+        { name: "FlavorProfile", value: "Nutty, Chocolate", correct: null },
+        { name: "RoastLevel", value: "Medium", correct: null }
+      ]
+    },
+    {
+      name: "Sunrise Espresso",
+      attributes: [
+        { name: "Origin", value: "Brazil", correct: null },
+        { name: "OrganicStatus", value: "No", correct: null },
+        { name: "Intensity", value: "9", correct: null },
+        { name: "FlavorProfile", value: "Caramel, Citrus", correct: null },
+        { name: "RoastLevel", value: "Dark", correct: null }
+      ]
+    },
+    {
+      name: "Tropical Paradise Coffee",
+      attributes: [
+        { name: "Origin", value: "Hawaii", correct: null },
+        { name: "OrganicStatus", value: "Yes", correct: null },
+        { name: "Intensity", value: "5", correct: null },
+        { name: "FlavorProfile", value: "Fruity, Floral", correct: null },
+        { name: "RoastLevel", value: "Light", correct: null }
+      ]
+    },
+    {
+      name: "Alpine Frost Coffee",
+      attributes: [
+        { name: "Origin", value: "Switzerland", correct: null },
+        { name: "OrganicStatus", value: "No", correct: null },
+        { name: "Intensity", value: "6", correct: null },
+        { name: "FlavorProfile", value: "Chocolate, Vanilla", correct: null },
+        { name: "RoastLevel", value: "Medium", correct: null }
+      ]
+    },
+    {
+      name: "Midnight Roast",
+      attributes: [
+        { name: "Origin", value: "Indonesia", correct: null },
+        { name: "OrganicStatus", value: "Yes", correct: null },
+        { name: "Intensity", value: "10", correct: null },
+        { name: "FlavorProfile", value: "Smoky, Earthy", correct: null },
+        { name: "RoastLevel", value: "Dark", correct: null }
+      ]
+    },
+    {
+      name: "Golden Sunrise Blend",
+      attributes: [
+        { name: "Origin", value: "Ethiopia", correct: null },
+        { name: "OrganicStatus", value: "Yes", correct: null },
+        { name: "Intensity", value: "4", correct: null },
+        { name: "FlavorProfile", value: "Floral, Citrus", correct: null },
+        { name: "RoastLevel", value: "Light", correct: null }
+      ]
+    },
+    {
+      name: "Velvet Mocha Delight",
+      attributes: [
+        { name: "Origin", value: "Guatemala", correct: null },
+        { name: "OrganicStatus", value: "No", correct: null },
+        { name: "Intensity", value: "8", correct: null },
+        { name: "FlavorProfile", value: "Chocolate, Nutty", correct: null },
+        { name: "RoastLevel", value: "Medium", correct: null }
+      ]
+    },
+    {
+      name: "Rainforest Blend",
+      attributes: [
+        { name: "Origin", value: "Costa Rica", correct: null },
+        { name: "OrganicStatus", value: "Yes", correct: null },
+        { name: "Intensity", value: "6", correct: null },
+        { name: "FlavorProfile", value: "Fruity, Balanced", correct: null },
+        { name: "RoastLevel", value: "Medium", correct: null }
+      ]
+    },
+    {
+      name: "Arctic Chill Coffee",
+      attributes: [
+        { name: "Origin", value: "Iceland", correct: null },
+        { name: "OrganicStatus", value: "No", correct: null },
+        { name: "Intensity", value: "3", correct: null },
+        { name: "FlavorProfile", value: "Smooth, Mild", correct: null },
+        { name: "RoastLevel", value: "Light", correct: null }
+      ]
+    },
+    {
+      name: "Volcanic Espresso",
+      attributes: [
+        { name: "Origin", value: "Italy", correct: null },
+        { name: "OrganicStatus", value: "No", correct: null },
+        { name: "Intensity", value: "9", correct: null },
+        { name: "FlavorProfile", value: "Rich, Bold", correct: null },
+        { name: "RoastLevel", value: "Dark", correct: null }
+      ]
+    }
+  ]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [attributes, setAttributes] = useState({
-    Origin: [],
+    Origin: ['Colombia', 'Brazil', 'Ethiopia', 'Indonesia', 'Guatemala', 'Costa Rica', 'Hawaii', 'Switzerland', 'Iceland', 'Italy'],
     OrganicStatus: ['Yes', 'No'],
     Intensity: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-    FlavorProfile: [],
+    FlavorProfile: ['Nutty', 'Chocolate', 'Caramel', 'Citrus', 'Fruity', 'Floral', 'Vanilla', 'Smoky', 'Earthy', 'Balanced', 'Smooth', 'Mild', 'Rich', 'Bold'],
     RoastLevel: ['Light', 'Medium', 'Dark']
   });
 
@@ -41,6 +142,7 @@ const App = () => {
               setCurrentProductIndex={setCurrentProductIndex}
               attributes={attributes}
               setAttributes={setAttributes}
+              setProducts={setProducts}
             />
           </Route>
           <Route path="/admin">
