@@ -1,7 +1,7 @@
 {
-  "name": "pavt",
+  "name": "llm-product-categorizer",
   "version": "1.0.0",
-  "description": "Product Attribute Verifier Tool",
+  "description": "LLM Product Categorizer Demo",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -17,7 +17,12 @@
     "express": "^4.17.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-scripts": "^5.0.1"
+    "react-scripts": "^5.0.1",
+    "react-router-dom": "^5.2.0",
+    "react-dropzone": "^11.3.4",
+    "chart.js": "^3.7.0",
+    "react-chartjs-2": "^4.0.0",
+    "tailwindcss": "^2.2.19"
   },
   "browserslist": {
     "production": [
@@ -35,3 +40,4 @@
     "node": "14.x"
   }
 }
+
