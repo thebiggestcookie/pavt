@@ -1,6 +1,6 @@
 import React from 'react';
 
-const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProductIndex, attributes, setAttributes }) => {
+const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProductIndex, attributes, setAttributes, setProducts }) => {
   const currentProduct = products[currentProductIndex];
 
   const handleAttributeChange = (attributeIndex, newValue) => {
@@ -38,6 +38,7 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
           <tr>
             <th className="border p-2">Attribute</th>
             <th className="border p-2">Value</th>
+            <th className="border p-2">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -63,6 +64,15 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
                 >
                   +
                 </button>
+              </td>
+              <td className="border p-2">
+                {attr.correct === null ? (
+                  <span className="text-yellow-500">Unreviewed</span>
+                ) : attr.correct ? (
+                  <span className="text-green-500">Confirmed</span>
+                ) : (
+                  <span className="text-red-500">Corrected</span>
+                )}
               </td>
             </tr>
           ))}
