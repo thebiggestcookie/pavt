@@ -1,12 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { mockCoffeeProducts } from '../data/mockCoffeeProducts';
 
-const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProductIndex, attributes, setAttributes }) => {
+const HumanGraderInterface = () => {
+  const [products, setProducts] = useState([]);
+  const [currentProductIndex, setCurrentProductIndex] = useState(0);
+  const [attributes, setAttributes] = useState({
+    Origin: [],
+    OrganicStatus: ['Yes', 'No'],
+    Intensity: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+    FlavorProfile: [],
+    RoastLevel: ['Light', 'Medium', 'Dark']
+  });
+
+  useEffect(() => {
+    setProducts(mockCoffeeProducts);
+    const initialAttributes = {
+      Origin: [...new Set(mockCoffeeProducts.map(p => p.attributes.Origin))],
+      OrganicStatus: ['Yes', 'No'],
+      Intensity: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+      FlavorProfile: [...new Set(mockCoffeeProducts.map(p => p.attributes.FlavorProfile))],
+      RoastLevel: ['Light', 'Medium', 'Dark']
+    };
+    setAttributes(initialAttributes);
+  }, []);
+
   const currentProduct = products[currentProductIndex];
 
-  const handleAttributeChange = (attributeIndex, newValue) => {
+  const handleAttributeChange = (attributeName, newValue) => {
     const updatedProducts = [...products];
-    updatedProducts[currentProductIndex].attributes[attributeIndex].value = newValue;
-    updatedProducts[currentProductIndex].attributes[attributeIndex].correct = true;
+    updatedProducts[currentProductIndex].attributes[attributeName] = newValue;
     setProducts(updatedProducts);
   };
 
@@ -26,13 +48,14 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
   };
 
   if (!currentProduct) {
-    return <div className="mt-8">No products to review. Please upload data first.</div>;
+    return <div className="mt-8">Loading products...</div>;
   }
 
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Human Grader Interface</h2>
-      <h3 className="text-xl font-semibold mb-2">{currentProduct.name}</h3>
+      <h3 className="text-xl font-semibold mb-2">{currentProduct.brand} - {currentProduct.productTitle}</h3>
+      <p className="mb-4">Price: ${currentProduct.price.toFixed(2)}</p>
       <table className="w-full border-collapse">
         <thead>
           <tr>
@@ -41,23 +64,23 @@ const HumanGraderInterface = ({ products, currentProductIndex, setCurrentProduct
           </tr>
         </thead>
         <tbody>
-          {currentProduct.attributes.map((attr, index) => (
-            <tr key={index}>
-              <td className="border p-2">{attr.name}</td>
+          {Object.entries(currentProduct.attributes).map(([attrName, attrValue]) => (
+            <tr key={attrName}>
+              <td className="border p-2">{attrName}</td>
               <td className="border p-2">
                 <select
-                  value={attr.value}
-                  onChange={(e) => handleAttributeChange(index, e.target.value)}
+                  value={attrValue}
+                  onChange={(e) => handleAttributeChange(attrName, e.target.value)}
                   className="w-full p-1"
                 >
-                  {attributes[attr.name]?.map(option => (
+                  {attributes[attrName]?.map(option => (
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
                 <button
                   onClick={() => {
-                    const newVariable = prompt(`Enter new variable for ${attr.name}`);
-                    if (newVariable) handleAddNewVariable(attr.name, newVariable);
+                    const newVariable = prompt(`Enter new variable for ${attrName}`);
+                    if (newVariable) handleAddNewVariable(attrName, newVariable);
                   }}
                   className="ml-2 bg-blue-500 text-white px-2 py-1 rounded"
                 >
