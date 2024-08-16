@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
 import UploadInterface from './components/UploadInterface';
 import HumanGraderInterface from './components/HumanGraderInterface';
 import AdminPanel from './components/AdminPanel';
 import PromptManagement from './components/PromptManagement';
 import PerformanceMetrics from './components/PerformanceMetrics';
+import AttributeManager from './components/AttributeManager';
 
 const App = () => {
-  const [products, setProducts] = useState([]);
-  const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [attributes, setAttributes] = useState({
-    Origin: [],
-    OrganicStatus: ['Yes', 'No'],
-    Intensity: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
-    FlavorProfile: [],
-    RoastLevel: ['Light', 'Medium', 'Dark']
-  });
+  const [showAttributeManager, setShowAttributeManager] = useState(false);
 
   return (
     <Router>
@@ -27,31 +20,20 @@ const App = () => {
             <li><Link to="/admin" className="text-blue-500 hover:text-blue-700">Admin Panel</Link></li>
             <li><Link to="/prompts" className="text-blue-500 hover:text-blue-700">Prompt Management</Link></li>
             <li><Link to="/metrics" className="text-blue-500 hover:text-blue-700">Performance Metrics</Link></li>
+            <li><button onClick={() => setShowAttributeManager(!showAttributeManager)} className="text-blue-500 hover:text-blue-700">
+              {showAttributeManager ? 'Hide' : 'Show'} Attribute Manager
+            </button></li>
           </ul>
         </nav>
 
+        {showAttributeManager && <AttributeManager />}
+
         <Switch>
-          <Route exact path="/">
-            <UploadInterface setProducts={setProducts} setAttributes={setAttributes} />
-          </Route>
-          <Route path="/grader">
-            <HumanGraderInterface
-              products={products}
-              currentProductIndex={currentProductIndex}
-              setCurrentProductIndex={setCurrentProductIndex}
-              attributes={attributes}
-              setAttributes={setAttributes}
-            />
-          </Route>
-          <Route path="/admin">
-            <AdminPanel />
-          </Route>
-          <Route path="/prompts">
-            <PromptManagement />
-          </Route>
-          <Route path="/metrics">
-            <PerformanceMetrics />
-          </Route>
+          <Route exact path="/" component={UploadInterface} />
+          <Route path="/grader" component={HumanGraderInterface} />
+          <Route path="/admin" component={AdminPanel} />
+          <Route path="/prompts" component={PromptManagement} />
+          <Route path="/metrics" component={PerformanceMetrics} />
         </Switch>
       </div>
     </Router>
@@ -59,4 +41,3 @@ const App = () => {
 };
 
 export default App;
-
