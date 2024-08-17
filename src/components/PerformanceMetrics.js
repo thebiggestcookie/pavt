@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Bar, Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { getTokenUsage, getGraderPerformance, getLlmPerformance } from '../api/api';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const PerformanceMetrics = () => {
   const [tokenUsage, setTokenUsage] = useState({});
@@ -98,23 +98,32 @@ const PerformanceMetrics = () => {
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Performance Metrics</h2>
       
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-2">LLM Performance</h3>
-        <Bar data={llmPerformanceData} options={options} />
-      </div>
+      {llmPerformance.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-2">LLM Performance</h3>
+          <Bar data={llmPerformanceData} options={options} />
+        </div>
+      )}
 
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-2">Token Usage</h3>
-        <Bar data={tokenUsageData} options={options} />
-      </div>
+      {Object.keys(tokenUsage).length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-2">Token Usage</h3>
+          <Bar data={tokenUsageData} options={options} />
+        </div>
+      )}
 
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-2">Grader Performance</h3>
-        <Bar data={graderPerformanceData} options={options} />
-      </div>
+      {graderPerformance.length > 0 && (
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold mb-2">Grader Performance</h3>
+          <Bar data={graderPerformanceData} options={options} />
+        </div>
+      )}
+
+      {llmPerformance.length === 0 && Object.keys(tokenUsage).length === 0 && graderPerformance.length === 0 && (
+        <p>No performance data available yet.</p>
+      )}
     </div>
   );
 };
 
 export default PerformanceMetrics;
-

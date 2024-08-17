@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { login } from '../api/api';
 
-const Login = () => {
+const Login = ({ setIsAuthenticated }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,6 +15,7 @@ const Login = () => {
       const response = await login(username, password);
       localStorage.setItem('token', response.token);
       localStorage.setItem('username', username);
+      setIsAuthenticated(true);
       history.push('/grader');
     } catch (error) {
       setError('Invalid username or password');
