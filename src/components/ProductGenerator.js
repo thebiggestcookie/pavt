@@ -36,16 +36,34 @@ const ProductGenerator = () => {
 
     try {
       // Generate product list
-      const productListPrompt = `Generate a list of ${productCount} unique product names for the ${category} category. Return the result as a JSON array of strings.`;
+      const productListPrompt = `Generate a list of ${productCount} unique product names for the ${category} category. Return the result as a JSON array of strings. Ensure the response is a valid JSON array.`;
       const productListResult = await processWithLLM(productListPrompt, '', selectedLlmConfigData);
-      const productList = JSON.parse(productListResult.attributes);
+      let productList;
+      try {
+        productList = JSON.parse(productListResult.attributes);
+        if (!Array.isArray(productList)) {
+          throw new Error('Response is not an array');
+        }
+      } catch (parseError) {
+        console.error('Error parsing product list:', productListResult.attributes);
+        throw new Error('Failed to parse product list: ' + parseError.message);
+      }
 
       // Generate attributes for each product
       const generatedProductsWithAttributes = [];
       for (const productName of productList) {
-        const attributePrompt = `Generate realistic attributes for the product "${productName}" in the ${category} category. Return the result as a JSON object with key-value pairs representing the attributes and their values.`;
+        const attributePrompt = `Generate realistic attributes for the product "${productName}" in the ${category} category. Return the result as a JSON object with key-value pairs representing the attributes and their values. Ensure the response is a valid JSON object.`;
         const attributeResult = await processWithLLM(attributePrompt, '', selectedLlmConfigData);
-        const attributes = JSON.parse(attributeResult.attributes);
+        let attributes;
+        try {
+          attributes = JSON.parse(attributeResult.attributes);
+          if (typeof attributes !== 'object' || attributes === null) {
+            throw new Error('Response is not an object');
+          }
+        } catch (parseError) {
+          console.error('Error parsing attributes:', attributeResult.attributes);
+          throw new Error('Failed to parse attributes: ' + parseError.message);
+        }
         generatedProductsWithAttributes.push({ name: productName, attributes });
       }
 
