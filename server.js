@@ -14,10 +14,27 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'build')));
 
 // In-memory storage for demo purposes
-let llmConfigs = [];
+let llmConfigs = [
+  {
+    id: '1',
+    name: 'OpenAI GPT-3.5',
+    provider: 'openai',
+    model: 'gpt-3.5-turbo',
+    apiKey: 'your-openai-api-key-here',
+    maxTokens: 150
+  },
+  {
+    id: '2',
+    name: 'Anthropic Claude',
+    provider: 'anthropic',
+    model: 'claude-v1',
+    apiKey: 'your-anthropic-api-key-here',
+    maxTokens: 150
+  }
+];
 let prompts = [
-  { id: '1', name: 'Coffee Attribute Extractor', content: 'Extract attributes from the given coffee product description.' },
-  { id: '2', name: 'Coffee Categorizer', content: 'Categorize the given coffee product into appropriate subcategories.' },
+  { id: '1', name: 'Coffee Attribute Extractor', content: 'Extract attributes from the given coffee product description. Return the result as a JSON object with the following structure: {"Origin": "...", "RoastLevel": "...", "FlavorProfile": "...", "Organic": "...", "FairTrade": "...", "ProcessingMethod": "..."}. Use "Unknown" if an attribute is not mentioned.' },
+  { id: '2', name: 'Coffee Categorizer', content: 'Categorize the given coffee product into appropriate subcategories. Return the result as a JSON object with the following structure: {"Subcategory": "..."}. Choose from: "Whole Bean Coffee", "Ground Coffee", or "Coffee Pods".' },
 ];
 let subcategories = [
   { id: '1', name: 'Whole Bean Coffee', parentCategory: 'Coffee' },
@@ -286,13 +303,11 @@ app.post('/api/process-llm', async (req, res) => {
           }
         });
         break;
-      // Add cases for other providers here
       default:
         throw new Error('Unsupported LLM provider');
     }
 
     // Parse the response and extract attributes
-    // This is a simplified example and may need to be adjusted based on the actual response format
     let attributes;
     if (llmConfig.provider === 'openai') {
       attributes = JSON.parse(response.data.choices[0].message.content);
@@ -316,4 +331,3 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-

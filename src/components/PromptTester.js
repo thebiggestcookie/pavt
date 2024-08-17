@@ -21,6 +21,9 @@ const PromptTester = () => {
     try {
       const promptsData = await fetchPrompts();
       setPrompts(promptsData);
+      if (promptsData.length > 0) {
+        setSelectedPrompt(promptsData[0].id);
+      }
     } catch (error) {
       console.error('Error loading prompts:', error);
       setError('Failed to load prompts');
@@ -105,7 +108,6 @@ const PromptTester = () => {
           onChange={handlePromptChange}
           className="w-full p-2 border rounded"
         >
-          <option value="">Select a prompt</option>
           {prompts.map(prompt => (
             <option key={prompt.id} value={prompt.id}>{prompt.name}</option>
           ))}
