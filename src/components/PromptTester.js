@@ -11,10 +11,12 @@ const PromptTester = () => {
   const [llmConfigs, setLlmConfigs] = useState([]);
   const [selectedLlmConfig, setSelectedLlmConfig] = useState('');
   const [error, setError] = useState(null);
+  const [humanGradedProducts, setHumanGradedProducts] = useState([]);
 
   useEffect(() => {
     loadPrompts();
     loadLlmConfigs();
+    loadHumanGradedProducts();
   }, []);
 
   const loadPrompts = async () => {
@@ -43,12 +45,27 @@ const PromptTester = () => {
     }
   };
 
+  const loadHumanGradedProducts = async () => {
+    try {
+      const products = await fetchProducts();
+      setHumanGradedProducts(products);
+    } catch (error) {
+      console.error('Error loading human graded products:', error);
+      setError('Failed to load human graded products');
+    }
+  };
+
   const handlePromptChange = (e) => {
     setSelectedPrompt(e.target.value);
   };
 
   const handleProductListChange = (e) => {
     setProductList(e.target.value);
+  };
+
+  const handleImportHumanGradedProducts = () => {
+    const productNames = humanGradedProducts.map(product => product.name).join(', ');
+    setProductList(productNames);
   };
 
   const executePrompt = async () => {
@@ -64,19 +81,14 @@ const PromptTester = () => {
       try {
         const llmResult = await processWithLLM(selectedPromptData.content, productName, selectedLlmConfigData);
         
-        // Fetch the actual product data
-        const productsData = await fetchProducts();
-        const actualProduct = productsData.find(p => p.name.toLowerCase() === productName.toLowerCase());
-
-        const correct = actualProduct ? Object.entries(llmResult.attributes).every(
-          ([key, value]) => actualProduct.attributes[key] === value
-        ) : false;
+        // Find the corresponding human graded product
+        const humanGradedProduct = humanGradedProducts.find(p => p.name.toLowerCase() === productName.toLowerCase());
 
         resultsArray.push({
           name: productName,
-          attributes: llmResult.attributes,
-          correct,
-          actualAttributes: actualProduct ? actualProduct.attributes : null,
+          llmAttributes: llmResult.attributes,
+          humanGradedAttributes: humanGradedProduct ? humanGradedProduct.attributes : null,
+          correct: humanGradedProduct ? compareAttributes(llmResult.attributes, humanGradedProduct.attributes) : null,
         });
 
       } catch (error) {
@@ -90,6 +102,18 @@ const PromptTester = () => {
 
     setResults(resultsArray);
     setLoading(false);
+  };
+
+  const compareAttributes = (llmAttributes, humanGradedAttributes) => {
+    if (!humanGradedAttributes) return null;
+    const keys = Object.keys(humanGradedAttributes);
+    let correctCount = 0;
+    for (const key of keys) {
+      if (llmAttributes[key] === humanGradedAttributes[key]) {
+        correctCount++;
+      }
+    }
+    return correctCount / keys.length;
   };
 
   return (
@@ -135,6 +159,12 @@ const PromptTester = () => {
           className="w-full p-2 border rounded"
           rows="4"
         ></textarea>
+        <button
+          onClick={handleImportHumanGradedProducts}
+          className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Import Human Graded Products
+        </button>
       </div>
 
       <button
@@ -152,9 +182,9 @@ const PromptTester = () => {
             <thead>
               <tr>
                 <th className="border p-2">Product Name</th>
-                <th className="border p-2">Mapped Attributes</th>
-                <th className="border p-2">Actual Attributes</th>
-                <th className="border p-2">Status</th>
+                <th className="border p-2">LLM Attributes</th>
+                <th className="border p-2">Human Graded Attributes</th>
+                <th className="border p-2">Accuracy</th>
               </tr>
             </thead>
             <tbody>
@@ -162,9 +192,9 @@ const PromptTester = () => {
                 <tr key={index}>
                   <td className="border p-2">{result.name}</td>
                   <td className="border p-2">
-                    {result.attributes ? (
+                    {result.llmAttributes ? (
                       <ul>
-                        {Object.entries(result.attributes).map(([key, value]) => (
+                        {Object.entries(result.llmAttributes).map(([key, value]) => (
                           <li key={key}>{key}: {value}</li>
                         ))}
                       </ul>
@@ -173,9 +203,9 @@ const PromptTester = () => {
                     )}
                   </td>
                   <td className="border p-2">
-                    {result.actualAttributes ? (
+                    {result.humanGradedAttributes ? (
                       <ul>
-                        {Object.entries(result.actualAttributes).map(([key, value]) => (
+                        {Object.entries(result.humanGradedAttributes).map(([key, value]) => (
                           <li key={key}>{key}: {value}</li>
                         ))}
                       </ul>
@@ -183,8 +213,8 @@ const PromptTester = () => {
                       'N/A'
                     )}
                   </td>
-                  <td className={`border p-2 ${result.correct ? 'text-green-600' : 'text-red-600'}`}>
-                    {result.error ? `Error: ${result.error}` : (result.correct ? 'Correct' : 'Incorrect')}
+                  <td className="border p-2">
+                    {result.correct !== null ? `${(result.correct * 100).toFixed(2)}%` : 'N/A'}
                   </td>
                 </tr>
               ))}
@@ -197,3 +227,4 @@ const PromptTester = () => {
 };
 
 export default PromptTester;
+
