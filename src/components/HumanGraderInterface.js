@@ -13,6 +13,7 @@ const HumanGraderInterface = () => {
   const [llmConfigs, setLlmConfigs] = useState([]);
   const [prompts, setPrompts] = useState([]);
   const [selectedPrompt, setSelectedPrompt] = useState(null);
+  const [currentProductChanges, setCurrentProductChanges] = useState({});
 
   useEffect(() => {
     loadProducts();
@@ -74,12 +75,27 @@ const HumanGraderInterface = () => {
     }
   };
 
-  const handleAttributeChange = async (attributeName, newValue) => {
+  const handleAttributeChange = (attributeName, newValue) => {
+    setCurrentProductChanges(prev => ({
+      ...prev,
+      [attributeName]: newValue
+    }));
+  };
+
+  const handleSubcategoryChange = (newSubcategory) => {
+    setCurrentProductChanges(prev => ({
+      ...prev,
+      subcategory: newSubcategory
+    }));
+  };
+
+  const submitChanges = async () => {
     const updatedProduct = {
       ...filteredProducts[currentProductIndex],
+      ...currentProductChanges,
       attributes: {
         ...filteredProducts[currentProductIndex].attributes,
-        [attributeName]: newValue
+        ...currentProductChanges
       }
     };
 
@@ -96,71 +112,56 @@ const HumanGraderInterface = () => {
       });
 
       // Update accuracy
-      if (newValue !== filteredProducts[currentProductIndex].attributes[attributeName]) {
-        setAccuracy(prev => ({ ...prev, inaccurate: prev.inaccurate + 1 }));
-      }
+      updateAccuracy(updatedProduct);
+
+      // Clear current changes
+      setCurrentProductChanges({});
     } catch (error) {
       console.error('Error updating product:', error);
       setError('Failed to update product. Please try again.');
     }
   };
 
-  const handleSubcategoryChange = async (newSubcategory) => {
-    const updatedProduct = {
-      ...filteredProducts[currentProductIndex],
-      subcategory: newSubcategory
-    };
-
-    try {
-      await updateProduct(updatedProduct.id, updatedProduct);
-      const updatedProducts = [...products];
-      const index = updatedProducts.findIndex(p => p.id === updatedProduct.id);
-      updatedProducts[index] = updatedProduct;
-      setProducts(updatedProducts);
-      setFilteredProducts(prevFiltered => {
-        const newFiltered = [...prevFiltered];
-        newFiltered[currentProductIndex] = updatedProduct;
-        return newFiltered;
-      });
-
-      // Update accuracy
-      if (newSubcategory !== filteredProducts[currentProductIndex].subcategory) {
-        setAccuracy(prev => ({ ...prev, inaccurate: prev.inaccurate + 1 }));
-      }
-    } catch (error) {
-      console.error('Error updating product subcategory:', error);
-      setError('Failed to update product subcategory. Please try again.');
-    }
-  };
-
   const moveToNextProduct = () => {
     if (currentProductIndex < filteredProducts.length - 1) {
-      updateAccuracy();
+      submitChanges();
       setCurrentProductIndex(currentProductIndex + 1);
+      setCurrentProductChanges({});
     } else {
-      updateAccuracy();
+      submitChanges();
       alert('All products verified!');
     }
   };
 
   const moveToPreviousProduct = () => {
     if (currentProductIndex > 0) {
-      updateAccuracy();
+      submitChanges();
       setCurrentProductIndex(currentProductIndex - 1);
+      setCurrentProductChanges({});
     }
   };
 
-  const updateAccuracy = () => {
-    const currentProduct = filteredProducts[currentProductIndex];
-    const subcategoryAttributes = attributes[currentProduct.subcategory] || {};
+  const updateAccuracy = (updatedProduct) => {
+    const subcategoryAttributes = attributes[updatedProduct.subcategory] || {};
     const totalAttributes = Object.keys(subcategoryAttributes).length;
-    const presentAttributes = Object.keys(currentProduct.attributes).length;
-    const missingAttributes = totalAttributes - presentAttributes;
+    let accurate = 0;
+    let inaccurate = 0;
+    let missing = 0;
+
+    Object.keys(subcategoryAttributes).forEach(attr => {
+      if (updatedProduct.attributes[attr] === updatedProduct.humanAttributes[attr]) {
+        accurate++;
+      } else if (updatedProduct.attributes[attr] && updatedProduct.attributes[attr] !== updatedProduct.humanAttributes[attr]) {
+        inaccurate++;
+      } else {
+        missing++;
+      }
+    });
 
     setAccuracy(prev => ({
-      ...prev,
-      accurate: prev.accurate + presentAttributes,
-      missing: prev.missing + missingAttributes
+      accurate: prev.accurate + accurate,
+      inaccurate: prev.inaccurate + inaccurate,
+      missing: prev.missing + missing
     }));
   };
 
@@ -237,14 +238,15 @@ const HumanGraderInterface = () => {
 
     updatedProducts.forEach(product => {
       if (product.humanVerified) {
-        Object.keys(product.attributes).forEach(attr => {
+        Object.keys(attributes[product.subcategory] || {}).forEach(attr => {
           if (product.attributes[attr] === product.humanAttributes[attr]) {
             accurate++;
-          } else {
+          } else if (product.attributes[attr] && product.attributes[attr] !== product.humanAttributes[attr]) {
             inaccurate++;
+          } else {
+            missing++;
           }
         });
-        missing += Object.keys(product.humanAttributes).length - Object.keys(product.attributes).length;
       }
     });
 
@@ -306,7 +308,7 @@ const HumanGraderInterface = () => {
       <div className="mb-4">
         <label className="block mb-2">Subcategory</label>
         <select
-          value={currentProduct.subcategory || ''}
+          value={currentProductChanges.subcategory || currentProduct.subcategory || ''}
           onChange={(e) => handleSubcategoryChange(e.target.value)}
           className="w-full p-2 border rounded"
         >
@@ -331,7 +333,7 @@ const HumanGraderInterface = () => {
               <td className="border p-2">{attrName}</td>
               <td className="border p-2">
                 <select
-                  value={currentProduct.attributes[attrName] || ''}
+                  value={currentProductChanges[attrName] || currentProduct.attributes[attrName] || ''}
                   onChange={(e) => handleAttributeChange(attrName, e.target.value)}
                   className="w-full p-1"
                 >
@@ -361,6 +363,12 @@ const HumanGraderInterface = () => {
           className="bg-gray-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
         >
           Previous Product
+        </button>
+        <button
+          onClick={submitChanges}
+          className="bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Submit Changes
         </button>
         <button
           onClick={moveToNextProduct}
