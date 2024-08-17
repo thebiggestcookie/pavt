@@ -33,8 +33,8 @@ let llmConfigs = [
   }
 ];
 let prompts = [
-  { id: '1', name: 'Coffee Attribute Extractor', content: 'Extract attributes from the given coffee product description.' },
-  { id: '2', name: 'Coffee Categorizer', content: 'Categorize the given coffee product into appropriate subcategories.' },
+  { id: '1', name: 'Coffee Attribute Extractor', content: 'Extract attributes from the given coffee product description. Return the result as a JSON object with the following structure: {"Origin": "...", "RoastLevel": "...", "FlavorProfile": "...", "Organic": "...", "FairTrade": "...", "ProcessingMethod": "..."}. Use "Unknown" if an attribute is not mentioned.' },
+  { id: '2', name: 'Coffee Categorizer', content: 'Categorize the given coffee product into appropriate subcategories. Return the result as a JSON object with the following structure: {"Subcategory": "..."}. Choose from: "Whole Bean Coffee", "Ground Coffee", or "Coffee Pods".' },
 ];
 let subcategories = [
   { id: '1', name: 'Whole Bean Coffee', parentCategory: 'Coffee' },
@@ -331,4 +331,3 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
