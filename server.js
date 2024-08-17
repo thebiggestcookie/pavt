@@ -165,6 +165,17 @@ app.post('/api/users', (req, res) => {
   res.status(201).json(newUser);
 });
 
+app.put('/api/users/:id', (req, res) => {
+  const { id } = req.params;
+  const index = users.findIndex(user => user.id === id);
+  if (index !== -1) {
+    users[index] = { ...users[index], ...req.body };
+    res.json(users[index]);
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+});
+
 app.delete('/api/users/:id', (req, res) => {
   const { id } = req.params;
   const index = users.findIndex(user => user.id === id);
@@ -212,4 +223,3 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
