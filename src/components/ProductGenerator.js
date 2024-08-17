@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchLlmConfigs, processWithLLM, addProduct } from '../api/api';
+import { fetchLlmConfigs, processWithLLM, addProduct, fetchSubcategories, fetchAttributes } from '../api/api';
 
 const ProductGenerator = () => {
   const [category, setCategory] = useState('');
@@ -9,9 +9,15 @@ const ProductGenerator = () => {
   const [generatedProducts, setGeneratedProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [subcategories, setSubcategories] = useState([]);
+  const [attributes, setAttributes] = useState({});
+  const [debugInfo, setDebugInfo] = useState([]);
+  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     loadLlmConfigs();
+    loadSubcategories();
+    loadAttributes();
   }, []);
 
   const loadLlmConfigs = async () => {
@@ -27,10 +33,35 @@ const ProductGenerator = () => {
     }
   };
 
+  const loadSubcategories = async () => {
+    try {
+      const subcategoriesData = await fetchSubcategories();
+      setSubcategories(subcategoriesData);
+    } catch (error) {
+      console.error('Error loading subcategories:', error);
+      setError('Failed to load subcategories');
+    }
+  };
+
+  const loadAttributes = async () => {
+    try {
+      const attributesData = await fetchAttributes();
+      setAttributes(attributesData);
+    } catch (error) {
+      console.error('Error loading attributes:', error);
+      setError('Failed to load attributes');
+    }
+  };
+
+  const addDebugInfo = (info) => {
+    setDebugInfo(prevInfo => [...prevInfo, info]);
+  };
+
   const handleGenerateProducts = async () => {
     setLoading(true);
     setError(null);
     setGeneratedProducts([]);
+    setDebugInfo([]);
 
     const selectedLlmConfigData = llmConfigs.find(c => c.id === selectedLlmConfig);
 
@@ -38,6 +69,8 @@ const ProductGenerator = () => {
       // Generate product list
       const productListPrompt = `Generate a list of ${productCount} unique product names for the ${category} category. Return the result as a JSON array of strings. Ensure the response is a valid JSON array.`;
       const productListResult = await processWithLLM(productListPrompt, '', selectedLlmConfigData);
+      addDebugInfo({ step: 'Product List Generation', prompt: productListPrompt, result: productListResult });
+
       let productList;
       try {
         productList = JSON.parse(productListResult.attributes);
@@ -54,25 +87,44 @@ const ProductGenerator = () => {
         }
       }
 
-      // Generate attributes for each product
+      // Generate subcategory and attributes for each product
       const generatedProductsWithAttributes = [];
       for (const productName of productList) {
-        const attributePrompt = `Generate realistic attributes for the product "${productName}" in the ${category} category. Return the result as a JSON object with key-value pairs representing the attributes and their values. Ensure the response is a valid JSON object.`;
-        const attributeResult = await processWithLLM(attributePrompt, '', selectedLlmConfigData);
-        let attributes;
+        // Determine subcategory
+        const subcategoryPrompt = `Determine the subcategory for the product "${productName}" in the ${category} category. Choose from the following options: ${subcategories.map(s => s.name).join(', ')}. Return the result as a JSON object with a single key "subcategory".`;
+        const subcategoryResult = await processWithLLM(subcategoryPrompt, '', selectedLlmConfigData);
+        addDebugInfo({ step: 'Subcategory Determination', prompt: subcategoryPrompt, result: subcategoryResult });
+
+        let subcategory;
         try {
-          attributes = attributeResult.attributes;
-          if (typeof attributes === 'string') {
-            attributes = JSON.parse(attributes);
+          subcategory = JSON.parse(subcategoryResult.attributes).subcategory;
+        } catch (parseError) {
+          console.error('Error parsing subcategory:', subcategoryResult.attributes);
+          subcategory = 'Unknown';
+        }
+
+        // Generate attributes
+        const attributePrompt = `Generate realistic attributes for the product "${productName}" in the ${subcategory} subcategory. Use the following attribute structure:
+        ${JSON.stringify(attributes[subcategory], null, 2)}
+        Return the result as a JSON object with key-value pairs representing the attributes and their values. Ensure the response is a valid JSON object.`;
+        const attributeResult = await processWithLLM(attributePrompt, '', selectedLlmConfigData);
+        addDebugInfo({ step: 'Attribute Generation', prompt: attributePrompt, result: attributeResult });
+
+        let productAttributes;
+        try {
+          productAttributes = attributeResult.attributes;
+          if (typeof productAttributes === 'string') {
+            productAttributes = JSON.parse(productAttributes);
           }
-          if (typeof attributes !== 'object' || attributes === null) {
+          if (typeof productAttributes !== 'object' || productAttributes === null) {
             throw new Error('Response is not an object');
           }
         } catch (parseError) {
           console.error('Error parsing attributes:', attributeResult.attributes);
-          attributes = { error: 'Failed to parse attributes' };
+          productAttributes = { error: 'Failed to parse attributes' };
         }
-        generatedProductsWithAttributes.push({ name: productName, attributes });
+
+        generatedProductsWithAttributes.push({ name: productName, subcategory, attributes: productAttributes });
       }
 
       setGeneratedProducts(generatedProductsWithAttributes);
@@ -92,7 +144,7 @@ const ProductGenerator = () => {
       for (const product of generatedProducts) {
         await addProduct({
           name: product.name,
-          subcategory: category,
+          subcategory: product.subcategory,
           attributes: product.attributes
         });
       }
@@ -162,11 +214,18 @@ const ProductGenerator = () => {
         <button
           onClick={handleSaveProducts}
           disabled={loading}
-          className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+          className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-400 mr-2"
         >
           {loading ? 'Saving...' : 'Save Products'}
         </button>
       )}
+
+      <button
+        onClick={() => setShowDebug(!showDebug)}
+        className="bg-yellow-500 text-white px-4 py-2 rounded"
+      >
+        {showDebug ? 'Hide Debug Info' : 'Show Debug Info'}
+      </button>
 
       {generatedProducts.length > 0 && (
         <div className="mt-8">
@@ -174,7 +233,7 @@ const ProductGenerator = () => {
           <ul className="list-disc list-inside">
             {generatedProducts.map((product, index) => (
               <li key={index} className="mb-4">
-                <strong>{product.name}</strong>
+                <strong>{product.name}</strong> (Subcategory: {product.subcategory})
                 <ul className="list-none ml-4">
                   {Object.entries(product.attributes).map(([key, value]) => (
                     <li key={key}>{key}: {value}</li>
@@ -183,6 +242,15 @@ const ProductGenerator = () => {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {showDebug && (
+        <div className="mt-8">
+          <h3 className="text-xl font-semibold mb-2">Debug Information</h3>
+          <pre className="bg-gray-100 p-4 rounded overflow-auto">
+            {JSON.stringify(debugInfo, null, 2)}
+          </pre>
         </div>
       )}
     </div>
