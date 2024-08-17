@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { fetchPrompts, fetchProducts, updateProduct } from '../api/api';
+import { fetchPrompts, fetchProducts, updateProduct, fetchLlmConfigs } from '../api/api';
+import { processWithLLM } from '../services/llmService';
 
 const PromptTester = () => {
   const [prompts, setPrompts] = useState([]);
@@ -7,9 +8,12 @@ const PromptTester = () => {
   const [productList, setProductList] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [llmConfigs, setLlmConfigs] = useState([]);
+  const [selectedLlmConfig, setSelectedLlmConfig] = useState('');
 
   useEffect(() => {
     loadPrompts();
+    loadLlmConfigs();
   }, []);
 
   const loadPrompts = async () => {
@@ -18,6 +22,18 @@ const PromptTester = () => {
       setPrompts(promptsData);
     } catch (error) {
       console.error('Error loading prompts:', error);
+    }
+  };
+
+  const loadLlmConfigs = async () => {
+    try {
+      const configs = await fetchLlmConfigs();
+      setLlmConfigs(configs);
+      if (configs.length > 0) {
+        setSelectedLlmConfig(configs[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading LLM configs:', error);
     }
   };
 
@@ -34,30 +50,24 @@ const PromptTester = () => {
     const products = productList.split(',').map(p => p.trim());
     const resultsArray = [];
 
+    const selectedPromptData = prompts.find(p => p.id === selectedPrompt);
+    const selectedLlmConfigData = llmConfigs.find(c => c.id === selectedLlmConfig);
+
     for (const productName of products) {
       try {
-        // Simulating LLM processing
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const llmResult = await processWithLLM(selectedPromptData.content, productName, selectedLlmConfigData);
         
-        // In a real scenario, you would call the LLM API here
-        const mockAttributes = {
-          Origin: ['Colombia', 'Ethiopia', 'Brazil'][Math.floor(Math.random() * 3)],
-          'Roast Level': ['Light', 'Medium', 'Dark'][Math.floor(Math.random() * 3)],
-          'Flavor Profile': ['Fruity', 'Nutty', 'Chocolatey'][Math.floor(Math.random() * 3)],
-          Organic: ['Yes', 'No'][Math.floor(Math.random() * 2)],
-        };
-
         // Fetch the actual product data
         const productsData = await fetchProducts();
         const actualProduct = productsData.find(p => p.name.toLowerCase() === productName.toLowerCase());
 
-        const correct = actualProduct ? Object.entries(mockAttributes).every(
+        const correct = actualProduct ? Object.entries(llmResult.attributes).every(
           ([key, value]) => actualProduct.attributes[key] === value
         ) : false;
 
         resultsArray.push({
           name: productName,
-          attributes: mockAttributes,
+          attributes: llmResult.attributes,
           correct,
           actualAttributes: actualProduct ? actualProduct.attributes : null,
         });
@@ -94,6 +104,19 @@ const PromptTester = () => {
       </div>
 
       <div className="mb-4">
+        <label className="block mb-2">Select LLM Configuration</label>
+        <select
+          value={selectedLlmConfig}
+          onChange={(e) => setSelectedLlmConfig(e.target.value)}
+          className="w-full p-2 border rounded"
+        >
+          {llmConfigs.map(config => (
+            <option key={config.id} value={config.id}>{config.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mb-4">
         <label className="block mb-2">Product List (comma-separated)</label>
         <textarea
           value={productList}
@@ -105,7 +128,7 @@ const PromptTester = () => {
 
       <button
         onClick={executePrompt}
-        disabled={!selectedPrompt || !productList || loading}
+        disabled={!selectedPrompt || !productList || !selectedLlmConfig || loading}
         className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
       >
         {loading ? 'Processing...' : 'Execute Prompt'}
