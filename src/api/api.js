@@ -294,3 +294,23 @@ export const login = async (username, password) => {
   }
 };
 
+export const regenerateAttributes = async (promptId, llmConfigs) => {
+  try {
+    const response = await api.post('/regenerate-attributes', { promptId, llmConfigs });
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in regenerateAttributes:', error);
+    throw error;
+  }
+};
+
+export const getAccuracyMetrics = async (promptId) => {
+  try {
+    const response = await api.get(`/accuracy-metrics/${promptId}`);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in getAccuracyMetrics:', error);
+    throw error;
+  }
+};
+
