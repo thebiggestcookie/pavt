@@ -67,7 +67,9 @@ let attributes = {
     'Compatibility': ['Keurig', 'Nespresso', 'Tassimo'],
   },
 };
-let users = [];
+let users = [
+  { id: '1', username: 'test123', password: 'test123', role: 'admin' }
+];
 let products = [
   {
     id: 1,
@@ -109,6 +111,17 @@ let products = [
     }
   }
 ];
+
+// Login endpoint
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+  if (user) {
+    res.json({ token: 'fake-jwt-token', username: user.username, role: user.role });
+  } else {
+    res.status(400).json({ message: 'Username or password is incorrect' });
+  }
+});
 
 // LLM Configs endpoints
 app.get('/api/llm-configs', (req, res) => {
@@ -208,7 +221,7 @@ app.put('/api/attributes', (req, res) => {
 
 // User management endpoints
 app.get('/api/users', (req, res) => {
-  res.json(users);
+  res.json(users.map(({ password, ...user }) => user));
 });
 
 app.post('/api/users', (req, res) => {
