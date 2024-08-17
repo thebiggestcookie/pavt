@@ -5,7 +5,7 @@ import debugLogger from '../utils/debugLogger';
 const AdminPanel = () => {
   const [llmConfigs, setLlmConfigs] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [newLlmConfig, setNewLlmConfig] = useState({ name: '', apiKey: '', maxTokens: 0 });
+  const [newLlmConfig, setNewLlmConfig] = useState({ name: '', apiKey: '', maxTokens: 0, model: 'gpt-4' });
   const [newSubcategory, setNewSubcategory] = useState({ name: '', parentCategory: 'Coffee' });
 
   useEffect(() => {
@@ -58,7 +58,7 @@ const AdminPanel = () => {
       debugLogger('Adding new LLM config:', newLlmConfig);
       const addedConfig = await updateLlmConfig(newLlmConfig);
       setLlmConfigs([...llmConfigs, addedConfig]);
-      setNewLlmConfig({ name: '', apiKey: '', maxTokens: 0 });
+      setNewLlmConfig({ name: '', apiKey: '', maxTokens: 0, model: 'gpt-4' });
     } catch (error) {
       console.error('Error adding LLM config:', error);
       alert(`Error adding LLM config: ${error.message}`);
@@ -96,11 +96,12 @@ const AdminPanel = () => {
               <th className="border p-2">Name</th>
               <th className="border p-2">API Key</th>
               <th className="border p-2">Max Tokens</th>
+              <th className="border p-2">Model</th>
               <th className="border p-2">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {llmConfigs && llmConfigs.map((config, index) => (
+            {llmConfigs.map((config, index) => (
               <tr key={config.id}>
                 <td className="border p-2">
                   <input
@@ -128,6 +129,18 @@ const AdminPanel = () => {
                     onChange={(e) => handleLlmConfigChange(e, index)}
                     className="w-full p-1"
                   />
+                </td>
+                <td className="border p-2">
+                  <select
+                    name="model"
+                    value={config.model}
+                    onChange={(e) => handleLlmConfigChange(e, index)}
+                    className="w-full p-1"
+                  >
+                    <option value="gpt-4">GPT-4</option>
+                    <option value="claude">Claude</option>
+                    <option value="perplexity">Perplexity Labs</option>
+                  </select>
                 </td>
                 <td className="border p-2">
                   <button
@@ -163,6 +176,15 @@ const AdminPanel = () => {
             onChange={(e) => setNewLlmConfig({ ...newLlmConfig, maxTokens: parseInt(e.target.value) })}
             className="p-2 border rounded mr-2"
           />
+          <select
+            value={newLlmConfig.model}
+            onChange={(e) => setNewLlmConfig({ ...newLlmConfig, model: e.target.value })}
+            className="p-2 border rounded mr-2"
+          >
+            <option value="gpt-4">GPT-4</option>
+            <option value="claude">Claude</option>
+            <option value="perplexity">Perplexity Labs</option>
+          </select>
           <button
             onClick={handleAddLlmConfig}
             className="bg-green-500 text-white px-4 py-2 rounded"
@@ -175,7 +197,7 @@ const AdminPanel = () => {
       <div>
         <h3 className="text-xl font-semibold mb-2">Subcategories</h3>
         <ul className="list-disc list-inside">
-          {subcategories && subcategories.map((subcategory) => (
+          {subcategories.map((subcategory) => (
             <li key={subcategory.id}>
               {subcategory.name}
               <button
@@ -208,3 +230,4 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
+
