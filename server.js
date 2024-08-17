@@ -15,41 +15,76 @@ app.use(express.static(path.join(__dirname, 'build')));
 // In-memory storage for demo purposes
 let llmConfigs = [];
 let prompts = [];
-let subcategories = [];
-let attributes = {};
+let subcategories = [
+  { id: '1', name: 'Whole Bean Coffee', parentCategory: 'Coffee' },
+  { id: '2', name: 'Ground Coffee', parentCategory: 'Coffee' },
+  { id: '3', name: 'Coffee Pods', parentCategory: 'Coffee' },
+];
+let attributes = {
+  'Whole Bean Coffee': {
+    'Origin': ['Colombia', 'Ethiopia', 'Brazil', 'Kenya', 'Guatemala'],
+    'Roast Level': ['Light', 'Medium', 'Dark', 'French'],
+    'Flavor Profile': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
+    'Organic': ['Yes', 'No'],
+    'Fair Trade': ['Yes', 'No'],
+    'Processing Method': ['Washed', 'Natural', 'Honey'],
+  },
+  'Ground Coffee': {
+    'Origin': ['Colombia', 'Ethiopia', 'Brazil', 'Kenya', 'Guatemala'],
+    'Roast Level': ['Light', 'Medium', 'Dark', 'French'],
+    'Grind Size': ['Fine', 'Medium', 'Coarse'],
+    'Flavor Profile': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
+    'Organic': ['Yes', 'No'],
+    'Fair Trade': ['Yes', 'No'],
+  },
+  'Coffee Pods': {
+    'Origin': ['Colombia', 'Ethiopia', 'Brazil', 'Kenya', 'Guatemala'],
+    'Roast Level': ['Light', 'Medium', 'Dark'],
+    'Flavor Profile': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
+    'Organic': ['Yes', 'No'],
+    'Fair Trade': ['Yes', 'No'],
+    'Compatibility': ['Keurig', 'Nespresso', 'Tassimo'],
+  },
+};
 let users = [];
 let products = [
   {
     id: 1,
     name: "Mountain Blend Coffee",
+    subcategory: "Whole Bean Coffee",
     attributes: {
       Origin: "Colombia",
-      OrganicStatus: "Yes",
-      Intensity: "7",
-      FlavorProfile: "Nutty, Chocolate",
-      RoastLevel: "Medium"
+      'Roast Level': "Medium",
+      'Flavor Profile': "Nutty, Chocolatey",
+      Organic: "Yes",
+      'Fair Trade': "Yes",
+      'Processing Method': "Washed"
     }
   },
   {
     id: 2,
     name: "Sunrise Espresso",
+    subcategory: "Ground Coffee",
     attributes: {
       Origin: "Brazil",
-      OrganicStatus: "No",
-      Intensity: "9",
-      FlavorProfile: "Caramel, Citrus",
-      RoastLevel: "Dark"
+      'Roast Level': "Dark",
+      'Grind Size': "Fine",
+      'Flavor Profile': "Chocolatey, Spicy",
+      Organic: "No",
+      'Fair Trade': "Yes"
     }
   },
   {
     id: 3,
-    name: "Tropical Paradise Coffee",
+    name: "Tropical Paradise Coffee Pods",
+    subcategory: "Coffee Pods",
     attributes: {
-      Origin: "Hawaii",
-      OrganicStatus: "Yes",
-      Intensity: "5",
-      FlavorProfile: "Fruity, Floral",
-      RoastLevel: "Light"
+      Origin: "Ethiopia",
+      'Roast Level': "Light",
+      'Flavor Profile': "Fruity, Floral",
+      Organic: "Yes",
+      'Fair Trade': "No",
+      Compatibility: "Keurig"
     }
   }
 ];
