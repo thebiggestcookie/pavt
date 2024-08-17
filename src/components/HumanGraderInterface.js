@@ -5,9 +5,9 @@ const HumanGraderInterface = () => {
   const [products, setProducts] = useState([]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [attributes, setAttributes] = useState({});
-  const [editMode, setEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [accuracy, setAccuracy] = useState({ accurate: 0, inaccurate: 0, missing: 0 });
 
   useEffect(() => {
     loadProducts();
@@ -60,6 +60,11 @@ const HumanGraderInterface = () => {
         newFiltered[currentProductIndex] = updatedProduct;
         return newFiltered;
       });
+
+      // Update accuracy
+      if (newValue !== filteredProducts[currentProductIndex].attributes[attributeName]) {
+        setAccuracy(prev => ({ ...prev, inaccurate: prev.inaccurate + 1 }));
+      }
     } catch (error) {
       console.error('Error updating product:', error);
     }
@@ -82,6 +87,11 @@ const HumanGraderInterface = () => {
         newFiltered[currentProductIndex] = updatedProduct;
         return newFiltered;
       });
+
+      // Update accuracy
+      if (newSubcategory !== filteredProducts[currentProductIndex].subcategory) {
+        setAccuracy(prev => ({ ...prev, inaccurate: prev.inaccurate + 1 }));
+      }
     } catch (error) {
       console.error('Error updating product subcategory:', error);
     }
@@ -89,16 +99,33 @@ const HumanGraderInterface = () => {
 
   const moveToNextProduct = () => {
     if (currentProductIndex < filteredProducts.length - 1) {
+      updateAccuracy();
       setCurrentProductIndex(currentProductIndex + 1);
     } else {
+      updateAccuracy();
       alert('All products verified!');
     }
   };
 
   const moveToPreviousProduct = () => {
     if (currentProductIndex > 0) {
+      updateAccuracy();
       setCurrentProductIndex(currentProductIndex - 1);
     }
+  };
+
+  const updateAccuracy = () => {
+    const currentProduct = filteredProducts[currentProductIndex];
+    const subcategoryAttributes = attributes[currentProduct.subcategory] || {};
+    const totalAttributes = Object.keys(subcategoryAttributes).length;
+    const presentAttributes = Object.keys(currentProduct.attributes).length;
+    const missingAttributes = totalAttributes - presentAttributes;
+
+    setAccuracy(prev => ({
+      ...prev,
+      accurate: prev.accurate + presentAttributes,
+      missing: prev.missing + missingAttributes
+    }));
   };
 
   const handleAddNewVariable = async (attributeName, newVariable) => {
@@ -151,7 +178,6 @@ const HumanGraderInterface = () => {
           value={currentProduct.subcategory || ''}
           onChange={(e) => handleSubcategoryChange(e.target.value)}
           className="w-full p-2 border rounded"
-          disabled={!editMode}
         >
           <option value="">Select Subcategory</option>
           {Object.keys(attributes).map(subcategory => (
@@ -177,24 +203,21 @@ const HumanGraderInterface = () => {
                   value={currentProduct.attributes[attrName] || ''}
                   onChange={(e) => handleAttributeChange(attrName, e.target.value)}
                   className="w-full p-1"
-                  disabled={!editMode}
                 >
                   <option value="">Select {attrName}</option>
                   {attrValues.map(option => (
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
-                {editMode && (
-                  <button
-                    onClick={() => {
-                      const newVariable = prompt(`Enter new variable for ${attrName}`);
-                      if (newVariable) handleAddNewVariable(attrName, newVariable);
-                    }}
-                    className="ml-2 bg-blue-500 text-white px-2 py-1 rounded"
-                  >
-                    +
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    const newVariable = prompt(`Enter new variable for ${attrName}`);
+                    if (newVariable) handleAddNewVariable(attrName, newVariable);
+                  }}
+                  className="ml-2 bg-blue-500 text-white px-2 py-1 rounded"
+                >
+                  +
+                </button>
               </td>
             </tr>
           ))}
@@ -209,12 +232,6 @@ const HumanGraderInterface = () => {
           Previous Product
         </button>
         <button
-          onClick={() => setEditMode(!editMode)}
-          className={`px-4 py-2 rounded ${editMode ? 'bg-red-500 text-white' : 'bg-yellow-500 text-black'}`}
-        >
-          {editMode ? 'Finish Editing' : 'Edit'}
-        </button>
-        <button
           onClick={moveToNextProduct}
           disabled={currentProductIndex === filteredProducts.length - 1}
           className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
@@ -223,6 +240,12 @@ const HumanGraderInterface = () => {
         </button>
       </div>
       <p className="mt-2">Verifying product {currentProductIndex + 1} of {filteredProducts.length}</p>
+      <div className="mt-4">
+        <h4 className="font-bold">Accuracy Metrics:</h4>
+        <p>Accurate: {accuracy.accurate}</p>
+        <p>Inaccurate: {accuracy.inaccurate}</p>
+        <p>Missing: {accuracy.missing}</p>
+      </div>
     </div>
   );
 };
