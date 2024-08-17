@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchLlmConfigs, processWithLLM } from '../api/api';
+import { fetchLlmConfigs, processWithLLM, addProduct } from '../api/api';
 
 const ProductGenerator = () => {
   const [category, setCategory] = useState('');
@@ -61,7 +61,10 @@ const ProductGenerator = () => {
         const attributeResult = await processWithLLM(attributePrompt, '', selectedLlmConfigData);
         let attributes;
         try {
-          attributes = JSON.parse(attributeResult.attributes);
+          attributes = attributeResult.attributes;
+          if (typeof attributes === 'string') {
+            attributes = JSON.parse(attributes);
+          }
           if (typeof attributes !== 'object' || attributes === null) {
             throw new Error('Response is not an object');
           }
@@ -76,6 +79,27 @@ const ProductGenerator = () => {
     } catch (error) {
       console.error('Error generating products:', error);
       setError('Failed to generate products: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProducts = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      for (const product of generatedProducts) {
+        await addProduct({
+          name: product.name,
+          subcategory: category,
+          attributes: product.attributes
+        });
+      }
+      alert('Products saved successfully!');
+    } catch (error) {
+      console.error('Error saving products:', error);
+      setError('Failed to save products: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -129,10 +153,20 @@ const ProductGenerator = () => {
       <button
         onClick={handleGenerateProducts}
         disabled={!category || !selectedLlmConfig || loading}
-        className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+        className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-gray-400 mr-2"
       >
         {loading ? 'Generating...' : 'Generate Products'}
       </button>
+
+      {generatedProducts.length > 0 && (
+        <button
+          onClick={handleSaveProducts}
+          disabled={loading}
+          className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-400"
+        >
+          {loading ? 'Saving...' : 'Save Products'}
+        </button>
+      )}
 
       {generatedProducts.length > 0 && (
         <div className="mt-8">
@@ -156,3 +190,4 @@ const ProductGenerator = () => {
 };
 
 export default ProductGenerator;
+
