@@ -259,6 +259,15 @@ app.get('/api/products', (req, res) => {
   res.json(products);
 });
 
+app.post('/api/products', (req, res) => {
+  const newProduct = {
+    id: products.length + 1,
+    ...req.body
+  };
+  products.push(newProduct);
+  res.status(201).json(newProduct);
+});
+
 app.put('/api/products/:id', (req, res) => {
   const { id } = req.params;
   const index = products.findIndex(product => product.id === parseInt(id));
@@ -315,18 +324,6 @@ app.post('/api/process-llm', async (req, res) => {
     } else if (llmConfig.provider === 'anthropic') {
       const content = response.data.completion.trim();
       attributes = JSON.parse(content);
-    }
-
-    // Save the result to the products array
-    const productIndex = products.findIndex(p => p.name.toLowerCase() === productName.toLowerCase());
-    if (productIndex !== -1) {
-      products[productIndex].llmAttributes = attributes;
-    } else {
-      products.push({
-        id: products.length + 1,
-        name: productName,
-        llmAttributes: attributes
-      });
     }
 
     res.json({ attributes });
