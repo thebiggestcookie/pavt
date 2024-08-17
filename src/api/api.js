@@ -89,16 +89,6 @@ export const resetPassword = async (userId) => {
   }
 };
 
-export const updateUser = async (userId, userData) => {
-  try {
-    const response = await api.put(`/users/${userId}`, userData);
-    return response.data;
-  } catch (error) {
-    debugLogger('Error in updateUser:', error);
-    throw error;
-  }
-};
-
 export const fetchAttributes = async () => {
   try {
     const response = await api.get('/attributes');
@@ -240,6 +230,16 @@ export const deleteSubcategory = async (subcategoryId) => {
     return response.data;
   } catch (error) {
     debugLogger('Error in deleteSubcategory:', error);
+    throw error;
+  }
+};
+
+export const processWithLLM = async (prompt, productName, llmConfig) => {
+  try {
+    const response = await api.post('/process-llm', { prompt, productName, llmConfig });
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in processWithLLM:', error);
     throw error;
   }
 };
