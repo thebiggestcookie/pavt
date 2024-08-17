@@ -9,39 +9,31 @@ const PerformanceMetrics = () => {
   const [tokenUsage, setTokenUsage] = useState({});
   const [graderPerformance, setGraderPerformance] = useState([]);
   const [llmPerformance, setLlmPerformance] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchTokenUsage();
-    fetchGraderPerformance();
-    fetchLlmPerformance();
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [usageData, graderData, llmData] = await Promise.all([
+          getTokenUsage(),
+          getGraderPerformance(),
+          getLlmPerformance()
+        ]);
+        setTokenUsage(usageData);
+        setGraderPerformance(graderData);
+        setLlmPerformance(llmData);
+      } catch (err) {
+        console.error('Error fetching performance data:', err);
+        setError('Failed to load performance data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
-
-  const fetchTokenUsage = async () => {
-    try {
-      const usage = await getTokenUsage();
-      setTokenUsage(usage);
-    } catch (error) {
-      console.error('Error fetching token usage:', error);
-    }
-  };
-
-  const fetchGraderPerformance = async () => {
-    try {
-      const performance = await getGraderPerformance();
-      setGraderPerformance(performance);
-    } catch (error) {
-      console.error('Error fetching grader performance:', error);
-    }
-  };
-
-  const fetchLlmPerformance = async () => {
-    try {
-      const performance = await getLlmPerformance();
-      setLlmPerformance(performance);
-    } catch (error) {
-      console.error('Error fetching LLM performance:', error);
-    }
-  };
 
   const llmPerformanceData = {
     labels: llmPerformance.map(llm => llm.name),
@@ -94,6 +86,14 @@ const PerformanceMetrics = () => {
     },
   };
 
+  if (loading) {
+    return <div className="mt-8">Loading performance metrics...</div>;
+  }
+
+  if (error) {
+    return <div className="mt-8 text-red-500">{error}</div>;
+  }
+
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Performance Metrics</h2>
@@ -127,3 +127,4 @@ const PerformanceMetrics = () => {
 };
 
 export default PerformanceMetrics;
+
