@@ -350,6 +350,37 @@ app.post('/api/process-llm', async (req, res) => {
   }
 });
 
+// Performance metrics endpoints
+app.get('/api/token-usage', (req, res) => {
+  // Mock data for token usage
+  const tokenUsage = {
+    'OpenAI GPT-3.5': 1000000,
+    'Anthropic Claude': 750000,
+    'Cohere Command': 500000
+  };
+  res.json(tokenUsage);
+});
+
+app.get('/api/grader-performance', (req, res) => {
+  // Mock data for grader performance
+  const graderPerformance = [
+    { name: 'Grader 1', accuracy: 95, speed: 120 },
+    { name: 'Grader 2', accuracy: 92, speed: 110 },
+    { name: 'Grader 3', accuracy: 88, speed: 130 }
+  ];
+  res.json(graderPerformance);
+});
+
+app.get('/api/llm-performance', (req, res) => {
+  // Mock data for LLM performance
+  const llmPerformance = [
+    { name: 'OpenAI GPT-3.5', accuracy: 88 },
+    { name: 'Anthropic Claude', accuracy: 85 },
+    { name: 'Cohere Command', accuracy: 82 }
+  ];
+  res.json(llmPerformance);
+});
+
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
 app.get('*', (req, res) => {
