@@ -14,7 +14,10 @@ app.use(express.static(path.join(__dirname, 'build')));
 
 // In-memory storage for demo purposes
 let llmConfigs = [];
-let prompts = [];
+let prompts = [
+  { id: '1', name: 'Coffee Attribute Extractor', content: 'Extract attributes from the given coffee product description.' },
+  { id: '2', name: 'Coffee Categorizer', content: 'Categorize the given coffee product into appropriate subcategories.' },
+];
 let subcategories = [
   { id: '1', name: 'Whole Bean Coffee', parentCategory: 'Coffee' },
   { id: '2', name: 'Ground Coffee', parentCategory: 'Coffee' },
