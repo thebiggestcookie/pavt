@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { fetchUsers, addUser, removeUser, resetPassword } from '../api/api';
+import { fetchUsers, addUser, removeUser, resetPassword, updateUser } from '../api/api';
 import predictGraderAccuracy from '../utils/mlPredictor';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [newUser, setNewUser] = useState({ username: '', password: '', experience: 0, pastAccuracy: 0 });
+  const [editingUser, setEditingUser] = useState(null);
 
   useEffect(() => {
     loadUsers();
@@ -46,6 +47,22 @@ const UserManagement = () => {
       alert(`Password reset for user with ID ${id}`);
     } catch (error) {
       console.error('Error resetting password:', error);
+    }
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+  };
+
+  const handleUpdateUser = async () => {
+    if (editingUser) {
+      try {
+        const updatedUser = await updateUser(editingUser.id, editingUser);
+        setUsers(users.map(user => user.id === updatedUser.id ? updatedUser : user));
+        setEditingUser(null);
+      } catch (error) {
+        console.error('Error updating user:', error);
+      }
     }
   };
 
@@ -107,15 +124,63 @@ const UserManagement = () => {
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
-                <td className="border p-2">{user.username}</td>
+                <td className="border p-2">
+                  {editingUser && editingUser.id === user.id ? (
+                    <input
+                      type="text"
+                      value={editingUser.username}
+                      onChange={(e) => setEditingUser({ ...editingUser, username: e.target.value })}
+                      className="w-full p-1 border rounded"
+                    />
+                  ) : (
+                    user.username
+                  )}
+                </td>
                 <td className="border p-2">{user.lastLogin}</td>
-                <td className="border p-2">{user.experience} years</td>
-                <td className="border p-2">{user.pastAccuracy}%</td>
+                <td className="border p-2">
+                  {editingUser && editingUser.id === user.id ? (
+                    <input
+                      type="number"
+                      value={editingUser.experience}
+                      onChange={(e) => setEditingUser({ ...editingUser, experience: parseInt(e.target.value) })}
+                      className="w-full p-1 border rounded"
+                    />
+                  ) : (
+                    `${user.experience} years`
+                  )}
+                </td>
+                <td className="border p-2">
+                  {editingUser && editingUser.id === user.id ? (
+                    <input
+                      type="number"
+                      value={editingUser.pastAccuracy}
+                      onChange={(e) => setEditingUser({ ...editingUser, pastAccuracy: parseFloat(e.target.value) })}
+                      className="w-full p-1 border rounded"
+                    />
+                  ) : (
+                    `${user.pastAccuracy}%`
+                  )}
+                </td>
                 <td className="border p-2">{predictGraderAccuracy(user)}%</td>
                 <td className="border p-2">
+                  {editingUser && editingUser.id === user.id ? (
+                    <button
+                      onClick={handleUpdateUser}
+                      className="mr-2 bg-green-500 text-white px-2 py-1 rounded"
+                    >
+                      Save
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleEditUser(user)}
+                      className="mr-2 bg-yellow-500 text-white px-2 py-1 rounded"
+                    >
+                      Edit
+                    </button>
+                  )}
                   <button
                     onClick={() => handleResetPassword(user.id)}
-                    className="mr-2 bg-yellow-500 text-white px-2 py-1 rounded"
+                    className="mr-2 bg-blue-500 text-white px-2 py-1 rounded"
                   >
                     Reset Password
                   </button>
@@ -136,3 +201,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+
