@@ -46,7 +46,12 @@ const ProductGenerator = () => {
         }
       } catch (parseError) {
         console.error('Error parsing product list:', productListResult.attributes);
-        throw new Error('Failed to parse product list: ' + parseError.message);
+        productList = productListResult.attributes;
+        if (typeof productList === 'string') {
+          productList = productList.split('\n').filter(item => item.trim() !== '');
+        } else if (!Array.isArray(productList)) {
+          throw new Error('Unable to parse product list');
+        }
       }
 
       // Generate attributes for each product
@@ -62,7 +67,7 @@ const ProductGenerator = () => {
           }
         } catch (parseError) {
           console.error('Error parsing attributes:', attributeResult.attributes);
-          throw new Error('Failed to parse attributes: ' + parseError.message);
+          attributes = { error: 'Failed to parse attributes' };
         }
         generatedProductsWithAttributes.push({ name: productName, attributes });
       }
@@ -151,4 +156,3 @@ const ProductGenerator = () => {
 };
 
 export default ProductGenerator;
-
