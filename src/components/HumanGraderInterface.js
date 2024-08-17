@@ -1,31 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { updateProduct, fetchSubcategories, updateAttributes, fetchProducts, fetchAttributes } from '../api/api';
+import { fetchProducts, updateProduct, fetchAttributes } from '../api/api';
 
 const HumanGraderInterface = () => {
   const [products, setProducts] = useState([]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [subcategories, setSubcategories] = useState([]);
   const [attributes, setAttributes] = useState({});
+  const [editMode, setEditMode] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredProducts, setFilteredProducts] = useState([]);
 
   useEffect(() => {
-    loadSubcategories();
     loadProducts();
     loadAttributes();
   }, []);
 
-  const loadSubcategories = async () => {
-    try {
-      const subcategoriesData = await fetchSubcategories();
-      setSubcategories(subcategoriesData);
-    } catch (error) {
-      console.error('Error loading subcategories:', error);
-    }
-  };
+  useEffect(() => {
+    const filtered = products.filter(product => 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
 
   const loadProducts = async () => {
     try {
       const productsData = await fetchProducts();
       setProducts(productsData);
+      setFilteredProducts(productsData);
     } catch (error) {
       console.error('Error loading products:', error);
     }
@@ -41,12 +41,10 @@ const HumanGraderInterface = () => {
   };
 
   const handleAttributeChange = async (attributeName, newValue) => {
-    if (!products[currentProductIndex]) return;
-
     const updatedProduct = {
-      ...products[currentProductIndex],
+      ...filteredProducts[currentProductIndex],
       attributes: {
-        ...products[currentProductIndex].attributes,
+        ...filteredProducts[currentProductIndex].attributes,
         [attributeName]: newValue
       }
     };
@@ -54,47 +52,61 @@ const HumanGraderInterface = () => {
     try {
       await updateProduct(updatedProduct.id, updatedProduct);
       const updatedProducts = [...products];
-      updatedProducts[currentProductIndex] = updatedProduct;
+      const index = updatedProducts.findIndex(p => p.id === updatedProduct.id);
+      updatedProducts[index] = updatedProduct;
       setProducts(updatedProducts);
+      setFilteredProducts(prevFiltered => {
+        const newFiltered = [...prevFiltered];
+        newFiltered[currentProductIndex] = updatedProduct;
+        return newFiltered;
+      });
     } catch (error) {
       console.error('Error updating product:', error);
     }
   };
 
   const handleSubcategoryChange = async (newSubcategory) => {
-    if (!products[currentProductIndex]) return;
-
     const updatedProduct = {
-      ...products[currentProductIndex],
+      ...filteredProducts[currentProductIndex],
       subcategory: newSubcategory
     };
 
     try {
       await updateProduct(updatedProduct.id, updatedProduct);
       const updatedProducts = [...products];
-      updatedProducts[currentProductIndex] = updatedProduct;
+      const index = updatedProducts.findIndex(p => p.id === updatedProduct.id);
+      updatedProducts[index] = updatedProduct;
       setProducts(updatedProducts);
+      setFilteredProducts(prevFiltered => {
+        const newFiltered = [...prevFiltered];
+        newFiltered[currentProductIndex] = updatedProduct;
+        return newFiltered;
+      });
     } catch (error) {
       console.error('Error updating product subcategory:', error);
     }
   };
 
   const moveToNextProduct = () => {
-    if (currentProductIndex < products.length - 1) {
+    if (currentProductIndex < filteredProducts.length - 1) {
       setCurrentProductIndex(currentProductIndex + 1);
     } else {
       alert('All products verified!');
     }
   };
 
-  const handleAddNewVariable = async (attributeName, newVariable) => {
-    if (!products[currentProductIndex] || !products[currentProductIndex].subcategory) return;
+  const moveToPreviousProduct = () => {
+    if (currentProductIndex > 0) {
+      setCurrentProductIndex(currentProductIndex - 1);
+    }
+  };
 
+  const handleAddNewVariable = async (attributeName, newVariable) => {
     const updatedAttributes = {
       ...attributes,
-      [products[currentProductIndex].subcategory]: {
-        ...attributes[products[currentProductIndex].subcategory],
-        [attributeName]: [...(attributes[products[currentProductIndex].subcategory]?.[attributeName] || []), newVariable]
+      [filteredProducts[currentProductIndex].subcategory]: {
+        ...attributes[filteredProducts[currentProductIndex].subcategory],
+        [attributeName]: [...(attributes[filteredProducts[currentProductIndex].subcategory]?.[attributeName] || []), newVariable]
       }
     };
 
@@ -106,15 +118,31 @@ const HumanGraderInterface = () => {
     }
   };
 
-  if (products.length === 0) {
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentProductIndex(0);
+  };
+
+  if (filteredProducts.length === 0) {
     return <div className="mt-8">No products to review. Please upload data first.</div>;
   }
 
-  const currentProduct = products[currentProductIndex];
+  const currentProduct = filteredProducts[currentProductIndex];
 
   return (
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Human Grader Interface</h2>
+      
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          className="w-full p-2 border rounded"
+        />
+      </div>
+
       <h3 className="text-xl font-semibold mb-2">{currentProduct.name}</h3>
       
       <div className="mb-4">
@@ -123,10 +151,11 @@ const HumanGraderInterface = () => {
           value={currentProduct.subcategory || ''}
           onChange={(e) => handleSubcategoryChange(e.target.value)}
           className="w-full p-2 border rounded"
+          disabled={!editMode}
         >
           <option value="">Select Subcategory</option>
-          {subcategories.map(subcategory => (
-            <option key={subcategory.id} value={subcategory.name}>{subcategory.name}</option>
+          {Object.keys(attributes).map(subcategory => (
+            <option key={subcategory} value={subcategory}>{subcategory}</option>
           ))}
         </select>
       </div>
@@ -148,33 +177,52 @@ const HumanGraderInterface = () => {
                   value={currentProduct.attributes[attrName] || ''}
                   onChange={(e) => handleAttributeChange(attrName, e.target.value)}
                   className="w-full p-1"
+                  disabled={!editMode}
                 >
                   <option value="">Select {attrName}</option>
                   {attrValues.map(option => (
                     <option key={option} value={option}>{option}</option>
                   ))}
                 </select>
-                <button
-                  onClick={() => {
-                    const newVariable = prompt(`Enter new variable for ${attrName}`);
-                    if (newVariable) handleAddNewVariable(attrName, newVariable);
-                  }}
-                  className="ml-2 bg-blue-500 text-white px-2 py-1 rounded"
-                >
-                  +
-                </button>
+                {editMode && (
+                  <button
+                    onClick={() => {
+                      const newVariable = prompt(`Enter new variable for ${attrName}`);
+                      if (newVariable) handleAddNewVariable(attrName, newVariable);
+                    }}
+                    className="ml-2 bg-blue-500 text-white px-2 py-1 rounded"
+                  >
+                    +
+                  </button>
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-      <button
-        onClick={moveToNextProduct}
-        className="mt-4 bg-green-500 text-white px-4 py-2 rounded"
-      >
-        Next Product
-      </button>
-      <p className="mt-2">Verifying product {currentProductIndex + 1} of {products.length}</p>
+      <div className="mt-4 flex justify-between">
+        <button
+          onClick={moveToPreviousProduct}
+          disabled={currentProductIndex === 0}
+          className="bg-gray-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+        >
+          Previous Product
+        </button>
+        <button
+          onClick={() => setEditMode(!editMode)}
+          className={`px-4 py-2 rounded ${editMode ? 'bg-red-500 text-white' : 'bg-yellow-500 text-black'}`}
+        >
+          {editMode ? 'Finish Editing' : 'Edit'}
+        </button>
+        <button
+          onClick={moveToNextProduct}
+          disabled={currentProductIndex === filteredProducts.length - 1}
+          className="bg-green-500 text-white px-4 py-2 rounded disabled:bg-gray-300"
+        >
+          Next Product
+        </button>
+      </div>
+      <p className="mt-2">Verifying product {currentProductIndex + 1} of {filteredProducts.length}</p>
     </div>
   );
 };
