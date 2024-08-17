@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { getTokenUsage } from '../api/api';
+import { Bar, Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { getTokenUsage, getGraderPerformance, getLlmPerformance } from '../api/api';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Tooltip, Legend);
 
 const PerformanceMetrics = () => {
-  const [tokenUsage, setTokenUsage] = useState({
-    openai: 0,
-    anthropic: 0,
-    perplexity: 0
-  });
+  const [tokenUsage, setTokenUsage] = useState({});
+  const [graderPerformance, setGraderPerformance] = useState([]);
+  const [llmPerformance, setLlmPerformance] = useState([]);
 
   useEffect(() => {
     fetchTokenUsage();
+    fetchGraderPerformance();
+    fetchLlmPerformance();
   }, []);
 
   const fetchTokenUsage = async () => {
@@ -25,24 +25,58 @@ const PerformanceMetrics = () => {
     }
   };
 
+  const fetchGraderPerformance = async () => {
+    try {
+      const performance = await getGraderPerformance();
+      setGraderPerformance(performance);
+    } catch (error) {
+      console.error('Error fetching grader performance:', error);
+    }
+  };
+
+  const fetchLlmPerformance = async () => {
+    try {
+      const performance = await getLlmPerformance();
+      setLlmPerformance(performance);
+    } catch (error) {
+      console.error('Error fetching LLM performance:', error);
+    }
+  };
+
   const llmPerformanceData = {
-    labels: ['GPT-4', 'Claude', 'Perplexity'],
+    labels: llmPerformance.map(llm => llm.name),
     datasets: [
       {
         label: 'Accuracy (%)',
-        data: [85, 82, 80],
+        data: llmPerformance.map(llm => llm.accuracy),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
       },
     ],
   };
 
   const tokenUsageData = {
-    labels: ['OpenAI', 'Anthropic', 'Perplexity'],
+    labels: Object.keys(tokenUsage),
     datasets: [
       {
         label: 'Token Usage',
-        data: [tokenUsage.openai, tokenUsage.anthropic, tokenUsage.perplexity],
+        data: Object.values(tokenUsage),
         backgroundColor: 'rgba(153, 102, 255, 0.6)',
+      },
+    ],
+  };
+
+  const graderPerformanceData = {
+    labels: graderPerformance.map(grader => grader.name),
+    datasets: [
+      {
+        label: 'Accuracy (%)',
+        data: graderPerformance.map(grader => grader.accuracy),
+        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+      },
+      {
+        label: 'Speed (products/hour)',
+        data: graderPerformance.map(grader => grader.speed),
+        backgroundColor: 'rgba(75, 192, 192, 0.6)',
       },
     ],
   };
@@ -74,17 +108,13 @@ const PerformanceMetrics = () => {
         <Bar data={tokenUsageData} options={options} />
       </div>
 
-      <div>
-        <h3 className="text-xl font-semibold mb-2">Recent Activity Log</h3>
-        <ul className="list-disc list-inside">
-          <li>User 'John' reviewed 25 products - 2 hours ago</li>
-          <li>LLM 'GPT-4' processed 100 products - 3 hours ago</li>
-          <li>New prompt added for 'Flavor Profile' - 5 hours ago</li>
-          <li>User 'Alice' corrected 15 product attributes - 1 day ago</li>
-        </ul>
+      <div className="mb-8">
+        <h3 className="text-xl font-semibold mb-2">Grader Performance</h3>
+        <Bar data={graderPerformanceData} options={options} />
       </div>
     </div>
   );
 };
 
 export default PerformanceMetrics;
+
