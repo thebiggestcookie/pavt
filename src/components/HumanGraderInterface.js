@@ -8,6 +8,8 @@ const HumanGraderInterface = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [accuracy, setAccuracy] = useState({ accurate: 0, inaccurate: 0, missing: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadProducts();
@@ -15,19 +17,25 @@ const HumanGraderInterface = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = products.filter(product => 
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredProducts(filtered);
+    if (products.length > 0) {
+      const filtered = products.filter(product => 
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    }
   }, [searchTerm, products]);
 
   const loadProducts = async () => {
     try {
+      setLoading(true);
       const productsData = await fetchProducts();
       setProducts(productsData);
       setFilteredProducts(productsData);
     } catch (error) {
       console.error('Error loading products:', error);
+      setError('Failed to load products. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -37,6 +45,7 @@ const HumanGraderInterface = () => {
       setAttributes(attributesData);
     } catch (error) {
       console.error('Error loading attributes:', error);
+      setError('Failed to load attributes. Please try again.');
     }
   };
 
@@ -67,6 +76,7 @@ const HumanGraderInterface = () => {
       }
     } catch (error) {
       console.error('Error updating product:', error);
+      setError('Failed to update product. Please try again.');
     }
   };
 
@@ -94,6 +104,7 @@ const HumanGraderInterface = () => {
       }
     } catch (error) {
       console.error('Error updating product subcategory:', error);
+      setError('Failed to update product subcategory. Please try again.');
     }
   };
 
@@ -142,6 +153,7 @@ const HumanGraderInterface = () => {
       setAttributes(updatedAttributes);
     } catch (error) {
       console.error('Error updating attributes:', error);
+      setError('Failed to add new variable. Please try again.');
     }
   };
 
@@ -149,6 +161,14 @@ const HumanGraderInterface = () => {
     setSearchTerm(e.target.value);
     setCurrentProductIndex(0);
   };
+
+  if (loading) {
+    return <div className="mt-8">Loading...</div>;
+  }
+
+  if (error) {
+    return <div className="mt-8 text-red-500">{error}</div>;
+  }
 
   if (filteredProducts.length === 0) {
     return <div className="mt-8">No products to review. Please upload data first.</div>;
@@ -251,3 +271,4 @@ const HumanGraderInterface = () => {
 };
 
 export default HumanGraderInterface;
+
