@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { updateProduct, fetchSubcategories, updateAttributes, fetchProducts } from '../api/api';
+import { updateProduct, fetchSubcategories, updateAttributes, fetchProducts, fetchAttributes } from '../api/api';
 
 const HumanGraderInterface = () => {
   const [products, setProducts] = useState([]);
@@ -10,6 +10,7 @@ const HumanGraderInterface = () => {
   useEffect(() => {
     loadSubcategories();
     loadProducts();
+    loadAttributes();
   }, []);
 
   const loadSubcategories = async () => {
@@ -27,6 +28,15 @@ const HumanGraderInterface = () => {
       setProducts(productsData);
     } catch (error) {
       console.error('Error loading products:', error);
+    }
+  };
+
+  const loadAttributes = async () => {
+    try {
+      const attributesData = await fetchAttributes();
+      setAttributes(attributesData);
+    } catch (error) {
+      console.error('Error loading attributes:', error);
     }
   };
 
@@ -129,16 +139,21 @@ const HumanGraderInterface = () => {
           </tr>
         </thead>
         <tbody>
-          {Object.entries(currentProduct.attributes).map(([attrName, attrValue]) => (
+          {currentProduct.subcategory && attributes[currentProduct.subcategory] &&
+           Object.entries(attributes[currentProduct.subcategory]).map(([attrName, attrValues]) => (
             <tr key={attrName}>
               <td className="border p-2">{attrName}</td>
               <td className="border p-2">
-                <input
-                  type="text"
-                  value={attrValue}
+                <select
+                  value={currentProduct.attributes[attrName] || ''}
                   onChange={(e) => handleAttributeChange(attrName, e.target.value)}
                   className="w-full p-1"
-                />
+                >
+                  <option value="">Select {attrName}</option>
+                  {attrValues.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
                 <button
                   onClick={() => {
                     const newVariable = prompt(`Enter new variable for ${attrName}`);
@@ -165,3 +180,4 @@ const HumanGraderInterface = () => {
 };
 
 export default HumanGraderInterface;
+
