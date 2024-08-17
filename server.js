@@ -276,7 +276,7 @@ app.post('/api/process-llm', async (req, res) => {
 
   try {
     let response;
-    const fullPrompt = `${prompt}\n\nProduct: ${productName}`;
+    const fullPrompt = `${prompt}\n\nProduct: ${productName}\n\nPlease ensure your response is in valid JSON format.`;
 
     switch (llmConfig.provider) {
       case 'openai':
@@ -320,7 +320,11 @@ app.post('/api/process-llm', async (req, res) => {
     res.json({ attributes });
   } catch (error) {
     console.error('Error processing with LLM:', error.response ? error.response.data : error.message);
-    res.status(500).json({ message: 'Error processing with LLM', error: error.response ? error.response.data : error.message });
+    res.status(500).json({ 
+      message: 'Error processing with LLM', 
+      error: error.response ? error.response.data : error.message,
+      rawResponse: error.response ? error.response.data : null
+    });
   }
 });
 
