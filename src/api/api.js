@@ -49,6 +49,16 @@ export const updateProduct = async (productId, updatedData) => {
   }
 };
 
+export const addProduct = async (productData) => {
+  try {
+    const response = await api.post('/products', productData);
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in addProduct:', error);
+    throw error;
+  }
+};
+
 export const fetchUsers = async () => {
   try {
     const response = await api.get('/users');
@@ -253,3 +263,4 @@ export const processWithLLM = async (prompt, productName, llmConfig) => {
     throw error;
   }
 };
+
