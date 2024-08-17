@@ -9,6 +9,7 @@ import UserManagement from './components/UserManagement';
 import AttributeEditor from './components/AttributeEditor';
 import InvestorDashboard from './components/InvestorDashboard';
 import PromptTester from './components/PromptTester';
+import ProductGenerator from './components/ProductGenerator';
 import { fetchProducts, fetchAttributes } from './api/api';
 import { coffeeProducts } from './data/coffeeProducts';
 
@@ -47,6 +48,7 @@ const App = () => {
               <li><Link to="/attributes" className="text-blue-600 hover:text-blue-800 font-medium">Attribute Editor</Link></li>
               <li><Link to="/investor" className="text-blue-600 hover:text-blue-800 font-medium">Investor Dashboard</Link></li>
               <li><Link to="/prompt-tester" className="text-blue-600 hover:text-blue-800 font-medium">Prompt Tester</Link></li>
+              <li><Link to="/product-generator" className="text-blue-600 hover:text-blue-800 font-medium">Product Generator</Link></li>
             </ul>
           </div>
         </nav>
@@ -87,6 +89,9 @@ const App = () => {
             <Route path="/prompt-tester">
               <PromptTester />
             </Route>
+            <Route path="/product-generator">
+              <ProductGenerator />
+            </Route>
           </Switch>
         </div>
       </div>
@@ -95,4 +100,3 @@ const App = () => {
 };
 
 export default App;
-
