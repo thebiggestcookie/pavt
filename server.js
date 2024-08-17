@@ -266,7 +266,7 @@ app.post('/api/process-llm', async (req, res) => {
         response = await axios.post('https://api.openai.com/v1/chat/completions', {
           model: llmConfig.model,
           messages: [{ role: 'user', content: fullPrompt }],
-          max_tokens: llmConfig.maxTokens
+          max_tokens: parseInt(llmConfig.maxTokens)
         }, {
           headers: {
             'Authorization': `Bearer ${llmConfig.apiKey}`,
@@ -278,7 +278,7 @@ app.post('/api/process-llm', async (req, res) => {
         response = await axios.post('https://api.anthropic.com/v1/complete', {
           prompt: fullPrompt,
           model: llmConfig.model,
-          max_tokens_to_sample: llmConfig.maxTokens
+          max_tokens_to_sample: parseInt(llmConfig.maxTokens)
         }, {
           headers: {
             'X-API-Key': llmConfig.apiKey,
@@ -293,12 +293,17 @@ app.post('/api/process-llm', async (req, res) => {
 
     // Parse the response and extract attributes
     // This is a simplified example and may need to be adjusted based on the actual response format
-    const attributes = JSON.parse(response.data.choices[0].message.content);
+    let attributes;
+    if (llmConfig.provider === 'openai') {
+      attributes = JSON.parse(response.data.choices[0].message.content);
+    } else if (llmConfig.provider === 'anthropic') {
+      attributes = JSON.parse(response.data.completion);
+    }
 
     res.json({ attributes });
   } catch (error) {
-    console.error('Error processing with LLM:', error);
-    res.status(500).json({ message: 'Error processing with LLM', error: error.message });
+    console.error('Error processing with LLM:', error.response ? error.response.data : error.message);
+    res.status(500).json({ message: 'Error processing with LLM', error: error.response ? error.response.data : error.message });
   }
 });
 

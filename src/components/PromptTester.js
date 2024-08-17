@@ -10,6 +10,7 @@ const PromptTester = () => {
   const [loading, setLoading] = useState(false);
   const [llmConfigs, setLlmConfigs] = useState([]);
   const [selectedLlmConfig, setSelectedLlmConfig] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadPrompts();
@@ -22,6 +23,7 @@ const PromptTester = () => {
       setPrompts(promptsData);
     } catch (error) {
       console.error('Error loading prompts:', error);
+      setError('Failed to load prompts');
     }
   };
 
@@ -34,6 +36,7 @@ const PromptTester = () => {
       }
     } catch (error) {
       console.error('Error loading LLM configs:', error);
+      setError('Failed to load LLM configurations');
     }
   };
 
@@ -47,6 +50,7 @@ const PromptTester = () => {
 
   const executePrompt = async () => {
     setLoading(true);
+    setError(null);
     const products = productList.split(',').map(p => p.trim());
     const resultsArray = [];
 
@@ -76,7 +80,7 @@ const PromptTester = () => {
         console.error(`Error processing product ${productName}:`, error);
         resultsArray.push({
           name: productName,
-          error: 'Failed to process product',
+          error: error.message || 'Failed to process product',
         });
       }
     }
@@ -89,6 +93,11 @@ const PromptTester = () => {
     <div className="mt-8">
       <h2 className="text-2xl font-bold mb-4">Prompt Tester</h2>
       
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <strong className="font-bold">Error:</strong>
+        <span className="block sm:inline"> {error}</span>
+      </div>}
+
       <div className="mb-4">
         <label className="block mb-2">Select Prompt</label>
         <select
@@ -173,7 +182,7 @@ const PromptTester = () => {
                     )}
                   </td>
                   <td className={`border p-2 ${result.correct ? 'text-green-600' : 'text-red-600'}`}>
-                    {result.correct ? 'Correct' : 'Incorrect'}
+                    {result.error ? `Error: ${result.error}` : (result.correct ? 'Correct' : 'Incorrect')}
                   </td>
                 </tr>
               ))}
@@ -186,4 +195,3 @@ const PromptTester = () => {
 };
 
 export default PromptTester;
-
