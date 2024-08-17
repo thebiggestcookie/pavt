@@ -11,12 +11,8 @@ import InvestorDashboard from './components/InvestorDashboard';
 import PromptTester from './components/PromptTester';
 import ProductGenerator from './components/ProductGenerator';
 import Login from './components/Login';
-import { fetchProducts, fetchAttributes } from './api/api';
 
 const App = () => {
-  const [products, setProducts] = useState([]);
-  const [currentProductIndex, setCurrentProductIndex] = useState(0);
-  const [attributes, setAttributes] = useState({});
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -24,19 +20,7 @@ const App = () => {
     if (token) {
       setIsAuthenticated(true);
     }
-    loadInitialData();
   }, []);
-
-  const loadInitialData = async () => {
-    try {
-      const productsData = await fetchProducts();
-      setProducts(productsData);
-      const attributesData = await fetchAttributes();
-      setAttributes(attributesData);
-    } catch (error) {
-      console.error('Error loading initial data:', error);
-    }
-  };
 
   const PrivateRoute = ({ component: Component, ...rest }) => (
     <Route
@@ -77,20 +61,7 @@ const App = () => {
           <Switch>
             <Route exact path="/login" render={(props) => <Login {...props} setIsAuthenticated={setIsAuthenticated} />} />
             <PrivateRoute exact path="/" component={UploadInterface} />
-            <PrivateRoute
-              path="/grader"
-              render={(props) => (
-                <HumanGraderInterface
-                  {...props}
-                  products={products}
-                  currentProductIndex={currentProductIndex}
-                  setCurrentProductIndex={setCurrentProductIndex}
-                  attributes={attributes}
-                  setAttributes={setAttributes}
-                  setProducts={setProducts}
-                />
-              )}
-            />
+            <PrivateRoute path="/grader" component={HumanGraderInterface} />
             <PrivateRoute path="/admin" component={AdminPanel} />
             <PrivateRoute path="/prompts" component={PromptManagement} />
             <PrivateRoute path="/metrics" component={PerformanceMetrics} />
@@ -107,4 +78,3 @@ const App = () => {
 };
 
 export default App;
-
