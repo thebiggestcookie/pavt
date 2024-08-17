@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchProducts, updateProduct, fetchAttributes, updateAttributes } from '../api/api';
+import { fetchProducts, updateProduct, fetchAttributes, updateAttributes, processWithLLM } from '../api/api';
 
 const HumanGraderInterface = () => {
   const [products, setProducts] = useState([]);
@@ -10,10 +10,15 @@ const HumanGraderInterface = () => {
   const [accuracy, setAccuracy] = useState({ accurate: 0, inaccurate: 0, missing: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [llmConfigs, setLlmConfigs] = useState([]);
+  const [prompts, setPrompts] = useState([]);
+  const [selectedPrompt, setSelectedPrompt] = useState(null);
 
   useEffect(() => {
     loadProducts();
     loadAttributes();
+    loadLlmConfigs();
+    loadPrompts();
   }, []);
 
   useEffect(() => {
@@ -46,6 +51,26 @@ const HumanGraderInterface = () => {
     } catch (error) {
       console.error('Error loading attributes:', error);
       setError('Failed to load attributes. Please try again.');
+    }
+  };
+
+  const loadLlmConfigs = async () => {
+    try {
+      const configs = await fetchLlmConfigs();
+      setLlmConfigs(configs);
+    } catch (error) {
+      console.error('Error loading LLM configs:', error);
+      setError('Failed to load LLM configurations. Please try again.');
+    }
+  };
+
+  const loadPrompts = async () => {
+    try {
+      const promptsData = await fetchPrompts();
+      setPrompts(promptsData);
+    } catch (error) {
+      console.error('Error loading prompts:', error);
+      setError('Failed to load prompts. Please try again.');
     }
   };
 
@@ -162,6 +187,70 @@ const HumanGraderInterface = () => {
     setCurrentProductIndex(0);
   };
 
+  const handlePromptChange = (e) => {
+    setSelectedPrompt(prompts.find(prompt => prompt.id === e.target.value));
+  };
+
+  const regenerateAttributes = async () => {
+    if (!selectedPrompt) {
+      setError('Please select a prompt first.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const updatedProducts = await Promise.all(products.map(async (product) => {
+        const [result1, result2] = await Promise.all([
+          processWithLLM(selectedPrompt.content, product.name, llmConfigs[0]),
+          processWithLLM(selectedPrompt.content, product.name, llmConfigs[1])
+        ]);
+
+        if (JSON.stringify(result1.attributes) === JSON.stringify(result2.attributes)) {
+          return { ...product, attributes: result1.attributes, needsReview: false };
+        } else {
+          return { ...product, attributes: result1.attributes, needsReview: true };
+        }
+      }));
+
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+      setCurrentProductIndex(0);
+      setLoading(false);
+
+      // Calculate accuracy based on human-generated answers
+      const accuracy = calculateAccuracy(updatedProducts);
+      setAccuracy(accuracy);
+
+    } catch (error) {
+      console.error('Error regenerating attributes:', error);
+      setError('Failed to regenerate attributes. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const calculateAccuracy = (updatedProducts) => {
+    let accurate = 0;
+    let inaccurate = 0;
+    let missing = 0;
+
+    updatedProducts.forEach(product => {
+      if (product.humanVerified) {
+        Object.keys(product.attributes).forEach(attr => {
+          if (product.attributes[attr] === product.humanAttributes[attr]) {
+            accurate++;
+          } else {
+            inaccurate++;
+          }
+        });
+        missing += Object.keys(product.humanAttributes).length - Object.keys(product.attributes).length;
+      }
+    });
+
+    return { accurate, inaccurate, missing };
+  };
+
   if (loading) {
     return <div className="mt-8">Loading...</div>;
   }
@@ -189,6 +278,28 @@ const HumanGraderInterface = () => {
           className="w-full p-2 border rounded"
         />
       </div>
+
+      <div className="mb-4">
+        <label className="block mb-2">Select Prompt</label>
+        <select
+          value={selectedPrompt ? selectedPrompt.id : ''}
+          onChange={handlePromptChange}
+          className="w-full p-2 border rounded"
+        >
+          <option value="">Select a prompt</option>
+          {prompts.map(prompt => (
+            <option key={prompt.id} value={prompt.id}>{prompt.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <button
+        onClick={regenerateAttributes}
+        className="mb-4 bg-blue-500 text-white px-4 py-2 rounded"
+        disabled={!selectedPrompt}
+      >
+        Regenerate Attributes
+      </button>
 
       <h3 className="text-xl font-semibold mb-2">{currentProduct.name}</h3>
       
