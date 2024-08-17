@@ -310,9 +310,11 @@ app.post('/api/process-llm', async (req, res) => {
     // Parse the response and extract attributes
     let attributes;
     if (llmConfig.provider === 'openai') {
-      attributes = JSON.parse(response.data.choices[0].message.content);
+      const content = response.data.choices[0].message.content.trim();
+      attributes = JSON.parse(content);
     } else if (llmConfig.provider === 'anthropic') {
-      attributes = JSON.parse(response.data.completion);
+      const content = response.data.completion.trim();
+      attributes = JSON.parse(content);
     }
 
     res.json({ attributes });
