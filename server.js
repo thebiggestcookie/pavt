@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const axios = require('axios');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -252,6 +253,55 @@ app.put('/api/products/:id', (req, res) => {
   }
 });
 
+// LLM processing endpoint
+app.post('/api/process-llm', async (req, res) => {
+  const { prompt, productName, llmConfig } = req.body;
+
+  try {
+    let response;
+    const fullPrompt = `${prompt}\n\nProduct: ${productName}`;
+
+    switch (llmConfig.provider) {
+      case 'openai':
+        response = await axios.post('https://api.openai.com/v1/chat/completions', {
+          model: llmConfig.model,
+          messages: [{ role: 'user', content: fullPrompt }],
+          max_tokens: llmConfig.maxTokens
+        }, {
+          headers: {
+            'Authorization': `Bearer ${llmConfig.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        break;
+      case 'anthropic':
+        response = await axios.post('https://api.anthropic.com/v1/complete', {
+          prompt: fullPrompt,
+          model: llmConfig.model,
+          max_tokens_to_sample: llmConfig.maxTokens
+        }, {
+          headers: {
+            'X-API-Key': llmConfig.apiKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        break;
+      // Add cases for other providers here
+      default:
+        throw new Error('Unsupported LLM provider');
+    }
+
+    // Parse the response and extract attributes
+    // This is a simplified example and may need to be adjusted based on the actual response format
+    const attributes = JSON.parse(response.data.choices[0].message.content);
+
+    res.json({ attributes });
+  } catch (error) {
+    console.error('Error processing with LLM:', error);
+    res.status(500).json({ message: 'Error processing with LLM', error: error.message });
+  }
+});
+
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
 app.get('*', (req, res) => {
@@ -261,3 +311,4 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
