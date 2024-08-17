@@ -14,7 +14,24 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'build')));
 
 // In-memory storage for demo purposes
-let llmConfigs = [];
+let llmConfigs = [
+  {
+    id: '1',
+    name: 'OpenAI GPT-3.5',
+    provider: 'openai',
+    model: 'gpt-3.5-turbo',
+    apiKey: 'your-openai-api-key-here',
+    maxTokens: 150
+  },
+  {
+    id: '2',
+    name: 'Anthropic Claude',
+    provider: 'anthropic',
+    model: 'claude-v1',
+    apiKey: 'your-anthropic-api-key-here',
+    maxTokens: 150
+  }
+];
 let prompts = [
   { id: '1', name: 'Coffee Attribute Extractor', content: 'Extract attributes from the given coffee product description.' },
   { id: '2', name: 'Coffee Categorizer', content: 'Categorize the given coffee product into appropriate subcategories.' },
@@ -286,13 +303,11 @@ app.post('/api/process-llm', async (req, res) => {
           }
         });
         break;
-      // Add cases for other providers here
       default:
         throw new Error('Unsupported LLM provider');
     }
 
     // Parse the response and extract attributes
-    // This is a simplified example and may need to be adjusted based on the actual response format
     let attributes;
     if (llmConfig.provider === 'openai') {
       attributes = JSON.parse(response.data.choices[0].message.content);
