@@ -5,8 +5,16 @@ import debugLogger from '../utils/debugLogger';
 const AdminPanel = () => {
   const [llmConfigs, setLlmConfigs] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [newLlmConfig, setNewLlmConfig] = useState({ name: '', apiKey: '', maxTokens: 0, model: 'gpt-4' });
+  const [newLlmConfig, setNewLlmConfig] = useState({ name: '', apiKey: '', maxTokens: 0, provider: 'openai', model: 'gpt-3.5-turbo' });
   const [newSubcategory, setNewSubcategory] = useState({ name: '', parentCategory: 'Coffee' });
+
+  const llmProviders = {
+    openai: ['gpt-3.5-turbo', 'gpt-4', 'text-davinci-003', 'text-curie-001', 'text-babbage-001', 'text-ada-001'],
+    anthropic: ['claude-v1', 'claude-instant-v1'],
+    cohere: ['command', 'command-light', 'command-nightly'],
+    ai21: ['j1-large', 'j1-jumbo'],
+    perplexity: ['perplexity-v1']
+  };
 
   useEffect(() => {
     loadLlmConfigs();
@@ -58,7 +66,7 @@ const AdminPanel = () => {
       debugLogger('Adding new LLM config:', newLlmConfig);
       const addedConfig = await updateLlmConfig(newLlmConfig);
       setLlmConfigs([...llmConfigs, addedConfig]);
-      setNewLlmConfig({ name: '', apiKey: '', maxTokens: 0, model: 'gpt-4' });
+      setNewLlmConfig({ name: '', apiKey: '', maxTokens: 0, provider: 'openai', model: 'gpt-3.5-turbo' });
     } catch (error) {
       console.error('Error adding LLM config:', error);
       alert(`Error adding LLM config: ${error.message}`);
@@ -96,6 +104,7 @@ const AdminPanel = () => {
               <th className="border p-2">Name</th>
               <th className="border p-2">API Key</th>
               <th className="border p-2">Max Tokens</th>
+              <th className="border p-2">Provider</th>
               <th className="border p-2">Model</th>
               <th className="border p-2">Actions</th>
             </tr>
@@ -132,14 +141,26 @@ const AdminPanel = () => {
                 </td>
                 <td className="border p-2">
                   <select
+                    name="provider"
+                    value={config.provider}
+                    onChange={(e) => handleLlmConfigChange(e, index)}
+                    className="w-full p-1"
+                  >
+                    {Object.keys(llmProviders).map(provider => (
+                      <option key={provider} value={provider}>{provider}</option>
+                    ))}
+                  </select>
+                </td>
+                <td className="border p-2">
+                  <select
                     name="model"
                     value={config.model}
                     onChange={(e) => handleLlmConfigChange(e, index)}
                     className="w-full p-1"
                   >
-                    <option value="gpt-4">GPT-4</option>
-                    <option value="claude">Claude</option>
-                    <option value="perplexity">Perplexity Labs</option>
+                    {llmProviders[config.provider].map(model => (
+                      <option key={model} value={model}>{model}</option>
+                    ))}
                   </select>
                 </td>
                 <td className="border p-2">
@@ -177,13 +198,22 @@ const AdminPanel = () => {
             className="p-2 border rounded mr-2"
           />
           <select
+            value={newLlmConfig.provider}
+            onChange={(e) => setNewLlmConfig({ ...newLlmConfig, provider: e.target.value, model: llmProviders[e.target.value][0] })}
+            className="p-2 border rounded mr-2"
+          >
+            {Object.keys(llmProviders).map(provider => (
+              <option key={provider} value={provider}>{provider}</option>
+            ))}
+          </select>
+          <select
             value={newLlmConfig.model}
             onChange={(e) => setNewLlmConfig({ ...newLlmConfig, model: e.target.value })}
             className="p-2 border rounded mr-2"
           >
-            <option value="gpt-4">GPT-4</option>
-            <option value="claude">Claude</option>
-            <option value="perplexity">Perplexity Labs</option>
+            {llmProviders[newLlmConfig.provider].map(model => (
+              <option key={model} value={model}>{model}</option>
+            ))}
           </select>
           <button
             onClick={handleAddLlmConfig}
@@ -230,4 +260,3 @@ const AdminPanel = () => {
 };
 
 export default AdminPanel;
-
