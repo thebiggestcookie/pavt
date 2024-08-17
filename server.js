@@ -317,6 +317,18 @@ app.post('/api/process-llm', async (req, res) => {
       attributes = JSON.parse(content);
     }
 
+    // Save the result to the products array
+    const productIndex = products.findIndex(p => p.name.toLowerCase() === productName.toLowerCase());
+    if (productIndex !== -1) {
+      products[productIndex].llmAttributes = attributes;
+    } else {
+      products.push({
+        id: products.length + 1,
+        name: productName,
+        llmAttributes: attributes
+      });
+    }
+
     res.json({ attributes });
   } catch (error) {
     console.error('Error processing with LLM:', error.response ? error.response.data : error.message);
