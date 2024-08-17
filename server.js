@@ -276,7 +276,7 @@ app.post('/api/process-llm', async (req, res) => {
 
   try {
     let response;
-    const fullPrompt = `${prompt}\n\nProduct: ${productName}\n\nPlease ensure your response is in valid JSON format.`;
+    const fullPrompt = `${prompt}\n\nProduct: ${productName}\n\nPlease ensure your response is in valid JSON format. Start your response with { and end it with }.`;
 
     switch (llmConfig.provider) {
       case 'openai':
