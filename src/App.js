@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Link, Redirect } from 'react-router-dom';
 import UploadInterface from './components/UploadInterface';
 import HumanGraderInterface from './components/HumanGraderInterface';
 import AdminPanel from './components/AdminPanel';
@@ -10,28 +10,46 @@ import AttributeEditor from './components/AttributeEditor';
 import InvestorDashboard from './components/InvestorDashboard';
 import PromptTester from './components/PromptTester';
 import ProductGenerator from './components/ProductGenerator';
+import Login from './components/Login';
 import { fetchProducts, fetchAttributes } from './api/api';
-import { coffeeProducts } from './data/coffeeProducts';
 
 const App = () => {
-  const [products, setProducts] = useState(coffeeProducts);
+  const [products, setProducts] = useState([]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [attributes, setAttributes] = useState({});
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    const loadInitialData = async () => {
-      try {
-        const productsData = await fetchProducts();
-        setProducts(productsData.length > 0 ? productsData : coffeeProducts);
-        const attributesData = await fetchAttributes();
-        setAttributes(attributesData);
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      }
-    };
-
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsAuthenticated(true);
+    }
     loadInitialData();
   }, []);
+
+  const loadInitialData = async () => {
+    try {
+      const productsData = await fetchProducts();
+      setProducts(productsData);
+      const attributesData = await fetchAttributes();
+      setAttributes(attributesData);
+    } catch (error) {
+      console.error('Error loading initial data:', error);
+    }
+  };
+
+  const PrivateRoute = ({ component: Component, ...rest }) => (
+    <Route
+      {...rest}
+      render={props =>
+        isAuthenticated ? (
+          <Component {...props} />
+        ) : (
+          <Redirect to="/login" />
+        )
+      }
+    />
+  );
 
   return (
     <Router>
@@ -55,43 +73,30 @@ const App = () => {
 
         <div className="container mx-auto px-6 py-8">
           <Switch>
-            <Route exact path="/">
-              <UploadInterface setProducts={setProducts} setAttributes={setAttributes} />
-            </Route>
-            <Route path="/grader">
-              <HumanGraderInterface
-                products={products}
-                currentProductIndex={currentProductIndex}
-                setCurrentProductIndex={setCurrentProductIndex}
-                attributes={attributes}
-                setAttributes={setAttributes}
-                setProducts={setProducts}
-              />
-            </Route>
-            <Route path="/admin">
-              <AdminPanel />
-            </Route>
-            <Route path="/prompts">
-              <PromptManagement />
-            </Route>
-            <Route path="/metrics">
-              <PerformanceMetrics />
-            </Route>
-            <Route path="/users">
-              <UserManagement />
-            </Route>
-            <Route path="/attributes">
-              <AttributeEditor />
-            </Route>
-            <Route path="/investor">
-              <InvestorDashboard />
-            </Route>
-            <Route path="/prompt-tester">
-              <PromptTester />
-            </Route>
-            <Route path="/product-generator">
-              <ProductGenerator />
-            </Route>
+            <Route exact path="/login" component={Login} />
+            <PrivateRoute exact path="/" component={UploadInterface} />
+            <PrivateRoute
+              path="/grader"
+              render={(props) => (
+                <HumanGraderInterface
+                  {...props}
+                  products={products}
+                  currentProductIndex={currentProductIndex}
+                  setCurrentProductIndex={setCurrentProductIndex}
+                  attributes={attributes}
+                  setAttributes={setAttributes}
+                  setProducts={setProducts}
+                />
+              )}
+            />
+            <PrivateRoute path="/admin" component={AdminPanel} />
+            <PrivateRoute path="/prompts" component={PromptManagement} />
+            <PrivateRoute path="/metrics" component={PerformanceMetrics} />
+            <PrivateRoute path="/users" component={UserManagement} />
+            <PrivateRoute path="/attributes" component={AttributeEditor} />
+            <PrivateRoute path="/investor" component={InvestorDashboard} />
+            <PrivateRoute path="/prompt-tester" component={PromptTester} />
+            <PrivateRoute path="/product-generator" component={ProductGenerator} />
           </Switch>
         </div>
       </div>
