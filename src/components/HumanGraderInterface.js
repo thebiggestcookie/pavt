@@ -31,10 +31,10 @@ const HumanGraderInterface = () => {
       const productsData = await fetchProducts();
       setProducts(productsData);
       setFilteredProducts(productsData);
+      setLoading(false);
     } catch (error) {
       console.error('Error loading products:', error);
       setError('Failed to load products. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
