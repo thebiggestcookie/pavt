@@ -91,22 +91,25 @@ const ProductGenerator = () => {
       const generatedProductsWithAttributes = [];
       for (const productName of productList) {
         // Determine subcategory
-        const subcategoryPrompt = `Determine the subcategory for the product "${productName}" in the ${category} category. Choose from the following options: ${subcategories.map(s => s.name).join(', ')}. Return the result as a JSON object with a single key "subcategory".`;
+        const subcategoryPrompt = `Determine the subcategory for the product "${productName}" in the ${category} category. Choose ONLY from the following options: ${subcategories.map(s => s.name).join(', ')}. Return the result as a JSON object with a single key "subcategory". The value must be one of the provided options.`;
         const subcategoryResult = await processWithLLM(subcategoryPrompt, '', selectedLlmConfigData);
         addDebugInfo({ step: 'Subcategory Determination', prompt: subcategoryPrompt, result: subcategoryResult });
 
         let subcategory;
         try {
           subcategory = JSON.parse(subcategoryResult.attributes).subcategory;
+          if (!subcategories.some(s => s.name === subcategory)) {
+            throw new Error('Invalid subcategory');
+          }
         } catch (parseError) {
           console.error('Error parsing subcategory:', subcategoryResult.attributes);
-          subcategory = 'Unknown';
+          subcategory = subcategories[0].name; // Default to first subcategory if parsing fails
         }
 
         // Generate attributes
-        const attributePrompt = `Generate realistic attributes for the product "${productName}" in the ${subcategory} subcategory. Use the following attribute structure:
+        const attributePrompt = `Generate realistic attributes for the product "${productName}" in the ${subcategory} subcategory. Use ONLY the following attribute structure:
         ${JSON.stringify(attributes[subcategory], null, 2)}
-        Return the result as a JSON object with key-value pairs representing the attributes and their values. Ensure the response is a valid JSON object.`;
+        Return the result as a JSON object with key-value pairs representing the attributes and their values. Ensure the response is a valid JSON object and ONLY use the provided attributes and their possible values.`;
         const attributeResult = await processWithLLM(attributePrompt, '', selectedLlmConfigData);
         addDebugInfo({ step: 'Attribute Generation', prompt: attributePrompt, result: attributeResult });
 
@@ -119,9 +122,17 @@ const ProductGenerator = () => {
           if (typeof productAttributes !== 'object' || productAttributes === null) {
             throw new Error('Response is not an object');
           }
+          // Validate and correct attributes
+          Object.keys(productAttributes).forEach(key => {
+            if (!attributes[subcategory][key]) {
+              delete productAttributes[key];
+            } else if (!attributes[subcategory][key].includes(productAttributes[key])) {
+              productAttributes[key] = attributes[subcategory][key][0]; // Default to first valid value
+            }
+          });
         } catch (parseError) {
           console.error('Error parsing attributes:', attributeResult.attributes);
-          productAttributes = { error: 'Failed to parse attributes' };
+          productAttributes = {}; // Default to empty object if parsing fails
         }
 
         generatedProductsWithAttributes.push({ name: productName, subcategory, attributes: productAttributes });
@@ -258,4 +269,3 @@ const ProductGenerator = () => {
 };
 
 export default ProductGenerator;
-
