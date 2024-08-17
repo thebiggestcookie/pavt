@@ -82,6 +82,15 @@ let products = [
       Organic: "Yes",
       'Fair Trade': "Yes",
       'Processing Method': "Washed"
+    },
+    humanVerified: true,
+    humanAttributes: {
+      Origin: "Colombia",
+      'Roast Level': "Medium",
+      'Flavor Profile': "Nutty, Chocolatey",
+      Organic: "Yes",
+      'Fair Trade': "Yes",
+      'Processing Method': "Washed"
     }
   },
   {
@@ -95,6 +104,15 @@ let products = [
       'Flavor Profile': "Chocolatey, Spicy",
       Organic: "No",
       'Fair Trade': "Yes"
+    },
+    humanVerified: true,
+    humanAttributes: {
+      Origin: "Brazil",
+      'Roast Level': "Dark",
+      'Grind Size': "Fine",
+      'Flavor Profile': "Chocolatey, Spicy",
+      Organic: "No",
+      'Fair Trade': "Yes"
     }
   },
   {
@@ -102,6 +120,15 @@ let products = [
     name: "Tropical Paradise Coffee Pods",
     subcategory: "Coffee Pods",
     attributes: {
+      Origin: "Ethiopia",
+      'Roast Level': "Light",
+      'Flavor Profile': "Fruity, Floral",
+      Organic: "Yes",
+      'Fair Trade': "No",
+      Compatibility: "Keurig"
+    },
+    humanVerified: true,
+    humanAttributes: {
       Origin: "Ethiopia",
       'Roast Level': "Light",
       'Flavor Profile': "Fruity, Floral",
@@ -174,7 +201,8 @@ app.put('/api/prompts/:id', (req, res) => {
 });
 
 app.delete('/api/prompts/:id', (req, res) => {
-  const { id } = req.params;
+  const { i
+d } = req.params;
   const index = prompts.findIndex(prompt => prompt.id === id);
   if (index !== -1) {
     prompts.splice(index, 1);
@@ -380,6 +408,103 @@ app.get('/api/llm-performance', (req, res) => {
   ];
   res.json(llmPerformance);
 });
+
+// Regenerate attributes endpoint
+app.post('/api/regenerate-attributes', async (req, res) => {
+  const { promptId, llmConfigs } = req.body;
+  const prompt = prompts.find(p => p.id === promptId);
+
+  if (!prompt) {
+    return res.status(404).json({ message: 'Prompt not found' });
+  }
+
+  try {
+    const updatedProducts = await Promise.all(products.map(async (product) => {
+      const [result1, result2] = await Promise.all([
+        processWithLLM(prompt.content, product.name, llmConfigs[0]),
+        processWithLLM(prompt.content, product.name, llmConfigs[1])
+      ]);
+
+      if (JSON.stringify(result1.attributes) === JSON.stringify(result2.attributes)) {
+        return { ...product, attributes: result1.attributes, needsReview: false };
+      } else {
+        return { ...product, attributes: result1.attributes, needsReview: true };
+      }
+    }));
+
+    products = updatedProducts;
+    res.json(updatedProducts);
+  } catch (error) {
+    console.error('Error regenerating attributes:', error);
+    res.status(500).json({ message: 'Error regenerating attributes', error: error.message });
+  }
+});
+
+// Accuracy metrics endpoint
+app.get('/api/accuracy-metrics/:promptId', (req, res) => {
+  const { promptId } = req.params;
+  const prompt = prompts.find(p => p.id === promptId);
+
+  if (!prompt) {
+    return res.status(404).json({ message: 'Prompt not found' });
+  }
+
+  const metrics = {
+    accurate: 0,
+    inaccurate: 0,
+    missing: 0
+  };
+
+  products.forEach(product => {
+    if (product.humanVerified) {
+      Object.keys(product.attributes).forEach(attr => {
+        if (product.attributes[attr] === product.humanAttributes[attr]) {
+          metrics.accurate++;
+        } else {
+          metrics.inaccurate++;
+        }
+      });
+      metrics.missing += Object.keys(product.humanAttributes).length - Object.keys(product.attributes).length;
+    }
+  });
+
+  res.json(metrics);
+});
+
+// Helper function to process with LLM
+async function processWithLLM(prompt, productName, llmConfig) {
+  const fullPrompt = `${prompt}\n\nProduct: ${productName}\n\nPlease ensure your response is in valid JSON format. Start your response with { and end it with }.`;
+
+  let response;
+  switch (llmConfig.provider) {
+    case 'openai':
+      response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: llmConfig.model,
+        messages: [{ role: 'user', content: fullPrompt }],
+        max_tokens: parseInt(llmConfig.maxTokens)
+      }, {
+        headers: {
+          'Authorization': `Bearer ${llmConfig.apiKey}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return { attributes: JSON.parse(response.data.choices[0].message.content.trim()) };
+    case 'anthropic':
+      response = await axios.post('https://api.anthropic.com/v1/complete', {
+        prompt: fullPrompt,
+        model: llmConfig.model,
+        max_tokens_to_sample: parseInt(llmConfig.maxTokens)
+      }, {
+        headers: {
+          'X-API-Key': llmConfig.apiKey,
+          'Content-Type': 'application/json'
+        }
+      });
+      return { attributes: JSON.parse(response.data.completion.trim()) };
+    default:
+      throw new Error('Unsupported LLM provider');
+  }
+}
 
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
