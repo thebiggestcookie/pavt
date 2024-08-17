@@ -199,6 +199,26 @@ export const getTokenUsage = async () => {
   }
 };
 
+export const getGraderPerformance = async () => {
+  try {
+    const response = await api.get('/grader-performance');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in getGraderPerformance:', error);
+    throw error;
+  }
+};
+
+export const getLlmPerformance = async () => {
+  try {
+    const response = await api.get('/llm-performance');
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in getLlmPerformance:', error);
+    throw error;
+  }
+};
+
 export const fetchLlmConfigs = async () => {
   try {
     const response = await api.get('/llm-configs');
@@ -263,3 +283,14 @@ export const processWithLLM = async (prompt, productName, llmConfig) => {
     throw error;
   }
 };
+
+export const login = async (username, password) => {
+  try {
+    const response = await api.post('/login', { username, password });
+    return response.data;
+  } catch (error) {
+    debugLogger('Error in login:', error);
+    throw error;
+  }
+};
+
