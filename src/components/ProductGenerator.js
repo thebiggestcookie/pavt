@@ -52,7 +52,7 @@ const ProductGenerator = () => {
       setGeneratedProducts(generatedProductsWithAttributes);
     } catch (error) {
       console.error('Error generating products:', error);
-      setError('Failed to generate products');
+      setError('Failed to generate products: ' + error.message);
     } finally {
       setLoading(false);
     }
