@@ -25,11 +25,11 @@ const ProductGenerator = () => {
         throw new Error('Prompts data is not in the expected format');
       }
 
-      const step1Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content;
-      const step2Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content;
+      const step1Prompt = response.data.find(prompt => prompt.name === 'Step 1')?.content;
+      const step2Prompt = response.data.find(prompt => prompt.name === 'Step 2')?.content;
 
       if (!step1Prompt || !step2Prompt) {
-        throw new Error('One or both prompts are missing');
+        throw new Error('One or both prompts are missing or empty');
       }
 
       setPrompts({ step1: step1Prompt, step2: step2Prompt });
