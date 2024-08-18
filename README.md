@@ -2,108 +2,98 @@
 
 This project is a React-based application for categorizing and managing e-commerce products using Large Language Models (LLMs).
 
-## Current Features
+## Database Configuration for Render
 
-- Upload and manage product data
-- Human grader interface for verifying LLM-generated categorizations
-- Admin panel for managing LLM configurations and subcategories
-- Prompt management for creating and editing LLM prompts
-- Performance metrics dashboard
-- User management system
-- Attribute editor for managing product attributes
-- Investor dashboard with detailed performance and financial metrics
-- Prompt tester with comparison to human-graded results
-- Product generator for creating sample products using LLMs
+When configuring the database on Render, you need to set up a PostgreSQL database and use the provided connection string. Here's how to do it:
 
-## Recent Changes
+1. In your Render dashboard, go to the "New +" button and select "PostgreSQL".
+2. Choose a name for your database and select the region closest to your users.
+3. Choose a plan that fits your needs (you can start with the free plan for development).
+4. Click "Create Database".
 
-- A default user (username: admin, password: password) has been set for testing purposes.
-- The navigation menu has been updated to show all available features for admin users.
+Once your database is created, you'll see a "Connection" tab with your connection details. The `Internal Database URL` is what you'll use for your `DATABASE_URL` environment variable.
 
-## Recommendations for Future Improvements
+## Environment Variables
 
-1. **Database Integration**: Replace in-memory storage with a proper database system (e.g., PostgreSQL, MongoDB) for persistent data storage and improved scalability.
+In your Render dashboard, go to the Environment section of your web service and add the following variables:
 
-2. **Authentication and Authorization**: Implement a robust authentication system and role-based access control to secure the application and manage user permissions.
+- `DATABASE_URL`: Set this to the Internal Database URL provided by Render for your PostgreSQL database.
+- `NODE_ENV`: Set this to "production".
 
-3. **API Rate Limiting**: Implement rate limiting for API calls to prevent abuse and ensure fair usage of resources.
+## Additional Changes
 
-4. **Bulk Operations**: Add functionality for bulk import/export of products, attributes, and other data.
+1. The `server.js` file has been updated to use PostgreSQL instead of in-memory storage or JSON files.
+2. The `package.json` file has been updated to include the `pg` package for PostgreSQL support.
+3. Make sure to run `npm install` to install the new dependencies before deploying.
 
-5. **Versioning System**: Implement a versioning system for products, attributes, and prompts to track changes over time.
+## Database Schema
 
-6. **Advanced Search and Filtering**: Enhance the search capabilities with advanced filtering options and full-text search.
+You'll need to set up your database schema. Here's a basic schema for the tables used in this application:
 
-7. **Automated Testing**: Develop a comprehensive suite of unit tests, integration tests, and end-to-end tests to ensure application reliability.
+```sql
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL,
+  last_login TIMESTAMP
+);
 
-8. **Performance Optimization**: Optimize database queries, implement caching mechanisms, and lazy loading for improved performance with large datasets.
+CREATE TABLE llm_configs (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  provider VARCHAR(50) NOT NULL,
+  model VARCHAR(255) NOT NULL,
+  api_key VARCHAR(255) NOT NULL,
+  max_tokens INTEGER NOT NULL
+);
 
-9. **Internationalization**: Add support for multiple languages and locales to make the application accessible to a global audience.
+CREATE TABLE prompts (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL
+);
 
-10. **Machine Learning Integration**: Implement machine learning models to predict product categorization accuracy and suggest improvements.
+CREATE TABLE subcategories (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
 
-11. **API Documentation**: Create comprehensive API documentation using tools like Swagger or OpenAPI.
+CREATE TABLE attributes (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  type VARCHAR(50) NOT NULL
+);
 
-12. **Webhook Integration**: Implement webhooks to allow integration with external systems and real-time notifications.
+CREATE TABLE products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  attributes JSONB,
+  human_attributes JSONB,
+  human_verified BOOLEAN DEFAULT FALSE,
+  needs_review BOOLEAN DEFAULT FALSE
+);
 
-13. **Audit Logging**: Add detailed audit logging for all important actions in the system for better traceability and debugging.
+CREATE TABLE token_usage (
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  token_count INTEGER NOT NULL
+);
 
-14. **Data Visualization**: Enhance the performance metrics and investor dashboard with more advanced data visualization and reporting tools.
+CREATE TABLE grader_performance (
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  accuracy FLOAT NOT NULL
+);
 
-15. **Batch Processing**: Implement a batch processing system for handling large-scale data operations asynchronously.
+CREATE TABLE llm_performance (
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  model VARCHAR(255) NOT NULL,
+  accuracy FLOAT NOT NULL
+);
+```
 
-## Making the Current Tool More Usable
+You can run these SQL commands in your Render PostgreSQL database to set up the necessary tables.
 
-1. **User Guide**: Create a comprehensive user guide or in-app tutorials to help users navigate and utilize all features effectively.
-
-2. **UI/UX Improvements**: Conduct usability testing and refine the user interface for a more intuitive experience. Consider implementing a design system for consistency.
-
-3. **Error Handling**: Improve error handling and provide more informative error messages to users.
-
-4. **Responsive Design**: Ensure the application is fully responsive and works well on various devices and screen sizes.
-
-5. **Keyboard Shortcuts**: Implement keyboard shortcuts for common actions to improve efficiency for power users.
-
-6. **Data Validation**: Enhance input validation and provide immediate feedback to users when entering data.
-
-7. **Undo/Redo Functionality**: Implement undo/redo functionality for key actions to improve user confidence and reduce errors.
-
-8. **Customizable Dashboard**: Allow users to customize their dashboard view based on their preferences and most-used features.
-
-9. **Batch Editing**: Implement batch editing features for products and attributes to streamline workflows.
-
-10. **Export Options**: Provide various export options (CSV, JSON, PDF) for data and reports.
-
-11. **Auto-save**: Implement auto-save functionality to prevent data loss during editing.
-
-12. **Feedback System**: Add a built-in feedback system for users to report issues or suggest improvements.
-
-13. **Performance Indicators**: Add visual indicators (e.g., progress bars, spinners) for long-running operations to improve user experience.
-
-14. **Contextual Help**: Implement contextual help tooltips and information icons throughout the application.
-
-15. **Onboarding Flow**: Create a smooth onboarding flow for new users to quickly set up their account and understand key features.
-
-By implementing these improvements, the LLM Product Categorizer can become more robust, user-friendly, and ready for production use in a variety of e-commerce scenarios.
-
-## Configuration Changes for Render
-
-To ensure that the database doesn't reset every time you redeploy the service on Render, you need to use a persistent storage solution. Here are the steps to configure this:
-
-1. **Use a Persistent Database**: Instead of using in-memory storage or local JSON files, set up a persistent database service on Render or use an external database service.
-
-2. **Environment Variables**: Use environment variables to store database connection information. In your Render dashboard, go to the Environment section of your service and add the following variables:
-   - `DATABASE_URL`: The connection string for your database
-   - `NODE_ENV`: Set this to "production"
-
-3. **Update Dependencies**: In your `package.json`, add the necessary database driver (e.g., `pg` for PostgreSQL or `mongodb` for MongoDB).
-
-4. **Update Server Code**: Modify your `server.js` to use the database instead of local JSON files. Use the `DATABASE_URL` environment variable to connect to your database.
-
-5. **Data Migration**: Create a script to migrate your existing data from JSON files to the database. Run this script once after setting up the database.
-
-6. **Render Disk**: If you need to store files (like uploads), use Render Disk, which provides persistent storage. You can mount it to your service and use it for file storage.
-
-7. **Backup Strategy**: Implement a regular backup strategy for your database to prevent data loss.
-
-By following these steps, your data will persist across redeployments on Render, ensuring that your database doesn't reset.
+Remember to update your application's error handling and connection management to properly handle database connections and potential errors.
