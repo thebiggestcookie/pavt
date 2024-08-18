@@ -17,10 +17,13 @@ const HumanGraderV2 = () => {
       debug('Fetching products to grade');
       const response = await axios.get('/api/products-to-grade');
       debug('Raw products response', response.data);
-      setProducts(response.data);
-      if (response.data.length > 0) {
-        setCurrentProduct(response.data[0]);
+      
+      if (!Array.isArray(response.data) || response.data.length === 0) {
+        throw new Error('No products available for grading');
       }
+
+      setProducts(response.data);
+      setCurrentProduct(response.data[0]);
       debug('Products fetched successfully', response.data);
       setLoading(false);
     } catch (error) {
@@ -33,6 +36,9 @@ const HumanGraderV2 = () => {
 
   const handleGrade = async (grade) => {
     try {
+      if (!currentProduct) {
+        throw new Error('No product selected for grading');
+      }
       debug('Grading product', { productId: currentProduct.id, grade });
       await axios.post('/api/grade-product', {
         productId: currentProduct.id,
@@ -59,7 +65,7 @@ const HumanGraderV2 = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading products...</div>;
   }
 
   if (error) {
