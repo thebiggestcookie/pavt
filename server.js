@@ -30,6 +30,7 @@ const query = (text, params) => pool.query(text, params);
 async function initializeDatabase() {
   const client = await pool.connect();
   try {
+    await client.query('BEGIN');
     const migrationSQL = fs.readFileSync(path.join(__dirname, 'migrations', '001_initial_schema.sql'), 'utf8');
     await client.query(migrationSQL);
     console.log('Database schema initialized successfully');
@@ -53,8 +54,10 @@ async function initializeDatabase() {
       );
     }
 
+    await client.query('COMMIT');
     console.log('Data initialized successfully');
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error initializing database:', error);
   } finally {
     client.release();
