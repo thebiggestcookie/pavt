@@ -1,17 +1,10 @@
 [
   {
-    "id": "1",
-    "name": "Whole Bean Coffee",
-    "parentCategory": "Coffee"
+    "id": 1,
+    "name": "Coffee Beans"
   },
   {
-    "id": "2",
-    "name": "Ground Coffee",
-    "parentCategory": "Coffee"
-  },
-  {
-    "id": "3",
-    "name": "Coffee Pods",
-    "parentCategory": "Coffee"
+    "id": 2,
+    "name": "Coffee Pods"
   }
 ]
