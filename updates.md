@@ -46,9 +46,14 @@
   - No changes made, component still not loading
   - Status: Further investigation needed
 
-Next steps:
-- Verify API endpoint '/api/generate-prompt' exists and is correctly implemented on the backend
-- Test product generation with updated endpoint and variable syntax
-- Investigate why HumanGraderV2 is not loading, check for any console errors
-- Review backend routes and controllers for both components
-- Consider adding more detailed error logging in the backend to help diagnose issues
+## 2023-06-19
+- Added GlobalDebug component
+  - Created a new component that displays debug information globally
+  - Integrated GlobalDebug component into App.js
+  - Debug information is now visible on all pages, even if the main component fails to load
+  - Status: Implemented, needs testing
+- Next steps:
+  - Test GlobalDebug component across all pages
+  - Use GlobalDebug to investigate ProductGenerator and HumanGraderV2 issues
+  - Review backend API endpoints, especially '/api/generate-prompt'
+  - Consider adding more detailed error logging in the backend
