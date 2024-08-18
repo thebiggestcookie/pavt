@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { debug, getDebugLog } from '../utils/debug';
 
 const ProductGenerator = () => {
   const [productName, setProductName] = useState('');
@@ -16,13 +17,16 @@ const ProductGenerator = () => {
 
   const fetchPrompts = async () => {
     try {
+      debug('Fetching prompts');
       const response = await axios.get('/api/prompts');
       setPrompts({
         step1: response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content || '',
         step2: response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content || ''
       });
+      debug('Prompts fetched successfully', prompts);
     } catch (error) {
       console.error('Error fetching prompts:', error);
+      debug('Error fetching prompts', error);
       setError('Failed to fetch prompts. Please try again.');
     }
   };
@@ -36,21 +40,27 @@ const ProductGenerator = () => {
     setError('');
     setDebugInfo('');
     try {
+      debug('Generating product', { productName });
       // Step 1: Generate subcategory
       const step1Prompt = prompts.step1.replace('{product_name}', productName);
+      debug('Step 1 prompt', step1Prompt);
       const step1Response = await axios.post('/api/generate', { prompt: step1Prompt });
       const generatedSubcategory = step1Response.data.response.trim();
       setSubcategory(generatedSubcategory);
+      debug('Generated subcategory', generatedSubcategory);
       setDebugInfo(prevDebug => prevDebug + `Step 1 Response:\n${generatedSubcategory}\n\n`);
 
       // Step 2: Generate attributes
       const step2Prompt = prompts.step2.replace('{product_name}', productName).replace('{subcategory}', generatedSubcategory);
+      debug('Step 2 prompt', step2Prompt);
       const step2Response = await axios.post('/api/generate', { prompt: step2Prompt });
       setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${step2Response.data.response}\n\n`);
       const generatedAttributes = JSON.parse(step2Response.data.response);
       setAttributes(generatedAttributes);
+      debug('Generated attributes', generatedAttributes);
     } catch (error) {
       console.error('Error generating product:', error);
+      debug('Error generating product', error);
       setError(`Failed to generate product: ${error.message}`);
       setDebugInfo(prevDebug => prevDebug + `Error: ${error.message}\n`);
     } finally {
@@ -60,12 +70,20 @@ const ProductGenerator = () => {
 
   const saveProduct = async () => {
     try {
+      debug('Saving product', { productName, subcategory, attributes });
       await axios.post('/api/products', { name: productName, subcategory, attributes });
+      debug('Product saved successfully');
       alert('Product saved successfully!');
     } catch (error) {
       console.error('Error saving product:', error);
+      debug('Error saving product', error);
       setError('Failed to save product. Please try again.');
     }
+  };
+
+  const copyDebugLog = () => {
+    navigator.clipboard.writeText(getDebugLog());
+    alert('Debug log copied to clipboard!');
   };
 
   return (
@@ -104,9 +122,15 @@ const ProductGenerator = () => {
       <button
         onClick={saveProduct}
         disabled={!subcategory || Object.keys(attributes).length === 0}
-        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
       >
         Save Product
+      </button>
+      <button
+        onClick={copyDebugLog}
+        className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Copy Debug Log
       </button>
       {error && <p className="text-red-500 mt-4">{error}</p>}
       {subcategory && (

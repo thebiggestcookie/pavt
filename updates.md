@@ -30,7 +30,16 @@
   - Added more specific error messages
   - Status: Pending testing, API endpoints need to be verified
 
+## 2023-06-17
+- Implemented global debug functionality
+  - Added debug.js utility file with debug, getDebugLog, and clearDebugLog functions
+  - Integrated debug logging into ProductGenerator and HumanGraderV2 components
+  - Added "Copy Debug Log" button to both components for easy sharing of debug information
+  - Status: Implemented, needs testing
+
 Next steps:
-- Verify API endpoints for both ProductGenerator and HumanGraderV2
+- Test debug functionality in ProductGenerator and HumanGraderV2
+- Verify API endpoints for both components
 - Test product generation with new product name field
 - Investigate and resolve 404 errors in API calls
+- Review and analyze debug logs to identify any remaining issues

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { debug, getDebugLog } from '../utils/debug';
 
 const HumanGraderV2 = () => {
   const [products, setProducts] = useState([]);
@@ -13,14 +14,17 @@ const HumanGraderV2 = () => {
 
   const fetchProducts = async () => {
     try {
+      debug('Fetching products to grade');
       const response = await axios.get('/api/products-to-grade');
       setProducts(response.data);
       if (response.data.length > 0) {
         setCurrentProduct(response.data[0]);
       }
+      debug('Products fetched successfully', response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
+      debug('Error fetching products', error);
       setError(`Failed to fetch products: ${error.message}`);
       setLoading(false);
     }
@@ -28,10 +32,12 @@ const HumanGraderV2 = () => {
 
   const handleGrade = async (grade) => {
     try {
+      debug('Grading product', { productId: currentProduct.id, grade });
       await axios.post('/api/grade-product', {
         productId: currentProduct.id,
         grade: grade
       });
+      debug('Product graded successfully');
       // Move to next product
       const nextProductIndex = products.findIndex(p => p.id === currentProduct.id) + 1;
       if (nextProductIndex < products.length) {
@@ -41,8 +47,14 @@ const HumanGraderV2 = () => {
       }
     } catch (error) {
       console.error('Error grading product:', error);
+      debug('Error grading product', error);
       setError(`Failed to grade product: ${error.message}`);
     }
+  };
+
+  const copyDebugLog = () => {
+    navigator.clipboard.writeText(getDebugLog());
+    alert('Debug log copied to clipboard!');
   };
 
   if (loading) {
@@ -50,11 +62,31 @@ const HumanGraderV2 = () => {
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return (
+      <div>
+        <div className="text-red-500">{error}</div>
+        <button
+          onClick={copyDebugLog}
+          className="mt-4 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Copy Debug Log
+        </button>
+      </div>
+    );
   }
 
   if (!currentProduct) {
-    return <div>No more products to grade.</div>;
+    return (
+      <div>
+        <div>No more products to grade.</div>
+        <button
+          onClick={copyDebugLog}
+          className="mt-4 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Copy Debug Log
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -86,6 +118,12 @@ const HumanGraderV2 = () => {
           </button>
         </div>
       </div>
+      <button
+        onClick={copyDebugLog}
+        className="mt-4 bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Copy Debug Log
+      </button>
     </div>
   );
 };
