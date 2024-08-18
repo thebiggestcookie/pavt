@@ -37,7 +37,13 @@ const ProductGenerator = () => {
     } catch (error) {
       console.error('Error fetching prompts:', error);
       debug('Error fetching prompts', error);
-      setError(`Failed to fetch prompts: ${error.message}`);
+      if (error.response) {
+        setError(`Failed to fetch prompts: ${error.response.data.message || error.message}`);
+      } else if (error.request) {
+        setError('No response received from the server. Please check your internet connection and try again.');
+      } else {
+        setError(`Failed to fetch prompts: ${error.message}`);
+      }
     }
   };
 
@@ -75,7 +81,13 @@ const ProductGenerator = () => {
     } catch (error) {
       console.error('Error generating product:', error);
       debug('Error generating product', error);
-      setError(`Failed to generate product: ${error.message}`);
+      if (error.response) {
+        setError(`Failed to generate product: ${error.response.data.message || error.message}`);
+      } else if (error.request) {
+        setError('No response received from the server. Please check your internet connection and try again.');
+      } else {
+        setError(`Failed to generate product: ${error.message}`);
+      }
       setDebugInfo(prevDebug => prevDebug + `Error: ${error.message}\n`);
     } finally {
       setLoading(false);
@@ -91,7 +103,13 @@ const ProductGenerator = () => {
     } catch (error) {
       console.error('Error saving product:', error);
       debug('Error saving product', error);
-      setError('Failed to save product. Please try again.');
+      if (error.response) {
+        setError(`Failed to save product: ${error.response.data.message || error.message}`);
+      } else if (error.request) {
+        setError('No response received from the server. Please check your internet connection and try again.');
+      } else {
+        setError(`Failed to save product: ${error.message}`);
+      }
     }
   };
 
