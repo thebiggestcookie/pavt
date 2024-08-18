@@ -1,134 +1,161 @@
 import React, { useState, useEffect } from 'react';
-import { fetchPrompts, processWithLLM, fetchLlmConfigs } from '../api/api';
+import axios from 'axios';
 
 const ProductGenerator = () => {
-  const [prompts, setPrompts] = useState([]);
-  const [selectedPrompt, setSelectedPrompt] = useState(null);
-  const [llmConfigs, setLlmConfigs] = useState([]);
   const [productName, setProductName] = useState('');
-  const [generatedAttributes, setGeneratedAttributes] = useState(null);
+  const [subcategory, setSubcategory] = useState('');
+  const [attributes, setAttributes] = useState({});
+  const [prompts, setPrompts] = useState([]);
+  const [llmConfigs, setLlmConfigs] = useState([]);
+  const [selectedPrompt1, setSelectedPrompt1] = useState('');
+  const [selectedPrompt2, setSelectedPrompt2] = useState('');
+  const [selectedLlmConfig, setSelectedLlmConfig] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [showPrompt, setShowPrompt] = useState(false);
-  const [editedPrompt, setEditedPrompt] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    loadPrompts();
-    loadLlmConfigs();
+    fetchPrompts();
+    fetchLlmConfigs();
   }, []);
 
-  const loadPrompts = async () => {
+  const fetchPrompts = async () => {
     try {
-      const promptsData = await fetchPrompts();
-      setPrompts(promptsData);
+      const response = await axios.get('/api/prompts');
+      setPrompts(response.data);
     } catch (error) {
-      console.error('Error loading prompts:', error);
-      setError('Failed to load prompts. Please try again.');
+      console.error('Error fetching prompts:', error);
+      setError('Failed to fetch prompts');
     }
   };
 
-  const loadLlmConfigs = async () => {
+  const fetchLlmConfigs = async () => {
     try {
-      const configs = await fetchLlmConfigs();
-      setLlmConfigs(configs);
+      const response = await axios.get('/api/llm-configs');
+      setLlmConfigs(response.data);
     } catch (error) {
-      console.error('Error loading LLM configs:', error);
-      setError('Failed to load LLM configurations. Please try again.');
+      console.error('Error fetching LLM configs:', error);
+      setError('Failed to fetch LLM configurations');
     }
   };
 
-  const handlePromptChange = (e) => {
-    const prompt = prompts.find(p => p.id === e.target.value);
-    setSelectedPrompt(prompt);
-    setEditedPrompt(prompt ? prompt.content : '');
-  };
-
-  const handleGenerateAttributes = async () => {
-    if (!selectedPrompt || !productName) {
-      setError('Please select a prompt and enter a product name.');
-      return;
-    }
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError('');
 
     try {
-      const result = await processWithLLM(editedPrompt, productName, llmConfigs[0]);
-      setGeneratedAttributes(result.attributes);
+      // Step 1: Identify subcategory
+      const subcategoryResponse = await axios.post('/api/process-llm', {
+        prompt: prompts.find(p => p.id === selectedPrompt1).content,
+        productName: productName,
+        llmConfig: llmConfigs.find(c => c.id === selectedLlmConfig)
+      });
+      setSubcategory(subcategoryResponse.data.attributes);
+
+      // Step 2: Generate attributes
+      const attributesResponse = await axios.post('/api/process-llm', {
+        prompt: prompts.find(p => p.id === selectedPrompt2).content,
+        productName: productName,
+        subcategory: subcategoryResponse.data.attributes,
+        llmConfig: llmConfigs.find(c => c.id === selectedLlmConfig)
+      });
+      setAttributes(attributesResponse.data.attributes);
     } catch (error) {
-      console.error('Error generating attributes:', error);
-      setError('Failed to generate attributes. Please try again.');
+      console.error('Error generating product:', error);
+      setError('Failed to generate product attributes');
     } finally {
       setLoading(false);
     }
   };
 
-  const toggleShowPrompt = () => {
-    setShowPrompt(!showPrompt);
-  };
-
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Product Generator</h2>
-      
-      <div className="mb-4">
-        <label className="block mb-2">Select Prompt</label>
-        <select
-          value={selectedPrompt ? selectedPrompt.id : ''}
-          onChange={handlePromptChange}
-          className="w-full p-2 border rounded"
-        >
-          <option value="">Select a prompt</option>
-          {prompts.map(prompt => (
-            <option key={prompt.id} value={prompt.id}>{prompt.name}</option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-2">Product Name</label>
-        <input
-          type="text"
-          value={productName}
-          onChange={(e) => setProductName(e.target.value)}
-          className="w-full p-2 border rounded"
-          placeholder="Enter product name"
-        />
-      </div>
-
-      <button
-        onClick={toggleShowPrompt}
-        className="mb-4 bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        {showPrompt ? 'Hide Prompt' : 'Show/Modify Prompt'}
-      </button>
-
-      {showPrompt && (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Product Generator</h1>
+      <form onSubmit={handleSubmit} className="mb-8">
         <div className="mb-4">
-          <textarea
-            value={editedPrompt}
-            onChange={(e) => setEditedPrompt(e.target.value)}
-            className="w-full p-2 border rounded"
-            rows="6"
+          <label htmlFor="productName" className="block text-gray-700 text-sm font-bold mb-2">
+            Product Name:
+          </label>
+          <input
+            type="text"
+            id="productName"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
           />
         </div>
-      )}
-
-      <button
-        onClick={handleGenerateAttributes}
-        className="mb-4 bg-green-500 text-white px-4 py-2 rounded"
-        disabled={loading}
-      >
-        {loading ? 'Generating...' : 'Generate Attributes'}
-      </button>
-
+        <div className="mb-4">
+          <label htmlFor="prompt1" className="block text-gray-700 text-sm font-bold mb-2">
+            Subcategory Identification Prompt:
+          </label>
+          <select
+            id="prompt1"
+            value={selectedPrompt1}
+            onChange={(e) => setSelectedPrompt1(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          >
+            <option value="">Select a prompt</option>
+            {prompts.filter(p => p.step === 1).map(prompt => (
+              <option key={prompt.id} value={prompt.id}>{prompt.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="prompt2" className="block text-gray-700 text-sm font-bold mb-2">
+            Attribute Generation Prompt:
+          </label>
+          <select
+            id="prompt2"
+            value={selectedPrompt2}
+            onChange={(e) => setSelectedPrompt2(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          >
+            <option value="">Select a prompt</option>
+            {prompts.filter(p => p.step === 2).map(prompt => (
+              <option key={prompt.id} value={prompt.id}>{prompt.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="llmConfig" className="block text-gray-700 text-sm font-bold mb-2">
+            LLM Configuration:
+          </label>
+          <select
+            id="llmConfig"
+            value={selectedLlmConfig}
+            onChange={(e) => setSelectedLlmConfig(e.target.value)}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          >
+            <option value="">Select an LLM configuration</option>
+            {llmConfigs.map(config => (
+              <option key={config.id} value={config.id}>{config.name}</option>
+            ))}
+          </select>
+        </div>
+        <button
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          disabled={loading}
+        >
+          {loading ? 'Generating...' : 'Generate Product'}
+        </button>
+      </form>
       {error && <p className="text-red-500 mb-4">{error}</p>}
-
-      {generatedAttributes && (
-        <div className="mt-4">
-          <h3 className="text-xl font-semibold mb-2">Generated Attributes:</h3>
-          <pre className="bg-gray-100 p-4 rounded">
-            {JSON.stringify(generatedAttributes, null, 2)}
+      {subcategory && (
+        <div className="mb-4">
+          <h2 className="text-xl font-semibold mb-2">Generated Subcategory:</h2>
+          <p className="text-gray-700">{subcategory}</p>
+        </div>
+      )}
+      {Object.keys(attributes).length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Generated Attributes:</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
+            {JSON.stringify(attributes, null, 2)}
           </pre>
         </div>
       )}
