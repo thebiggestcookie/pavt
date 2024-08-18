@@ -78,7 +78,124 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// ... (rest of the server.js code remains unchanged)
+// Prompts endpoints
+app.get('/api/prompts', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM prompts');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching prompts:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.post('/api/prompts', async (req, res) => {
+  const { name, content, step } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO prompts (name, content, step) VALUES ($1, $2, $3) RETURNING *',
+      [name, content, step]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating prompt:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.put('/api/prompts/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, content, step } = req.body;
+  try {
+    const result = await query(
+      'UPDATE prompts SET name = $1, content = $2, step = $3 WHERE id = $4 RETURNING *',
+      [name, content, step, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Prompt not found' });
+    }
+  } catch (error) {
+    console.error('Error updating prompt:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.delete('/api/prompts/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await query('DELETE FROM prompts WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting prompt:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// LLM processing endpoint
+app.post('/api/process-llm', async (req, res) => {
+  const { prompt, productName, subcategory, llmConfig } = req.body;
+
+  try {
+    let fullPrompt = prompt.replace('[Product Name Here]', productName);
+    if (subcategory) {
+      fullPrompt = fullPrompt.replace('[Subcategory Here]', subcategory);
+    }
+
+    let response;
+    switch (llmConfig.provider) {
+      case 'openai':
+        response = await axios.post('https://api.openai.com/v1/chat/completions', {
+          model: llmConfig.model,
+          messages: [{ role: 'user', content: fullPrompt }],
+          max_tokens: parseInt(llmConfig.maxTokens)
+        }, {
+          headers: {
+            'Authorization': `Bearer ${llmConfig.apiKey}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        break;
+      case 'anthropic':
+        response = await axios.post('https://api.anthropic.com/v1/complete', {
+          prompt: fullPrompt,
+          model: llmConfig.model,
+          max_tokens_to_sample: parseInt(llmConfig.maxTokens)
+        }, {
+          headers: {
+            'X-API-Key': llmConfig.apiKey,
+            'Content-Type': 'application/json'
+          }
+        });
+        break;
+      default:
+        throw new Error('Unsupported LLM provider');
+    }
+
+    let attributes;
+    if (llmConfig.provider === 'openai') {
+      attributes = response.data.choices[0].message.content.trim();
+    } else if (llmConfig.provider === 'anthropic') {
+      attributes = response.data.completion.trim();
+    }
+
+    res.json({ attributes });
+  } catch (error) {
+    console.error('Error processing with LLM:', error.response ? error.response.data : error.message);
+    res.status(500).json({ 
+      message: 'Error processing with LLM', 
+      error: error.response ? error.response.data : error.message,
+      rawResponse: error.response ? error.response.data : null
+    });
+  }
+});
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
