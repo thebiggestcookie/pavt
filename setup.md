@@ -120,11 +120,19 @@ Your LLM Product Categorizer should now be set up and running on Render. You can
 
 If you encounter build errors related to missing dependencies, follow these steps:
 
-1. In your local development environment, run `npm install react-dropzone @babel/plugin-proposal-private-property-in-object` to add the missing dependencies.
-2. Update your `package.json` file with the new dependencies.
+1. In your local development environment, run `npm install @babel/plugin-proposal-private-property-in-object` to add the missing dependency.
+2. Update your `package.json` file to include this dependency in the `dependencies` section, not in `devDependencies`.
 3. Commit and push these changes to your GitHub repository.
 4. In the Render dashboard, go to your web service and click on "Manual Deploy" > "Deploy latest commit".
 
 This should resolve the build errors related to missing dependencies.
+
+If you continue to face issues, you may need to clear your build cache:
+
+1. In the Render dashboard, go to your web service.
+2. Click on "Settings".
+3. Scroll down to the "Clear build cache" section.
+4. Click on "Clear build cache".
+5. After clearing the cache, go back to the "Deploy" tab and click on "Manual Deploy" > "Deploy latest commit".
 
 Remember to secure your application properly, especially if you're handling sensitive data. Consider implementing proper authentication, using environment variables for sensitive information, and following security best practices.
