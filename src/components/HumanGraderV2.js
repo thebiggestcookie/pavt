@@ -16,6 +16,7 @@ const HumanGraderV2 = () => {
     try {
       debug('Fetching products to grade');
       const response = await axios.get('/api/products-to-grade');
+      debug('Raw products response', response.data);
       setProducts(response.data);
       if (response.data.length > 0) {
         setCurrentProduct(response.data[0]);
