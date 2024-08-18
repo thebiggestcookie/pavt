@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchProducts, updateProduct, fetchAttributes, updateAttributes, processWithLLM } from '../api/api';
+import { fetchProducts, updateProduct, fetchAttributes, updateAttributes, processWithLLM, fetchLlmConfigs, fetchPrompts } from '../api/api';
 
 const HumanGraderInterface = () => {
   const [products, setProducts] = useState([]);
@@ -390,4 +390,3 @@ const HumanGraderInterface = () => {
 };
 
 export default HumanGraderInterface;
-
