@@ -1,113 +1,96 @@
 import React, { useState, useEffect } from 'react';
-import { fetchPrompts, addPrompt, updatePrompt, deletePrompt } from '../api/api';
+import axios from 'axios';
 
 const PromptManagement = () => {
   const [prompts, setPrompts] = useState([]);
-  const [newPrompt, setNewPrompt] = useState({ name: '', content: '', model: 'gpt-4' });
+  const [newPrompt, setNewPrompt] = useState({ name: '', content: '' });
 
   useEffect(() => {
-    loadPrompts();
+    fetchPrompts();
   }, []);
 
-  const loadPrompts = async () => {
+  const fetchPrompts = async () => {
     try {
-      const promptsData = await fetchPrompts();
-      setPrompts(promptsData);
+      const response = await axios.get('/api/prompts');
+      setPrompts(response.data);
     } catch (error) {
-      console.error('Error loading prompts:', error);
+      console.error('Error fetching prompts:', error);
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewPrompt({ ...newPrompt, [name]: value });
+    setNewPrompt(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddPrompt = async () => {
-    if (newPrompt.name && newPrompt.content) {
-      try {
-        const addedPrompt = await addPrompt(newPrompt);
-        setPrompts([...prompts, addedPrompt]);
-        setNewPrompt({ name: '', content: '', model: 'gpt-4' });
-      } catch (error) {
-        console.error('Error adding prompt:', error);
-      }
-    }
-  };
-
-  const handleEditPrompt = async (id) => {
-    const promptToEdit = prompts.find(prompt => prompt.id === id);
-    if (promptToEdit) {
-      setNewPrompt({ ...promptToEdit });
-      await deletePrompt(id);
-      setPrompts(prompts.filter(prompt => prompt.id !== id));
-    }
-  };
-
-  const handleDeletePrompt = async (id) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      await deletePrompt(id);
-      setPrompts(prompts.filter(prompt => prompt.id !== id));
+      await axios.post('/api/prompts', newPrompt);
+      setNewPrompt({ name: '', content: '' });
+      fetchPrompts();
+    } catch (error) {
+      console.error('Error creating prompt:', error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/prompts/${id}`);
+      fetchPrompts();
     } catch (error) {
       console.error('Error deleting prompt:', error);
     }
   };
 
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Prompt Management</h2>
-      
-      <div className="mb-4">
-        <input
-          type="text"
-          name="name"
-          value={newPrompt.name}
-          onChange={handleInputChange}
-          placeholder="Prompt Name"
-          className="w-full p-2 mb-2 border rounded"
-        />
-        <textarea
-          name="content"
-          value={newPrompt.content}
-          onChange={handleInputChange}
-          placeholder="Prompt Content"
-          className="w-full p-2 mb-2 border rounded"
-          rows="3"
-        ></textarea>
-        <select
-          name="model"
-          value={newPrompt.model}
-          onChange={handleInputChange}
-          className="w-full p-2 mb-2 border rounded"
-        >
-          <option value="gpt-4">OpenAI GPT-4</option>
-          <option value="claude">Anthropic Claude</option>
-          <option value="perplexity">Perplexity Labs</option>
-        </select>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Prompt Management</h1>
+      <form onSubmit={handleSubmit} className="mb-8">
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">
+            Prompt Name:
+          </label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={newPrompt.name}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2">
+            Prompt Content:
+          </label>
+          <textarea
+            id="content"
+            name="content"
+            value={newPrompt.content}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            rows="4"
+            required
+          ></textarea>
+        </div>
         <button
-          onClick={handleAddPrompt}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          type="submit"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
-          Add/Update Prompt
+          Add Prompt
         </button>
-      </div>
-
+      </form>
       <div>
-        <h3 className="text-xl font-semibold mb-2">Existing Prompts</h3>
-        {prompts.map((prompt) => (
-          <div key={prompt.id} className="mb-4 p-4 border rounded">
-            <h4 className="font-bold">{prompt.name}</h4>
-            <p className="mb-2">{prompt.content}</p>
-            <p className="mb-2">Model: {prompt.model}</p>
+        <h2 className="text-xl font-semibold mb-2">Existing Prompts</h2>
+        {prompts.map(prompt => (
+          <div key={prompt.id} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <h3 className="text-lg font-semibold">{prompt.name}</h3>
+            <p className="text-gray-700 mb-2">{prompt.content}</p>
             <button
-              onClick={() => handleEditPrompt(prompt.id)}
-              className="mr-2 bg-yellow-500 text-white px-2 py-1 rounded"
-            >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDeletePrompt(prompt.id)}
-              className="bg-red-500 text-white px-2 py-1 rounded"
+              onClick={() => handleDelete(prompt.id)}
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline"
             >
               Delete
             </button>
@@ -119,4 +102,3 @@ const PromptManagement = () => {
 };
 
 export default PromptManagement;
-
