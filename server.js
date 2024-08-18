@@ -26,79 +26,25 @@ const pool = new Pool({
 // Helper function to query the database
 const query = (text, params) => pool.query(text, params);
 
-// Initialize database with admin user
+// Initialize database schema
 async function initializeDatabase() {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
+    const migrationSQL = fs.readFileSync(path.join(__dirname, 'migrations', '001_initial_schema.sql'), 'utf8');
+    await client.query(migrationSQL);
+    console.log('Database schema initialized successfully');
 
-    // Create tables if they don't exist
-    await client.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS subcategories (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) UNIQUE NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS attributes (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) UNIQUE NOT NULL,
-        type VARCHAR(50) NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) UNIQUE NOT NULL,
-        subcategory VARCHAR(255) NOT NULL,
-        attributes JSONB,
-        human_attributes JSONB,
-        human_verified BOOLEAN DEFAULT FALSE
-      );
-
-      CREATE TABLE IF NOT EXISTS prompts (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) UNIQUE NOT NULL,
-        content TEXT NOT NULL,
-        step INTEGER NOT NULL
-      );
-
-      CREATE TABLE IF NOT EXISTS llm_configs (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255) UNIQUE NOT NULL,
-        provider VARCHAR(50) NOT NULL,
-        model VARCHAR(255) NOT NULL,
-        api_key VARCHAR(255) NOT NULL,
-        max_tokens INTEGER NOT NULL
-      );
-    `);
-
-    const userExists = await client.query('SELECT * FROM users WHERE username = $1', ['admin']);
-    if (userExists.rows.length === 0) {
-      await client.query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3)', ['admin', 'password', 'admin']);
-      console.log('Admin user created successfully');
-    } else {
-      console.log('Admin user already exists');
-    }
-
-    // Initialize subcategories
+    // Initialize data
     const subcategories = JSON.parse(fs.readFileSync('data/subcategories.json', 'utf8'));
     for (const subcategory of subcategories) {
       await client.query('INSERT INTO subcategories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [subcategory.name]);
     }
 
-    // Initialize attributes
     const attributes = JSON.parse(fs.readFileSync('data/attributes.json', 'utf8'));
     for (const attribute of attributes) {
       await client.query('INSERT INTO attributes (name, type) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [attribute.name, attribute.type]);
     }
 
-    // Initialize products
     const products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
     for (const product of products) {
       await client.query(
@@ -107,69 +53,15 @@ async function initializeDatabase() {
       );
     }
 
-    await client.query('COMMIT');
-    console.log('Database initialized successfully');
+    console.log('Data initialized successfully');
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error('Error initializing database:', error);
   } finally {
     client.release();
   }
 }
 
-// New function to check and update database schema
-async function checkAndUpdateSchema() {
-  const client = await pool.connect();
-  try {
-    await client.query('BEGIN');
-
-    // Check and update all tables
-    const tables = ['users', 'subcategories', 'attributes', 'products', 'prompts', 'llm_configs'];
-    for (const table of tables) {
-      const tableExists = await client.query(`
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_name = $1
-        );
-      `, [table]);
-
-      if (tableExists.rows[0].exists) {
-        // Check if the name column has a unique constraint
-        const constraintExists = await client.query(`
-          SELECT COUNT(*) 
-          FROM pg_constraint 
-          WHERE conrelid = $1::regclass 
-          AND contype = 'u' 
-          AND conkey @> ARRAY[
-            (SELECT attnum 
-             FROM pg_attribute 
-             WHERE attrelid = $1::regclass 
-             AND attname = 'name')
-          ];
-        `, [table]);
-
-        if (constraintExists.rows[0].count === '0') {
-          // Add unique constraint if it doesn't exist
-          await client.query(`ALTER TABLE ${table} ADD CONSTRAINT ${table}_name_key UNIQUE (name);`);
-          console.log(`Added unique constraint to ${table} table`);
-        }
-      }
-    }
-
-    await client.query('COMMIT');
-  } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error checking/updating schema:', error);
-  } finally {
-    client.release();
-  }
-}
-
-// Run schema check and update before initializing
-(async () => {
-  await checkAndUpdateSchema();
-  await initializeDatabase();
-})();
+initializeDatabase();
 
 // Debug endpoint to check database connection
 app.get('/api/debug', async (req, res) => {
