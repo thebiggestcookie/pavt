@@ -1,3 +1,11 @@
+-- Drop existing tables if they exist
+DROP TABLE IF EXISTS users CASCADE;
+DROP TABLE IF EXISTS subcategories CASCADE;
+DROP TABLE IF EXISTS attributes CASCADE;
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS prompts CASCADE;
+DROP TABLE IF EXISTS llm_configs CASCADE;
+
 -- Create users table
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
