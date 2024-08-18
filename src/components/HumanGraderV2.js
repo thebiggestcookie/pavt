@@ -18,8 +18,18 @@ const HumanGraderV2 = () => {
       const response = await axios.get('/api/products-to-grade');
       debug('Raw products response', response.data);
       
-      if (!Array.isArray(response.data) || response.data.length === 0) {
-        throw new Error('No products available for grading');
+      if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
+        throw new Error('Received HTML instead of JSON. Check server configuration.');
+      }
+
+      if (!Array.isArray(response.data)) {
+        throw new Error('Received data is not an array');
+      }
+
+      if (response.data.length === 0) {
+        setError('No products available for grading');
+        setLoading(false);
+        return;
       }
 
       setProducts(response.data);
@@ -51,6 +61,7 @@ const HumanGraderV2 = () => {
         setCurrentProduct(products[nextProductIndex]);
       } else {
         setCurrentProduct(null);
+        setError('No more products to grade');
       }
     } catch (error) {
       console.error('Error grading product:', error);
