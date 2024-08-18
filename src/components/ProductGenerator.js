@@ -91,6 +91,10 @@ const ProductGenerator = () => {
     }
   };
 
+  const handlePromptChange = (step, value) => {
+    setPrompts(prevPrompts => ({ ...prevPrompts, [step]: value }));
+  };
+
   const copyDebugLog = () => {
     navigator.clipboard.writeText(getDebugLog());
     alert('Debug log copied to clipboard!');
@@ -114,12 +118,22 @@ const ProductGenerator = () => {
       <div className="mb-4">
         <h2 className="text-xl font-bold mb-2">Prompts:</h2>
         <div className="mb-2">
-          <h3 className="font-bold">Step 1:</h3>
-          <pre className="bg-gray-100 p-2 rounded">{prompts.step1 || 'Loading...'}</pre>
+          <h3 className="font-bold">Step 1 (Subcategory):</h3>
+          <textarea
+            value={prompts.step1}
+            onChange={(e) => handlePromptChange('step1', e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            rows="4"
+          />
         </div>
         <div>
-          <h3 className="font-bold">Step 2:</h3>
-          <pre className="bg-gray-100 p-2 rounded">{prompts.step2 || 'Loading...'}</pre>
+          <h3 className="font-bold">Step 2 (Attributes):</h3>
+          <textarea
+            value={prompts.step2}
+            onChange={(e) => handlePromptChange('step2', e.target.value)}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+            rows="4"
+          />
         </div>
       </div>
       <button
