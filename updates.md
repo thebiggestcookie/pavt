@@ -29,10 +29,28 @@
     - Updated error handling to provide more specific error messages
     - Refactored fetchProducts and handleGrade functions
 
+## Update #14
+- Updated API utility file (src/utils/api.js)
+  - Added default baseURL to https://pavt-db.onrender.com
+  - Implemented response interceptor for better error logging
+  - Added timeout of 10 seconds to API calls
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Set default baseURL in axios.create
+    - Added response interceptor to log detailed error information
+    - Set timeout option in axios.create
+
+- Updated ProductGenerator component
+  - Enhanced error handling to provide more specific error messages
+  - Improved debug logging for network errors
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Updated error handling in fetchPromptsData, handleGenerateProduct, and handleSaveProduct functions
+    - Added specific error messages for network errors and server non-responses
+
 - Next steps:
-  - Verify that the REACT_APP_API_URL environment variable is set correctly
-  - Test the new API utility functions with the backend
-  - Review backend API endpoints to ensure they match the new frontend expectations
-  - Implement proper authentication flow if not already in place
-  - Test ProductGenerator and HumanGraderV2 components with the updated API calls
-  - Monitor for any CORS issues and adjust backend configuration if necessary
+  - Test the updated API utility with the backend
+  - Verify that the baseURL is correct and the server is accessible
+  - Monitor for timeout issues and adjust the timeout value if necessary
+  - Test ProductGenerator component with the updated error handling
+  - Investigate any persistent network errors or connection issues
