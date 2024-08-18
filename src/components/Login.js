@@ -1,61 +1,64 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { login } from '../api/api';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
-const Login = ({ setIsAuthenticated }) => {
+const Login = ({ setIsAuthenticated, setUserRole }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     try {
-      const response = await login(username, password);
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('username', username);
+      const response = await axios.post('/api/login', { username, password });
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('userRole', response.data.role);
       setIsAuthenticated(true);
-      history.push('/grader');
+      setUserRole(response.data.role);
+      navigate('/');
     } catch (error) {
       setError('Invalid username or password');
     }
   };
 
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Login</h2>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="username" className="block mb-2">Username</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="password" className="block mb-2">Password</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 border rounded"
-            required
-          />
-        </div>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-          Login
-        </button>
-      </form>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="px-8 py-6 mt-4 text-left bg-white shadow-lg">
+        <h3 className="text-2xl font-bold text-center">Login to your account</h3>
+        <form onSubmit={handleSubmit}>
+          <div className="mt-4">
+            <div>
+              <label className="block" htmlFor="username">Username</label>
+              <input
+                type="text"
+                placeholder="Username"
+                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mt-4">
+              <label className="block" htmlFor="password">Password</label>
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <div className="flex items-baseline justify-between">
+              <button className="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900" type="submit">Login</button>
+            </div>
+          </div>
+        </form>
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      </div>
     </div>
   );
 };
 
 export default Login;
-
