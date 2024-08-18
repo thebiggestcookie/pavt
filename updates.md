@@ -52,8 +52,16 @@
   - Integrated GlobalDebug component into App.js
   - Debug information is now visible on all pages, even if the main component fails to load
   - Status: Implemented, needs testing
+
+## 2023-06-20
+- Updated ProductGenerator component
+  - Fixed issue with empty prompts after fetching
+  - Updated error handling to provide more detailed information
+  - Changed API endpoint back to '/api/generate' based on debug log
+  - Status: Implemented, needs testing
 - Next steps:
-  - Test GlobalDebug component across all pages
-  - Use GlobalDebug to investigate ProductGenerator and HumanGraderV2 issues
-  - Review backend API endpoints, especially '/api/generate-prompt'
-  - Consider adding more detailed error logging in the backend
+  - Test updated ProductGenerator component
+  - Verify that prompts are being correctly fetched and stored
+  - Investigate why the API endpoint '/api/generate' is returning a 404 error
+  - Review backend API routes and controllers to ensure '/api/generate' endpoint is properly set up
+  - Continue debugging HumanGraderV2 component loading issues
