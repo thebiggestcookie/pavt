@@ -78,9 +78,31 @@ export const saveProduct = async (product) => {
 };
 
 export const fetchProductsToGrade = async () => {
+  try {
+    const response = await api.get('/api/products-to-grade');
+    console.log("Products to grade response:", response.data);
+    if (!Array.isArray(response.data)) {
+      throw new Error('Received data is not in the expected format');
+    }
+    return response;
+  } catch (error) {
+    console.error("Error in fetchProductsToGrade:", error);
+    throw error;
+  }
+};
 
+export const gradeProduct = async (productId, grade) => {
+  try {
+    const response = await api.post('/api/grade-product', { productId, grade });
+    console.log("Grade product response:", response.data);
+    if (typeof response.data !== 'object') {
+      throw new Error('Received data is not in the expected format');
+    }
+    return response;
+  } catch (error) {
+    console.error("Error in gradeProduct:", error);
+    throw error;
   }
 };
 
 export default api;
-
