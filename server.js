@@ -300,6 +300,19 @@ app.get('/api/attributes', async (req, res) => {
   }
 });
 
+// Get attributes for a specific subcategory
+app.get('/api/subcategory-attributes/:subcategory', async (req, res) => {
+  const { subcategory } = req.params;
+  try {
+    const result = await query('SELECT DISTINCT jsonb_object_keys(attributes) as attribute FROM products WHERE subcategory = $1', [subcategory]);
+    const attributes = result.rows.map(row => row.attribute);
+    res.json(attributes);
+  } catch (error) {
+    console.error('Error fetching subcategory attributes:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // Token usage endpoint (mock data for now)
 app.get('/api/token-usage', async (req, res) => {
   const mockData = [
