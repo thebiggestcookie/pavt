@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getTokenUsage, getGraderPerformance, getLlmPerformance } from '../api/api';
 import { Line, Bar } from 'react-chartjs-2';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import "react-datepicker/dist/react-datepicker.css";
 
 const PerformanceMetrics = () => {
   const [tokenUsage, setTokenUsage] = useState({});
@@ -157,4 +157,3 @@ const PerformanceMetrics = () => {
 };
 
 export default PerformanceMetrics;
-
