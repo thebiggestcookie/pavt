@@ -13,6 +13,7 @@ const ProductGenerator = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [debug, setDebug] = useState('');
+  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     fetchPrompts();
@@ -49,28 +50,38 @@ const ProductGenerator = () => {
       const selectedLlmConfigData = llmConfigs.find(c => c.id === parseInt(selectedLlmConfig));
       
       // Step 1: Identify subcategory
+      const prompt1 = prompts.find(p => p.id === parseInt(selectedPrompt1)).content.replace('[Product Name Here]', productName);
+      setDebug(prevDebug => prevDebug + `\nStep 1 Prompt:\n${prompt1}\n`);
+      
       const subcategoryResponse = await axios.post('/api/process-llm', {
-        prompt: prompts.find(p => p.id === parseInt(selectedPrompt1)).content,
+        prompt: prompt1,
         productName: productName,
         llmConfig: selectedLlmConfigData
       });
       const identifiedSubcategory = subcategoryResponse.data.attributes.trim();
       setSubcategory(identifiedSubcategory);
+      setDebug(prevDebug => prevDebug + `\nStep 1 Response:\n${identifiedSubcategory}\n`);
 
       // Step 2: Generate attributes
+      const prompt2 = prompts.find(p => p.id === parseInt(selectedPrompt2)).content
+        .replace('[Product Name Here]', productName)
+        .replace('[Subcategory Here]', identifiedSubcategory);
+      setDebug(prevDebug => prevDebug + `\nStep 2 Prompt:\n${prompt2}\n`);
+      
       const attributesResponse = await axios.post('/api/process-llm', {
-        prompt: prompts.find(p => p.id === parseInt(selectedPrompt2)).content,
+        prompt: prompt2,
         productName: productName,
         subcategory: identifiedSubcategory,
         llmConfig: selectedLlmConfigData
       });
+
+      setDebug(prevDebug => prevDebug + `\nStep 2 Response:\n${attributesResponse.data.attributes}\n`);
 
       let parsedAttributes;
       try {
         parsedAttributes = JSON.parse(attributesResponse.data.attributes);
       } catch (parseError) {
         console.error('Error parsing attributes:', parseError);
-        setDebug(`Raw LLM response: ${attributesResponse.data.attributes}`);
         throw new Error('Failed to parse attributes. The LLM response was not valid JSON.');
       }
 
@@ -96,6 +107,10 @@ const ProductGenerator = () => {
       console.error('Error saving product:', error);
       setError('Failed to save product: ' + (error.response?.data?.message || error.message));
     }
+  };
+
+  const toggleDebug = () => {
+    setShowDebug(!showDebug);
   };
 
   return (
@@ -176,10 +191,17 @@ const ProductGenerator = () => {
         <button
           type="button"
           onClick={handleSave}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
           disabled={!subcategory || Object.keys(attributes).length === 0}
         >
           Save Product
+        </button>
+        <button
+          type="button"
+          onClick={toggleDebug}
+          className="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+        >
+          {showDebug ? 'Hide Debug' : 'Show Debug'}
         </button>
       </form>
       {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -197,10 +219,10 @@ const ProductGenerator = () => {
           </pre>
         </div>
       )}
-      {debug && (
+      {showDebug && debug && (
         <div className="mt-4">
           <h2 className="text-xl font-semibold mb-2">Debug Information:</h2>
-          <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto whitespace-pre-wrap">
             {debug}
           </pre>
         </div>
