@@ -382,8 +382,7 @@ app.post('/api/process-llm', async (req, res) => {
     if (llmConfig.provider === 'openai') {
       const content = response.data.choices[0].message.content.trim();
       attributes = JSON.parse(content);
-    } else if (llmConfig.provider ===
- 'anthropic') {
+    } else if (llmConfig.provider === 'anthropic') {
       const content = response.data.completion.trim();
       attributes = JSON.parse(content);
     }
