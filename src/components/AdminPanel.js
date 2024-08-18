@@ -12,6 +12,12 @@ const AdminPanel = () => {
   });
   const [error, setError] = useState('');
 
+  const providerModels = {
+    openai: ['gpt-4', 'gpt-3.5-turbo', 'text-davinci-002', 'text-curie-001'],
+    anthropic: ['claude-v1', 'claude-instant-v1'],
+    perplexity: ['pplx-7b-chat', 'pplx-70b-chat']
+  };
+
   useEffect(() => {
     fetchLlmConfigs();
   }, []);
@@ -90,19 +96,24 @@ const AdminPanel = () => {
             <option value="">Select a provider</option>
             <option value="openai">OpenAI</option>
             <option value="anthropic">Anthropic</option>
+            <option value="perplexity">Perplexity</option>
           </select>
         </div>
         <div className="mb-4">
           <label htmlFor="model" className="block text-gray-700 text-sm font-bold mb-2">Model:</label>
-          <input
-            type="text"
+          <select
             id="model"
             name="model"
             value={newConfig.model}
             onChange={handleInputChange}
             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             required
-          />
+          >
+            <option value="">Select a model</option>
+            {newConfig.provider && providerModels[newConfig.provider].map(model => (
+              <option key={model} value={model}>{model}</option>
+            ))}
+          </select>
         </div>
         <div className="mb-4">
           <label htmlFor="apiKey" className="block text-gray-700 text-sm font-bold mb-2">API Key:</label>

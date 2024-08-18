@@ -8,24 +8,38 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 const PerformanceMetrics = () => {
   const [tokenUsageData, setTokenUsageData] = useState(null);
   const [llmPerformanceData, setLlmPerformanceData] = useState(null);
-
-  const fetchData = async () => {
-    try {
-      const tokenUsageResponse = await axios.get('/api/token-usage');
-      const llmPerformanceResponse = await axios.get('/api/llm-performance');
-      setTokenUsageData(tokenUsageResponse.data);
-      setLlmPerformanceData(llmPerformanceResponse.data);
-    } catch (error) {
-      console.error('Error fetching performance data:', error);
-    }
-  };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  if (!tokenUsageData || !llmPerformanceData) {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const tokenUsageResponse = await axios.get('/api/token-usage');
+      const llmPerformanceResponse = await axios.get('/api/llm-performance');
+      setTokenUsageData(tokenUsageResponse.data);
+      setLlmPerformanceData(llmPerformanceResponse.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching performance data:', error);
+      setError('Failed to fetch performance data. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
     return <div>Loading performance metrics...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  if (!tokenUsageData || !llmPerformanceData) {
+    return <div>No performance data available.</div>;
   }
 
   const tokenUsageChartData = {
@@ -33,7 +47,7 @@ const PerformanceMetrics = () => {
     datasets: [
       {
         label: 'Token Usage',
-        data: tokenUsageData.map(d => d.tokenCount),
+        data: tokenUsageData.map(d => d.token_count),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
       },
     ],
