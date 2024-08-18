@@ -21,7 +21,7 @@ const HumanGraderV2 = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setError('Failed to fetch products. Please try again.');
+      setError(`Failed to fetch products: ${error.message}`);
       setLoading(false);
     }
   };
@@ -41,7 +41,7 @@ const HumanGraderV2 = () => {
       }
     } catch (error) {
       console.error('Error grading product:', error);
-      setError('Failed to grade product. Please try again.');
+      setError(`Failed to grade product: ${error.message}`);
     }
   };
 
