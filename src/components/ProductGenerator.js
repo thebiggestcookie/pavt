@@ -20,20 +20,34 @@ const ProductGenerator = () => {
       debug('Fetching prompts');
       const response = await axios.get('/api/prompts');
       debug('Raw prompts response', response.data);
-      const step1Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content || '';
-      const step2Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content || '';
+      
+      if (!Array.isArray(response.data) || response.data.length === 0) {
+        throw new Error('Prompts data is not in the expected format');
+      }
+
+      const step1Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content;
+      const step2Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content;
+
+      if (!step1Prompt || !step2Prompt) {
+        throw new Error('One or both prompts are missing');
+      }
+
       setPrompts({ step1: step1Prompt, step2: step2Prompt });
       debug('Prompts fetched successfully', { step1: step1Prompt, step2: step2Prompt });
     } catch (error) {
       console.error('Error fetching prompts:', error);
       debug('Error fetching prompts', error);
-      setError('Failed to fetch prompts. Please try again.');
+      setError(`Failed to fetch prompts: ${error.message}`);
     }
   };
 
   const generateProduct = async () => {
     if (!productName) {
       setError('Please enter a product name.');
+      return;
+    }
+    if (!prompts.step1 || !prompts.step2) {
+      setError('Prompts are not loaded. Please try refreshing the page.');
       return;
     }
     setLoading(true);
@@ -44,9 +58,6 @@ const ProductGenerator = () => {
       // Step 1: Generate subcategory
       const step1Prompt = prompts.step1.replace('$productname', productName);
       debug('Step 1 prompt', step1Prompt);
-      if (!step1Prompt) {
-        throw new Error('Step 1 prompt is empty. Please check if prompts are loaded correctly.');
-      }
       const step1Response = await axios.post('/api/generate', { prompt: step1Prompt });
       const generatedSubcategory = step1Response.data.response.trim();
       setSubcategory(generatedSubcategory);
@@ -56,9 +67,6 @@ const ProductGenerator = () => {
       // Step 2: Generate attributes
       const step2Prompt = prompts.step2.replace('$productname', productName).replace('$subcategory', generatedSubcategory);
       debug('Step 2 prompt', step2Prompt);
-      if (!step2Prompt) {
-        throw new Error('Step 2 prompt is empty. Please check if prompts are loaded correctly.');
-      }
       const step2Response = await axios.post('/api/generate', { prompt: step2Prompt });
       setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${step2Response.data.response}\n\n`);
       const generatedAttributes = JSON.parse(step2Response.data.response);
