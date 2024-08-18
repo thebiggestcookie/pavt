@@ -223,6 +223,20 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
+app.post('/api/products', async (req, res) => {
+  const { name, subcategory, attributes } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) RETURNING *',
+      [name, subcategory, JSON.stringify(attributes)]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating product:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 app.put('/api/products/:id', async (req, res) => {
   const { id } = req.params;
   const { name, subcategory, attributes, humanAttributes, humanVerified } = req.body;
@@ -338,12 +352,7 @@ app.post('/api/process-llm', async (req, res) => {
   const { prompt, productName, subcategory, llmConfig } = req.body;
 
   try {
-    let fullPrompt = prompt.replace('[Product Name Here]', productName);
-    if (subcategory) {
-      fullPrompt = fullPrompt.replace('[Subcategory Here]', subcategory);
-    }
-
-    console.log('Full Prompt:', fullPrompt);
+    console.log('Full Prompt:', prompt);
     console.log('LLM Config:', llmConfig);
 
     let response;
@@ -351,7 +360,7 @@ app.post('/api/process-llm', async (req, res) => {
       case 'openai':
         response = await axios.post('https://api.openai.com/v1/chat/completions', {
           model: llmConfig.model,
-          messages: [{ role: 'user', content: fullPrompt }],
+          messages: [{ role: 'user', content: prompt }],
           max_tokens: parseInt(llmConfig.max_tokens)
         }, {
           headers: {
@@ -362,7 +371,7 @@ app.post('/api/process-llm', async (req, res) => {
         break;
       case 'anthropic':
         response = await axios.post('https://api.anthropic.com/v1/complete', {
-          prompt: fullPrompt,
+          prompt: prompt,
           model: llmConfig.model,
           max_tokens_to_sample: parseInt(llmConfig.max_tokens)
         }, {
