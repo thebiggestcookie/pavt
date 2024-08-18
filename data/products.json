@@ -4,7 +4,6 @@
     "name": "Ethiopian Yirgacheffe Whole Bean",
     "subcategory": "Coffee Beans",
     "attributes": {
-      "Brand": "Artisan Roasters",
       "Origin": "Ethiopia",
       "Roast Level": "Light",
       "Flavor Notes": ["Floral", "Citrus", "Bergamot"],
@@ -20,7 +19,6 @@
     "name": "Colombian Supremo Ground",
     "subcategory": "Coffee Beans",
     "attributes": {
-      "Brand": "Mountain Peak Coffee",
       "Origin": "Colombia",
       "Roast Level": "Medium",
       "Flavor Notes": ["Chocolate", "Nuts", "Caramel"],
@@ -33,130 +31,47 @@
   },
   {
     "id": 3,
-    "name": "Sumatra Dark Roast Whole Bean",
-    "subcategory": "Coffee Beans",
+    "name": "Espresso Blend Pods",
+    "subcategory": "Coffee Pods",
     "attributes": {
-      "Brand": "Pacific Roasters",
-      "Origin": "Indonesia",
+      "Origin": "Blend",
       "Roast Level": "Dark",
-      "Flavor Notes": ["Earthy", "Herbal", "Dark Chocolate"],
-      "Weight": 12,
-      "Price": 14.99,
-      "Grind Type": "Whole Bean",
-      "Organic": true,
+      "Flavor Notes": ["Rich", "Intense", "Caramel"],
+      "Pods per Pack": 18,
+      "Price": 9.99,
+      "Compatible Machines": ["Nespresso"],
+      "Organic": false,
       "Fair Trade": false
     }
   },
   {
     "id": 4,
-    "name": "Brazilian Santos Espresso",
-    "subcategory": "Coffee Beans",
+    "name": "Decaf Sumatra Pods",
+    "subcategory": "Coffee Pods",
     "attributes": {
-      "Brand": "Espresso Experts",
-      "Origin": "Brazil",
-      "Roast Level": "Medium-Dark",
-      "Flavor Notes": ["Cocoa", "Almond", "Brown Sugar"],
-      "Weight": 1000,
-      "Price": 24.99,
-      "Grind Type": "Espresso",
-      "Organic": false,
+      "Origin": "Indonesia",
+      "Roast Level": "Medium",
+      "Flavor Notes": ["Earthy", "Herbal", "Smooth"],
+      "Pods per Pack": 16,
+      "Price": 10.99,
+      "Compatible Machines": ["Keurig"],
+      "Organic": true,
       "Fair Trade": true
     }
   },
   {
     "id": 5,
-    "name": "Costa Rican Tarrazu Light Roast",
+    "name": "Costa Rican Tarrazu Whole Bean",
     "subcategory": "Coffee Beans",
     "attributes": {
-      "Brand": "Central American Imports",
       "Origin": "Costa Rica",
-      "Roast Level": "Light",
-      "Flavor Notes": ["Honey", "Orange", "Vanilla"],
+      "Roast Level": "Medium-Light",
+      "Flavor Notes": ["Citrus", "Brown Sugar", "Almond"],
       "Weight": 12,
-      "Price": 16.99,
+      "Price": 14.99,
       "Grind Type": "Whole Bean",
       "Organic": true,
-      "Fair Trade": true
-    }
-  },
-  {
-    "id": 6,
-    "name": "Nespresso Compatible Variety Pack",
-    "subcategory": "Coffee Pods",
-    "attributes": {
-      "Brand": "PodMasters",
-      "Origin": "Various",
-      "Roast Level": "Mixed",
-      "Flavor Notes": ["Various"],
-      "Price": 29.99,
-      "Organic": false,
-      "Fair Trade": false,
-      "Pods per Pack": 60,
-      "Compatible Machines": ["Nespresso OriginalLine"]
-    }
-  },
-  {
-    "id": 7,
-    "name": "Keurig Dark Roast Blend",
-    "subcategory": "Coffee Pods",
-    "attributes": {
-      "Brand": "Green Mountain",
-      "Origin": "Various",
-      "Roast Level": "Dark",
-      "Flavor Notes": ["Bold", "Intense", "Smoky"],
-      "Price": 19.99,
-      "Organic": false,
-      "Fair Trade": true,
-      "Pods per Pack": 24,
-      "Compatible Machines": ["Keurig", "Keurig 2.0"]
-    }
-  },
-  {
-    "id": 8,
-    "name": "Organic Espresso Pods",
-    "subcategory": "Coffee Pods",
-    "attributes": {
-      "Brand": "EcoPods",
-      "Origin": "Ethiopia",
-      "Roast Level": "Medium-Dark",
-      "Flavor Notes": ["Rich", "Crema", "Bittersweet"],
-      "Price": 22.99,
-      "Organic": true,
-      "Fair Trade": true,
-      "Pods per Pack": 20,
-      "Compatible Machines": ["Nespresso VertuoLine"]
-    }
-  },
-  {
-    "id": 9,
-    "name": "Decaf Colombian Pods",
-    "subcategory": "Coffee Pods",
-    "attributes": {
-      "Brand": "CaffeineFreeCo",
-      "Origin": "Colombia",
-      "Roast Level": "Medium",
-      "Flavor Notes": ["Smooth", "Balanced", "Mild"],
-      "Price": 18.99,
-      "Organic": false,
-      "Fair Trade": true,
-      "Pods per Pack": 30,
-      "Compatible Machines": ["Keurig", "Keurig 2.0"]
-    }
-  },
-  {
-    "id": 10,
-    "name": "Flavored Variety Pack Pods",
-    "subcategory": "Coffee Pods",
-    "attributes": {
-      "Brand": "FlavorFusion",
-      "Origin": "Various",
-      "Roast Level": "Light-Medium",
-      "Flavor Notes": ["Vanilla", "Hazelnut", "Caramel", "Mocha"],
-      "Price": 24.99,
-      "Organic": false,
-      "Fair Trade": false,
-      "Pods per Pack": 40,
-      "Compatible Machines": ["Keurig", "Keurig 2.0"]
+      "Fair Trade": false
     }
   }
 ]
