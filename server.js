@@ -139,6 +139,27 @@ let products = [
   }
 ];
 
+// Mock data for performance metrics
+let tokenUsage = {
+  'OpenAI GPT-3.5': 1000000,
+  'Anthropic Claude': 750000,
+  'Cohere Command': 500000
+};
+
+let graderPerformance = [
+  { name: 'Alice', accuracy: 95, speed: 120, score: 114 },
+  { name: 'Bob', accuracy: 92, speed: 110, score: 101.2 },
+  { name: 'Charlie', accuracy: 88, speed: 130, score: 114.4 },
+  { name: 'David', accuracy: 91, speed: 115, score: 104.65 },
+  { name: 'Eve', accuracy: 94, speed: 105, score: 98.7 }
+];
+
+let llmPerformance = [
+  { name: 'OpenAI GPT-3.5', accuracy: 88 },
+  { name: 'Anthropic Claude', accuracy: 85 },
+  { name: 'Cohere Command', accuracy: 82 }
+];
+
 // Login endpoint
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
@@ -201,8 +222,7 @@ app.put('/api/prompts/:id', (req, res) => {
 });
 
 app.delete('/api/prompts/:id', (req, res) => {
-  const { i
-d } = req.params;
+  const { id } = req.params;
   const index = prompts.findIndex(prompt => prompt.id === id);
   if (index !== -1) {
     prompts.splice(index, 1);
@@ -362,7 +382,8 @@ app.post('/api/process-llm', async (req, res) => {
     if (llmConfig.provider === 'openai') {
       const content = response.data.choices[0].message.content.trim();
       attributes = JSON.parse(content);
-    } else if (llmConfig.provider === 'anthropic') {
+    } else if (llmConfig.provider ===
+ 'anthropic') {
       const content = response.data.completion.trim();
       attributes = JSON.parse(content);
     }
@@ -380,32 +401,20 @@ app.post('/api/process-llm', async (req, res) => {
 
 // Performance metrics endpoints
 app.get('/api/token-usage', (req, res) => {
-  // Mock data for token usage
-  const tokenUsage = {
-    'OpenAI GPT-3.5': 1000000,
-    'Anthropic Claude': 750000,
-    'Cohere Command': 500000
-  };
+  const { startDate, endDate } = req.query;
+  // In a real application, you would filter the data based on the date range
   res.json(tokenUsage);
 });
 
 app.get('/api/grader-performance', (req, res) => {
-  // Mock data for grader performance
-  const graderPerformance = [
-    { name: 'Grader 1', accuracy: 95, speed: 120 },
-    { name: 'Grader 2', accuracy: 92, speed: 110 },
-    { name: 'Grader 3', accuracy: 88, speed: 130 }
-  ];
+  const { startDate, endDate } = req.query;
+  // In a real application, you would filter the data based on the date range
   res.json(graderPerformance);
 });
 
 app.get('/api/llm-performance', (req, res) => {
-  // Mock data for LLM performance
-  const llmPerformance = [
-    { name: 'OpenAI GPT-3.5', accuracy: 88 },
-    { name: 'Anthropic Claude', accuracy: 85 },
-    { name: 'Cohere Command', accuracy: 82 }
-  ];
+  const { startDate, endDate } = req.query;
+  // In a real application, you would filter the data based on the date range
   res.json(llmPerformance);
 });
 
