@@ -1,0 +1,5 @@
+{
+  "OpenAI GPT-3.5": 1000000,
+  "Anthropic Claude": 750000,
+  "Cohere Command": 500000
+}
