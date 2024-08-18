@@ -133,6 +133,61 @@ app.delete('/api/prompts/:id', async (req, res) => {
   }
 });
 
+// LLM Configs endpoints
+app.get('/api/llm-configs', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM llm_configs');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching LLM configs:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.post('/api/llm-configs', async (req, res) => {
+  const { name, provider, model, apiKey, maxTokens } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO llm_configs (name, provider, model, api_key, max_tokens) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, provider, model, apiKey, maxTokens]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating LLM config:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.put('/api/llm-configs/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, provider, model, apiKey, maxTokens } = req.body;
+  try {
+    const result = await query(
+      'UPDATE llm_configs SET name = $1, provider = $2, model = $3, api_key = $4, max_tokens = $5 WHERE id = $6 RETURNING *',
+      [name, provider, model, apiKey, maxTokens, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'LLM config not found' });
+    }
+  } catch (error) {
+    console.error('Error updating LLM config:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.delete('/api/llm-configs/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await query('DELETE FROM llm_configs WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting LLM config:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // LLM processing endpoint
 app.post('/api/process-llm', async (req, res) => {
   const { prompt, productName, subcategory, llmConfig } = req.body;

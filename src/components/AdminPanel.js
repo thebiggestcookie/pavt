@@ -1,259 +1,154 @@
 import React, { useState, useEffect } from 'react';
-import { fetchLlmConfigs, updateLlmConfig, fetchSubcategories, addSubcategory, deleteSubcategory } from '../api/api';
-import debugLogger from '../utils/debugLogger';
+import axios from 'axios';
 
 const AdminPanel = () => {
   const [llmConfigs, setLlmConfigs] = useState([]);
-  const [subcategories, setSubcategories] = useState([]);
-  const [newLlmConfig, setNewLlmConfig] = useState({ name: '', apiKey: '', maxTokens: 0, provider: 'openai', model: 'gpt-3.5-turbo' });
-  const [newSubcategory, setNewSubcategory] = useState({ name: '', parentCategory: 'Coffee' });
-
-  const llmProviders = {
-    openai: ['gpt-3.5-turbo', 'gpt-4', 'text-davinci-003', 'text-curie-001', 'text-babbage-001', 'text-ada-001'],
-    anthropic: ['claude-v1', 'claude-instant-v1'],
-    cohere: ['command', 'command-light', 'command-nightly'],
-    ai21: ['j1-large', 'j1-jumbo'],
-    perplexity: ['perplexity-v1']
-  };
+  const [newConfig, setNewConfig] = useState({
+    name: '',
+    provider: '',
+    model: '',
+    apiKey: '',
+    maxTokens: ''
+  });
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    loadLlmConfigs();
-    loadSubcategories();
+    fetchLlmConfigs();
   }, []);
 
-  const loadLlmConfigs = async () => {
+  const fetchLlmConfigs = async () => {
     try {
-      const configs = await fetchLlmConfigs();
-      setLlmConfigs(configs);
+      const response = await axios.get('/api/llm-configs');
+      setLlmConfigs(response.data);
     } catch (error) {
-      console.error('Error loading LLM configs:', error);
+      console.error('Error fetching LLM configs:', error);
+      setError('Failed to fetch LLM configurations');
     }
   };
 
-  const loadSubcategories = async () => {
-    try {
-      const categories = await fetchSubcategories();
-      setSubcategories(categories);
-    } catch (error) {
-      console.error('Error loading subcategories:', error);
-    }
-  };
-
-  const handleLlmConfigChange = (e, index) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const updatedConfigs = [...llmConfigs];
-    updatedConfigs[index] = { ...updatedConfigs[index], [name]: value };
-    setLlmConfigs(updatedConfigs);
+    setNewConfig(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdateLlmConfig = async (index) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
     try {
-      const configToUpdate = llmConfigs[index];
-      debugLogger('Updating LLM config:', configToUpdate);
-      if (!configToUpdate.id) {
-        throw new Error('LLM config ID is undefined');
-      }
-      await updateLlmConfig(configToUpdate);
-      alert('LLM configuration updated successfully');
-    } catch (error) {
-      console.error('Error updating LLM config:', error);
-      alert(`Error updating LLM config: ${error.message}`);
-    }
-  };
-
-  const handleAddLlmConfig = async () => {
-    try {
-      debugLogger('Adding new LLM config:', newLlmConfig);
-      const addedConfig = await updateLlmConfig(newLlmConfig);
-      setLlmConfigs([...llmConfigs, addedConfig]);
-      setNewLlmConfig({ name: '', apiKey: '', maxTokens: 0, provider: 'openai', model: 'gpt-3.5-turbo' });
+      await axios.post('/api/llm-configs', newConfig);
+      setNewConfig({
+        name: '',
+        provider: '',
+        model: '',
+        apiKey: '',
+        maxTokens: ''
+      });
+      fetchLlmConfigs();
     } catch (error) {
       console.error('Error adding LLM config:', error);
-      alert(`Error adding LLM config: ${error.message}`);
+      setError('Failed to add LLM configuration. Please try again.');
     }
   };
 
-  const handleAddSubcategory = async () => {
+  const handleDelete = async (id) => {
     try {
-      const addedSubcategory = await addSubcategory(newSubcategory);
-      setSubcategories([...subcategories, addedSubcategory]);
-      setNewSubcategory({ name: '', parentCategory: 'Coffee' });
+      await axios.delete(`/api/llm-configs/${id}`);
+      fetchLlmConfigs();
     } catch (error) {
-      console.error('Error adding subcategory:', error);
-    }
-  };
-
-  const handleDeleteSubcategory = async (id) => {
-    try {
-      await deleteSubcategory(id);
-      setSubcategories(subcategories.filter(subcategory => subcategory.id !== id));
-    } catch (error) {
-      console.error('Error deleting subcategory:', error);
+      console.error('Error deleting LLM config:', error);
+      setError('Failed to delete LLM configuration');
     }
   };
 
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold mb-4">Admin Panel</h2>
-      
-      <div className="mb-8">
-        <h3 className="text-xl font-semibold mb-2">LLM Configurations</h3>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              <th className="border p-2">Name</th>
-              <th className="border p-2">API Key</th>
-              <th className="border p-2">Max Tokens</th>
-              <th className="border p-2">Provider</th>
-              <th className="border p-2">Model</th>
-              <th className="border p-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {llmConfigs.map((config, index) => (
-              <tr key={config.id}>
-                <td className="border p-2">
-                  <input
-                    type="text"
-                    name="name"
-                    value={config.name}
-                    onChange={(e) => handleLlmConfigChange(e, index)}
-                    className="w-full p-1"
-                  />
-                </td>
-                <td className="border p-2">
-                  <input
-                    type="password"
-                    name="apiKey"
-                    value={config.apiKey}
-                    onChange={(e) => handleLlmConfigChange(e, index)}
-                    className="w-full p-1"
-                  />
-                </td>
-                <td className="border p-2">
-                  <input
-                    type="number"
-                    name="maxTokens"
-                    value={config.maxTokens}
-                    onChange={(e) => handleLlmConfigChange(e, index)}
-                    className="w-full p-1"
-                  />
-                </td>
-                <td className="border p-2">
-                  <select
-                    name="provider"
-                    value={config.provider}
-                    onChange={(e) => handleLlmConfigChange(e, index)}
-                    className="w-full p-1"
-                  >
-                    {Object.keys(llmProviders).map(provider => (
-                      <option key={provider} value={provider}>{provider}</option>
-                    ))}
-                  </select>
-                </td>
-                <td className="border p-2">
-                  <select
-                    name="model"
-                    value={config.model}
-                    onChange={(e) => handleLlmConfigChange(e, index)}
-                    className="w-full p-1"
-                  >
-                    {llmProviders[config.provider].map(model => (
-                      <option key={model} value={model}>{model}</option>
-                    ))}
-                  </select>
-                </td>
-                <td className="border p-2">
-                  <button
-                    onClick={() => handleUpdateLlmConfig(index)}
-                    className="bg-blue-500 text-white px-2 py-1 rounded"
-                  >
-                    Update
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="mt-4">
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+      <h2 className="text-xl font-semibold mb-2">LLM Configurations</h2>
+      <form onSubmit={handleSubmit} className="mb-8">
+        <div className="mb-4">
+          <label htmlFor="name" className="block text-gray-700 text-sm font-bold mb-2">Name:</label>
           <input
             type="text"
-            placeholder="Name"
-            value={newLlmConfig.name}
-            onChange={(e) => setNewLlmConfig({ ...newLlmConfig, name: e.target.value })}
-            className="p-2 border rounded mr-2"
+            id="name"
+            name="name"
+            value={newConfig.name}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
           />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="provider" className="block text-gray-700 text-sm font-bold mb-2">Provider:</label>
+          <select
+            id="provider"
+            name="provider"
+            value={newConfig.provider}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          >
+            <option value="">Select a provider</option>
+            <option value="openai">OpenAI</option>
+            <option value="anthropic">Anthropic</option>
+          </select>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="model" className="block text-gray-700 text-sm font-bold mb-2">Model:</label>
+          <input
+            type="text"
+            id="model"
+            name="model"
+            value={newConfig.model}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
+          />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="apiKey" className="block text-gray-700 text-sm font-bold mb-2">API Key:</label>
           <input
             type="password"
-            placeholder="API Key"
-            value={newLlmConfig.apiKey}
-            onChange={(e) => setNewLlmConfig({ ...newLlmConfig, apiKey: e.target.value })}
-            className="p-2 border rounded mr-2"
+            id="apiKey"
+            name="apiKey"
+            value={newConfig.apiKey}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
           />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="maxTokens" className="block text-gray-700 text-sm font-bold mb-2">Max Tokens:</label>
           <input
             type="number"
-            placeholder="Max Tokens"
-            value={newLlmConfig.maxTokens}
-            onChange={(e) => setNewLlmConfig({ ...newLlmConfig, maxTokens: parseInt(e.target.value) })}
-            className="p-2 border rounded mr-2"
+            id="maxTokens"
+            name="maxTokens"
+            value={newConfig.maxTokens}
+            onChange={handleInputChange}
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            required
           />
-          <select
-            value={newLlmConfig.provider}
-            onChange={(e) => setNewLlmConfig({ ...newLlmConfig, provider: e.target.value, model: llmProviders[e.target.value][0] })}
-            className="p-2 border rounded mr-2"
-          >
-            {Object.keys(llmProviders).map(provider => (
-              <option key={provider} value={provider}>{provider}</option>
-            ))}
-          </select>
-          <select
-            value={newLlmConfig.model}
-            onChange={(e) => setNewLlmConfig({ ...newLlmConfig, model: e.target.value })}
-            className="p-2 border rounded mr-2"
-          >
-            {llmProviders[newLlmConfig.provider].map(model => (
-              <option key={model} value={model}>{model}</option>
-            ))}
-          </select>
-          <button
-            onClick={handleAddLlmConfig}
-            className="bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Add LLM Config
-          </button>
         </div>
-      </div>
-
+        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+          Add Configuration
+        </button>
+      </form>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       <div>
-        <h3 className="text-xl font-semibold mb-2">Subcategories</h3>
-        <ul className="list-disc list-inside">
-          {subcategories.map((subcategory) => (
-            <li key={subcategory.id}>
-              {subcategory.name}
-              <button
-                onClick={() => handleDeleteSubcategory(subcategory.id)}
-                className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4">
-          <input
-            type="text"
-            placeholder="Subcategory Name"
-            value={newSubcategory.name}
-            onChange={(e) => setNewSubcategory({ ...newSubcategory, name: e.target.value })}
-            className="p-2 border rounded mr-2"
-          />
-          <button
-            onClick={handleAddSubcategory}
-            className="bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Add Subcategory
-          </button>
-        </div>
+        <h3 className="text-lg font-semibold mb-2">Existing Configurations</h3>
+        {llmConfigs.map(config => (
+          <div key={config.id} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <p><strong>Name:</strong> {config.name}</p>
+            <p><strong>Provider:</strong> {config.provider}</p>
+            <p><strong>Model:</strong> {config.model}</p>
+            <p><strong>Max Tokens:</strong> {config.max_tokens}</p>
+            <button
+              onClick={() => handleDelete(config.id)}
+              className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline mt-2"
+            >
+              Delete
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
