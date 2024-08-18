@@ -29,6 +29,36 @@ const query = (text, params) => pool.query(text, params);
 // Initialize database with admin user
 async function initializeDatabase() {
   try {
+    // Create tables if they don't exist
+    await query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        role VARCHAR(50) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS subcategories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS attributes (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        type VARCHAR(50) NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        subcategory VARCHAR(255) NOT NULL,
+        attributes JSONB,
+        human_attributes JSONB,
+        human_verified BOOLEAN DEFAULT FALSE
+      );
+    `);
+
     const userExists = await query('SELECT * FROM users WHERE username = $1', ['admin']);
     if (userExists.rows.length === 0) {
       await query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3)', ['admin', 'password', 'admin']);
