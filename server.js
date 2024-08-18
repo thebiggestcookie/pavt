@@ -42,6 +42,17 @@ async function initializeDatabase() {
 
 initializeDatabase();
 
+// Debug endpoint to check database connection
+app.get('/api/debug', async (req, res) => {
+  try {
+    const result = await query('SELECT NOW()');
+    res.json({ message: 'Database connection successful', timestamp: result.rows[0].now });
+  } catch (error) {
+    console.error('Error connecting to database:', error);
+    res.status(500).json({ message: 'Error connecting to database', error: error.message });
+  }
+});
+
 // Login endpoint
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
