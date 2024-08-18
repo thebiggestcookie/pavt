@@ -88,13 +88,22 @@ const ProductGenerator = () => {
         subcategory: identifiedSubcategory,
         llmConfig: selectedLlmConfigData
       });
-      setAttributes(JSON.parse(attributesResponse.data.attributes));
+
+      let parsedAttributes;
+      try {
+        parsedAttributes = JSON.parse(attributesResponse.data.attributes);
+      } catch (parseError) {
+        console.error('Error parsing attributes:', parseError);
+        throw new Error('Failed to parse attributes. The LLM response was not valid JSON.');
+      }
+
+      setAttributes(parsedAttributes);
 
       // Save the generated product to the database
       await axios.post('/api/products', {
         name: productName,
         subcategory: identifiedSubcategory,
-        attributes: JSON.parse(attributesResponse.data.attributes)
+        attributes: parsedAttributes
       });
 
     } catch (error) {

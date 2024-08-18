@@ -7,6 +7,7 @@ const HumanGraderInterface = () => {
   const [humanAttributes, setHumanAttributes] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [metrics, setMetrics] = useState({ accurate: 0, inaccurate: 0, missing: 0 });
 
   useEffect(() => {
     fetchProducts();
@@ -32,11 +33,25 @@ const HumanGraderInterface = () => {
   const handleSubmit = async () => {
     try {
       const currentProduct = products[currentProductIndex];
+      const updatedMetrics = { ...metrics };
+
+      Object.keys(currentProduct.attributes).forEach(attr => {
+        if (humanAttributes[attr] === undefined) {
+          updatedMetrics.missing++;
+        } else if (humanAttributes[attr] !== currentProduct.attributes[attr]) {
+          updatedMetrics.inaccurate++;
+        } else {
+          updatedMetrics.accurate++;
+        }
+      });
+
       await axios.put(`/api/products/${currentProduct.id}`, {
         ...currentProduct,
         human_attributes: humanAttributes,
         human_verified: true
       });
+
+      setMetrics(updatedMetrics);
       setCurrentProductIndex(prev => prev + 1);
       setHumanAttributes({});
     } catch (error) {
@@ -70,28 +85,29 @@ const HumanGraderInterface = () => {
         <h2 className="text-xl font-semibold mb-2">{currentProduct.name}</h2>
         <div className="mb-4">
           <h3 className="text-lg font-semibold">LLM Generated Attributes:</h3>
-          <ul>
-            {Object.entries(currentProduct.attributes).map(([key, value]) => (
-              <li key={key} className="mb-2">
-                <span className="font-medium">{key}:</span> {value}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold">Human Verification:</h3>
-          {Object.keys(currentProduct.attributes).map(attribute => (
-            <div key={attribute} className="mb-2">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={attribute}>
-                {attribute}:
+          {Object.entries(currentProduct.attributes).map(([key, value]) => (
+            <div key={key} className="mb-2">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={key}>
+                {key}:
               </label>
-              <input
+              <select
+                id={key}
+                value={humanAttributes[key] || value}
+                onChange={(e) => handleAttributeChange(key, e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                id={attribute}
-                type="text"
-                value={humanAttributes[attribute] || ''}
-                onChange={(e) => handleAttributeChange(attribute, e.target.value)}
-              />
+              >
+                <option value={value}>{value}</option>
+                {/* Add more options based on your attribute types */}
+                <option value="Other">Other</option>
+              </select>
+              {humanAttributes[key] === 'Other' && (
+                <input
+                  type="text"
+                  placeholder="Specify other value"
+                  className="mt-2 shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  onChange={(e) => handleAttributeChange(key, e.target.value)}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -104,6 +120,12 @@ const HumanGraderInterface = () => {
             Submit and Next
           </button>
         </div>
+      </div>
+      <div className="mt-4">
+        <h3 className="text-lg font-semibold">Grading Metrics:</h3>
+        <p>Accurate: {metrics.accurate}</p>
+        <p>Inaccurate: {metrics.inaccurate}</p>
+        <p>Missing: {metrics.missing}</p>
       </div>
     </div>
   );
