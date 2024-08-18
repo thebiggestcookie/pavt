@@ -104,9 +104,12 @@ CREATE TABLE llm_performance (
   model VARCHAR(255) NOT NULL,
   accuracy FLOAT NOT NULL
 );
+
+-- Insert initial admin user
+INSERT INTO users (username, password, role) VALUES ('admin', 'password', 'admin');
 ```
 
-4. Press Enter to execute the commands. You should see "CREATE TABLE" messages for each table created.
+4. Press Enter to execute the commands. You should see "CREATE TABLE" messages for each table created and a message confirming the insertion of the admin user.
 
 ## 4. Finalize Setup
 
@@ -116,23 +119,43 @@ CREATE TABLE llm_performance (
 
 Your LLM Product Categorizer should now be set up and running on Render. You can access it via the URL provided in your web service dashboard.
 
-## 5. Troubleshooting
+## 5. Logging In
 
-If you encounter build errors related to missing dependencies, follow these steps:
+After the setup is complete, you should be able to log in with the following credentials:
 
-1. In your local development environment, run `npm install @babel/plugin-proposal-private-property-in-object` to add the missing dependency.
-2. Update your `package.json` file to include this dependency in the `dependencies` section, not in `devDependencies`.
-3. Commit and push these changes to your GitHub repository.
-4. In the Render dashboard, go to your web service and click on "Manual Deploy" > "Deploy latest commit".
+- Username: admin
+- Password: password
 
-This should resolve the build errors related to missing dependencies.
+If you're unable to log in, check the server logs in the Render dashboard for any error messages.
 
-If you continue to face issues, you may need to clear your build cache:
+## 6. Troubleshooting
 
-1. In the Render dashboard, go to your web service.
-2. Click on "Settings".
-3. Scroll down to the "Clear build cache" section.
-4. Click on "Clear build cache".
-5. After clearing the cache, go back to the "Deploy" tab and click on "Manual Deploy" > "Deploy latest commit".
+If you encounter any issues:
+
+1. Check the logs in your Render dashboard for both the web service and the database.
+2. Ensure that the `DATABASE_URL` environment variable is correctly set in your web service settings.
+3. Verify that the database schema was created successfully by connecting to the database shell and running `\dt` to list all tables.
+4. Check if the admin user exists in the database by running this SQL command in the database shell:
+
+   ```sql
+   SELECT * FROM users WHERE username = 'admin';
+   ```
+
+   If the admin user doesn't exist, you can add it manually:
+
+   ```sql
+   INSERT INTO users (username, password, role) VALUES ('admin', 'password', 'admin');
+   ```
+
+5. If you make any changes to your code, remember to commit and push to GitHub, then manually deploy again in the Render dashboard.
+6. If the issue persists, try to manually test the login API endpoint using a tool like curl or Postman. Here's an example curl command:
+
+   ```
+   curl -X POST https://your-app-url.onrender.com/api/login -H "Content-Type: application/json" -d '{"username":"admin","password":"password"}'
+   ```
+
+   Replace `https://your-app-url.onrender.com` with your actual app URL.
+
+7. If you're still having issues, you may need to check your database connection. You can add more logging in the `server.js` file to help diagnose the problem.
 
 Remember to secure your application properly, especially if you're handling sensitive data. Consider implementing proper authentication, using environment variables for sensitive information, and following security best practices.
