@@ -28,9 +28,12 @@ const query = (text, params) => pool.query(text, params);
 
 // Initialize database with admin user
 async function initializeDatabase() {
+  const client = await pool.connect();
   try {
+    await client.query('BEGIN');
+
     // Create tables if they don't exist
-    await query(`
+    await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
@@ -57,11 +60,27 @@ async function initializeDatabase() {
         human_attributes JSONB,
         human_verified BOOLEAN DEFAULT FALSE
       );
+
+      CREATE TABLE IF NOT EXISTS prompts (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        content TEXT NOT NULL,
+        step INTEGER NOT NULL
+      );
+
+      CREATE TABLE IF NOT EXISTS llm_configs (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) UNIQUE NOT NULL,
+        provider VARCHAR(50) NOT NULL,
+        model VARCHAR(255) NOT NULL,
+        api_key VARCHAR(255) NOT NULL,
+        max_tokens INTEGER NOT NULL
+      );
     `);
 
-    const userExists = await query('SELECT * FROM users WHERE username = $1', ['admin']);
+    const userExists = await client.query('SELECT * FROM users WHERE username = $1', ['admin']);
     if (userExists.rows.length === 0) {
-      await query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3)', ['admin', 'password', 'admin']);
+      await client.query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3)', ['admin', 'password', 'admin']);
       console.log('Admin user created successfully');
     } else {
       console.log('Admin user already exists');
@@ -70,27 +89,31 @@ async function initializeDatabase() {
     // Initialize subcategories
     const subcategories = JSON.parse(fs.readFileSync('data/subcategories.json', 'utf8'));
     for (const subcategory of subcategories) {
-      await query('INSERT INTO subcategories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [subcategory.name]);
+      await client.query('INSERT INTO subcategories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [subcategory.name]);
     }
 
     // Initialize attributes
     const attributes = JSON.parse(fs.readFileSync('data/attributes.json', 'utf8'));
     for (const attribute of attributes) {
-      await query('INSERT INTO attributes (name, type) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [attribute.name, attribute.type]);
+      await client.query('INSERT INTO attributes (name, type) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [attribute.name, attribute.type]);
     }
 
     // Initialize products
     const products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
     for (const product of products) {
-      await query(
+      await client.query(
         'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET subcategory = EXCLUDED.subcategory, attributes = EXCLUDED.attributes',
         [product.name, product.subcategory, JSON.stringify(product.attributes)]
       );
     }
 
+    await client.query('COMMIT');
     console.log('Database initialized successfully');
   } catch (error) {
+    await client.query('ROLLBACK');
     console.error('Error initializing database:', error);
+  } finally {
+    client.release();
   }
 }
 
