@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch, Link, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Switch, Link, Navigate } from 'react-router-dom';
 import UploadInterface from './components/UploadInterface';
 import HumanGraderInterface from './components/HumanGraderInterface';
 import AdminPanel from './components/AdminPanel';
@@ -22,18 +22,9 @@ const App = () => {
     }
   }, []);
 
-  const PrivateRoute = ({ component: Component, ...rest }) => (
-    <Route
-      {...rest}
-      render={props =>
-        isAuthenticated ? (
-          <Component {...props} />
-        ) : (
-          <Redirect to="/login" />
-        )
-      }
-    />
-  );
+  const PrivateRoute = ({ children }) => {
+    return isAuthenticated ? children : <Navigate to="/login" />;
+  };
 
   return (
     <Router>
@@ -59,17 +50,39 @@ const App = () => {
 
         <div className="container mx-auto px-6 py-8">
           <Switch>
-            <Route exact path="/login" render={(props) => <Login {...props} setIsAuthenticated={setIsAuthenticated} />} />
-            <PrivateRoute exact path="/" component={UploadInterface} />
-            <PrivateRoute path="/grader" component={HumanGraderInterface} />
-            <PrivateRoute path="/admin" component={AdminPanel} />
-            <PrivateRoute path="/prompts" component={PromptManagement} />
-            <PrivateRoute path="/metrics" component={PerformanceMetrics} />
-            <PrivateRoute path="/users" component={UserManagement} />
-            <PrivateRoute path="/attributes" component={AttributeEditor} />
-            <PrivateRoute path="/investor" component={InvestorDashboard} />
-            <PrivateRoute path="/prompt-tester" component={PromptTester} />
-            <PrivateRoute path="/product-generator" component={ProductGenerator} />
+            <Route exact path="/login">
+              <Login setIsAuthenticated={setIsAuthenticated} />
+            </Route>
+            <PrivateRoute exact path="/">
+              <UploadInterface />
+            </PrivateRoute>
+            <PrivateRoute path="/grader">
+              <HumanGraderInterface />
+            </PrivateRoute>
+            <PrivateRoute path="/admin">
+              <AdminPanel />
+            </PrivateRoute>
+            <PrivateRoute path="/prompts">
+              <PromptManagement />
+            </PrivateRoute>
+            <PrivateRoute path="/metrics">
+              <PerformanceMetrics />
+            </PrivateRoute>
+            <PrivateRoute path="/users">
+              <UserManagement />
+            </PrivateRoute>
+            <PrivateRoute path="/attributes">
+              <AttributeEditor />
+            </PrivateRoute>
+            <PrivateRoute path="/investor">
+              <InvestorDashboard />
+            </PrivateRoute>
+            <PrivateRoute path="/prompt-tester">
+              <PromptTester />
+            </PrivateRoute>
+            <PrivateRoute path="/product-generator">
+              <ProductGenerator />
+            </PrivateRoute>
           </Switch>
         </div>
       </div>
