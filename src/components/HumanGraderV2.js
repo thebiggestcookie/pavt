@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { debug, getDebugLog } from '../utils/debug';
+import { fetchProductsToGrade, gradeProduct } from '../utils/api';
 
 const HumanGraderV2 = () => {
   const [products, setProducts] = useState([]);
@@ -15,18 +15,9 @@ const HumanGraderV2 = () => {
   const fetchProducts = async () => {
     try {
       debug('Fetching products to grade');
-      const response = await axios.get('/api/products-to-grade', {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
-      });
+      const response = await fetchProductsToGrade();
       debug('Raw products response', response.data);
       
-      if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
-        throw new Error('Received HTML instead of JSON. Check server configuration and ensure you are authenticated.');
-      }
-
       if (!Array.isArray(response.data)) {
         throw new Error('Received data is not an array');
       }
@@ -67,10 +58,7 @@ const HumanGraderV2 = () => {
         throw new Error('No product selected for grading');
       }
       debug('Grading product', { productId: currentProduct.id, grade });
-      await axios.post('/api/grade-product', {
-        productId: currentProduct.id,
-        grade: grade
-      });
+      await gradeProduct(currentProduct.id, grade);
       debug('Product graded successfully');
       // Move to next product
       const nextProductIndex = products.findIndex(p => p.id === currentProduct.id) + 1;
