@@ -64,8 +64,23 @@
     - Removed redundant error checks that are now handled in the API utility
     - Updated error messages to directly use the error message from the API utility
 
+## Update #16
+- Updated API utility file (src/utils/api.js)
+  - Increased timeout to 30 seconds
+  - Added more detailed error logging
+  - Added console.log statements for debugging API responses
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Updated timeout in axios.create to 30000 ms
+    - Enhanced error logging in response interceptor
+    - Added console.log statements in each API function to log response data
+
+- Updated ProductGenerator component
+  - No changes made, but component will benefit from improved API error logging
+
 - Next steps:
   - Test the updated API utility with the backend
-  - Verify that the data validation checks are working correctly
-  - Test ProductGenerator and HumanGraderV2 components with the updated error handling
-  - Investigate any persistent data format issues from the backend
+  - Monitor console logs for API responses to identify any data format issues
+  - Verify that the increased timeout resolves any connection issues
+  - Investigate why prompts are missing or empty in the ProductGenerator
+  - Debug the connection issues in HumanGraderV2
