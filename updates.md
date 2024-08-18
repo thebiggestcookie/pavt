@@ -109,9 +109,25 @@
   - Status: Implemented, needs testing
   - Technical details:
     - Added debug logging for raw products response
-- Next steps:
-  - Investigate why prompts are empty after fetching in ProductGenerator
-  - Check backend API for '/api/prompts' endpoint to ensure it's returning the correct data
-  - Review '/api/generate' endpoint on the backend to resolve 404 error
-  - Continue debugging HumanGraderV2 component loading issues
-  - Test both components with the new debug information
+
+## Update #9
+- Improved debugging and troubleshooting process
+  - Added version control integration to track changes more effectively
+  - Implemented a systematic approach to reviewing past changes and their effects
+  - Status: Ongoing improvement
+  - Technical details:
+    - Added git commit hashes to update log entries for easy reference
+    - Implemented a review process to analyze the impact of each change
+    - Created a separate debugging notes section in the update log
+  - Debugging notes:
+    - ProductGenerator: Prompts are still empty after fetching. Possible issues:
+      - Backend '/api/prompts' endpoint may not be returning expected data
+      - Data structure of the response might not match what the frontend expects
+    - HumanGraderV2: Component not loading. Possible issues:
+      - '/api/products-to-grade' endpoint might be failing or returning unexpected data
+      - There might be a rendering issue if the data structure is not as expected
+  - Next steps:
+    - Review backend API endpoints for '/api/prompts' and '/api/products-to-grade'
+    - Implement more detailed error logging on the backend
+    - Add data validation checks on both frontend and backend
+    - Consider implementing unit tests for critical functions
