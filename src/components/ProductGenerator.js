@@ -12,13 +12,11 @@ const ProductGenerator = () => {
   const [selectedLlmConfig, setSelectedLlmConfig] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [subcategories, setSubcategories] = useState([]);
-  const [subcategoryAttributes, setSubcategoryAttributes] = useState([]);
+  const [debug, setDebug] = useState('');
 
   useEffect(() => {
     fetchPrompts();
     fetchLlmConfigs();
-    fetchSubcategories();
   }, []);
 
   const fetchPrompts = async () => {
@@ -41,30 +39,11 @@ const ProductGenerator = () => {
     }
   };
 
-  const fetchSubcategories = async () => {
-    try {
-      const response = await axios.get('/api/subcategories');
-      setSubcategories(response.data);
-    } catch (error) {
-      console.error('Error fetching subcategories:', error);
-      setError('Failed to fetch subcategories');
-    }
-  };
-
-  const fetchSubcategoryAttributes = async (subcategory) => {
-    try {
-      const response = await axios.get(`/api/subcategory-attributes/${subcategory}`);
-      setSubcategoryAttributes(response.data);
-    } catch (error) {
-      console.error('Error fetching subcategory attributes:', error);
-      setError('Failed to fetch subcategory attributes');
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setDebug('');
 
     try {
       const selectedLlmConfigData = llmConfigs.find(c => c.id === parseInt(selectedLlmConfig));
@@ -77,9 +56,6 @@ const ProductGenerator = () => {
       });
       const identifiedSubcategory = subcategoryResponse.data.attributes.trim();
       setSubcategory(identifiedSubcategory);
-
-      // Fetch attributes for the identified subcategory
-      await fetchSubcategoryAttributes(identifiedSubcategory);
 
       // Step 2: Generate attributes
       const attributesResponse = await axios.post('/api/process-llm', {
@@ -94,23 +70,31 @@ const ProductGenerator = () => {
         parsedAttributes = JSON.parse(attributesResponse.data.attributes);
       } catch (parseError) {
         console.error('Error parsing attributes:', parseError);
+        setDebug(`Raw LLM response: ${attributesResponse.data.attributes}`);
         throw new Error('Failed to parse attributes. The LLM response was not valid JSON.');
       }
 
       setAttributes(parsedAttributes);
-
-      // Save the generated product to the database
-      await axios.post('/api/products', {
-        name: productName,
-        subcategory: identifiedSubcategory,
-        attributes: parsedAttributes
-      });
 
     } catch (error) {
       console.error('Error generating product:', error);
       setError('Failed to generate product attributes: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      await axios.post('/api/products', {
+        name: productName,
+        subcategory: subcategory,
+        attributes: attributes
+      });
+      alert('Product saved successfully!');
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setError('Failed to save product: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -184,10 +168,18 @@ const ProductGenerator = () => {
         </div>
         <button
           type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-2"
           disabled={loading}
         >
           {loading ? 'Generating...' : 'Generate Product'}
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          disabled={!subcategory || Object.keys(attributes).length === 0}
+        >
+          Save Product
         </button>
       </form>
       {error && <p className="text-red-500 mb-4">{error}</p>}
@@ -202,6 +194,14 @@ const ProductGenerator = () => {
           <h2 className="text-xl font-semibold mb-2">Generated Attributes:</h2>
           <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
             {JSON.stringify(attributes, null, 2)}
+          </pre>
+        </div>
+      )}
+      {debug && (
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold mb-2">Debug Information:</h2>
+          <pre className="bg-gray-100 p-4 rounded overflow-x-auto">
+            {debug}
           </pre>
         </div>
       )}
