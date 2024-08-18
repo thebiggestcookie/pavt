@@ -278,6 +278,48 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
+// Subcategories endpoint
+app.get('/api/subcategories', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM subcategories');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Attributes endpoint
+app.get('/api/attributes', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM attributes');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching attributes:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Token usage endpoint (mock data for now)
+app.get('/api/token-usage', async (req, res) => {
+  const mockData = [
+    { date: '2023-05-01', token_count: 1000 },
+    { date: '2023-05-02', token_count: 1200 },
+    { date: '2023-05-03', token_count: 950 },
+  ];
+  res.json(mockData);
+});
+
+// LLM performance endpoint (mock data for now)
+app.get('/api/llm-performance', async (req, res) => {
+  const mockData = [
+    { model: 'GPT-3', accuracy: 0.85 },
+    { model: 'GPT-4', accuracy: 0.92 },
+    { model: 'Claude', accuracy: 0.88 },
+  ];
+  res.json(mockData);
+});
+
 // LLM processing endpoint
 app.post('/api/process-llm', async (req, res) => {
   const { prompt, productName, subcategory, llmConfig } = req.body;
