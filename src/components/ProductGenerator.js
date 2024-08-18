@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import { debug, getDebugLog } from '../utils/debug';
+import { fetchPrompts, generateProduct, saveProduct } from '../utils/api';
 
 const ProductGenerator = () => {
   const [productName, setProductName] = useState('');
@@ -12,13 +12,13 @@ const ProductGenerator = () => {
   const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
-    fetchPrompts();
+    fetchPromptsData();
   }, []);
 
-  const fetchPrompts = async () => {
+  const fetchPromptsData = async () => {
     try {
       debug('Fetching prompts');
-      const response = await axios.get('/api/prompts');
+      const response = await fetchPrompts();
       debug('Raw prompts response', response.data);
       
       if (!Array.isArray(response.data) || response.data.length === 0) {
@@ -41,7 +41,7 @@ const ProductGenerator = () => {
     }
   };
 
-  const generateProduct = async () => {
+  const handleGenerateProduct = async () => {
     if (!productName) {
       setError('Please enter a product name.');
       return;
@@ -58,7 +58,7 @@ const ProductGenerator = () => {
       // Step 1: Generate subcategory
       const step1Prompt = prompts.step1.replace('$productname', productName);
       debug('Step 1 prompt', step1Prompt);
-      const step1Response = await axios.post('/api/generate', { prompt: step1Prompt });
+      const step1Response = await generateProduct(step1Prompt);
       const generatedSubcategory = step1Response.data.response.trim();
       setSubcategory(generatedSubcategory);
       debug('Generated subcategory', generatedSubcategory);
@@ -67,7 +67,7 @@ const ProductGenerator = () => {
       // Step 2: Generate attributes
       const step2Prompt = prompts.step2.replace('$productname', productName).replace('$subcategory', generatedSubcategory);
       debug('Step 2 prompt', step2Prompt);
-      const step2Response = await axios.post('/api/generate', { prompt: step2Prompt });
+      const step2Response = await generateProduct(step2Prompt);
       setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${step2Response.data.response}\n\n`);
       const generatedAttributes = JSON.parse(step2Response.data.response);
       setAttributes(generatedAttributes);
@@ -82,10 +82,10 @@ const ProductGenerator = () => {
     }
   };
 
-  const saveProduct = async () => {
+  const handleSaveProduct = async () => {
     try {
       debug('Saving product', { productName, subcategory, attributes });
-      await axios.post('/api/products', { name: productName, subcategory, attributes });
+      await saveProduct({ name: productName, subcategory, attributes });
       debug('Product saved successfully');
       alert('Product saved successfully!');
     } catch (error) {
@@ -127,14 +127,14 @@ const ProductGenerator = () => {
         </div>
       </div>
       <button
-        onClick={generateProduct}
+        onClick={handleGenerateProduct}
         disabled={loading || !prompts.step1 || !prompts.step2}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
       >
         {loading ? 'Generating...' : 'Generate Product'}
       </button>
       <button
-        onClick={saveProduct}
+        onClick={handleSaveProduct}
         disabled={!subcategory || Object.keys(attributes).length === 0}
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
       >
