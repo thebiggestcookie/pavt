@@ -135,12 +135,27 @@ If you encounter any issues:
 1. Check the logs in your Render dashboard for both the web service and the database.
 2. Ensure that the `DATABASE_URL` environment variable is correctly set in your web service settings.
 3. Verify that the database schema was created successfully by connecting to the database shell and running `\dt` to list all tables.
-4. If the admin user is not present, you can manually add it by connecting to the database shell and running:
+4. Check if the admin user exists in the database by running this SQL command in the database shell:
+
+   ```sql
+   SELECT * FROM users WHERE username = 'admin';
+   ```
+
+   If the admin user doesn't exist, you can add it manually:
 
    ```sql
    INSERT INTO users (username, password, role) VALUES ('admin', 'password', 'admin');
    ```
 
 5. If you make any changes to your code, remember to commit and push to GitHub, then manually deploy again in the Render dashboard.
+6. If the issue persists, try to manually test the login API endpoint using a tool like curl or Postman. Here's an example curl command:
+
+   ```
+   curl -X POST https://your-app-url.onrender.com/api/login -H "Content-Type: application/json" -d '{"username":"admin","password":"password"}'
+   ```
+
+   Replace `https://your-app-url.onrender.com` with your actual app URL.
+
+7. If you're still having issues, you may need to check your database connection. You can add more logging in the `server.js` file to help diagnose the problem.
 
 Remember to secure your application properly, especially if you're handling sensitive data. Consider implementing proper authentication, using environment variables for sensitive information, and following security best practices.
