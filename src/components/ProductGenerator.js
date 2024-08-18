@@ -19,11 +19,10 @@ const ProductGenerator = () => {
     try {
       debug('Fetching prompts');
       const response = await axios.get('/api/prompts');
-      setPrompts({
-        step1: response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content || '',
-        step2: response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content || ''
-      });
-      debug('Prompts fetched successfully', prompts);
+      const step1Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content || '';
+      const step2Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content || '';
+      setPrompts({ step1: step1Prompt, step2: step2Prompt });
+      debug('Prompts fetched successfully', { step1: step1Prompt, step2: step2Prompt });
     } catch (error) {
       console.error('Error fetching prompts:', error);
       debug('Error fetching prompts', error);
@@ -42,18 +41,18 @@ const ProductGenerator = () => {
     try {
       debug('Generating product', { productName });
       // Step 1: Generate subcategory
-      const step1Prompt = prompts.step1.replace('{product_name}', productName);
+      const step1Prompt = prompts.step1.replace('$productname', productName);
       debug('Step 1 prompt', step1Prompt);
-      const step1Response = await axios.post('/api/generate', { prompt: step1Prompt });
+      const step1Response = await axios.post('/api/generate-prompt', { prompt: step1Prompt });
       const generatedSubcategory = step1Response.data.response.trim();
       setSubcategory(generatedSubcategory);
       debug('Generated subcategory', generatedSubcategory);
       setDebugInfo(prevDebug => prevDebug + `Step 1 Response:\n${generatedSubcategory}\n\n`);
 
       // Step 2: Generate attributes
-      const step2Prompt = prompts.step2.replace('{product_name}', productName).replace('{subcategory}', generatedSubcategory);
+      const step2Prompt = prompts.step2.replace('$productname', productName).replace('$subcategory', generatedSubcategory);
       debug('Step 2 prompt', step2Prompt);
-      const step2Response = await axios.post('/api/generate', { prompt: step2Prompt });
+      const step2Response = await axios.post('/api/generate-prompt', { prompt: step2Prompt });
       setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${step2Response.data.response}\n\n`);
       const generatedAttributes = JSON.parse(step2Response.data.response);
       setAttributes(generatedAttributes);

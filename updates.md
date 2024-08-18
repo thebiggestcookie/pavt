@@ -37,9 +37,31 @@
   - Added "Copy Debug Log" button to both components for easy sharing of debug information
   - Status: Implemented, needs testing
 
-Next steps:
-- Test debug functionality in ProductGenerator and HumanGraderV2
-- Verify API endpoints for both components
-- Test product generation with new product name field
-- Investigate and resolve 404 errors in API calls
-- Review and analyze debug logs to identify any remaining issues
+## 2023-06-18
+- Updated ProductGenerator component
+  - Changed API endpoint from '/api/generate' to '/api/generate-prompt'
+  - Updated prompt variable syntax from {productname} to $productname
+  - Status: Pending testing, 404 error still occurring
+- Reviewed HumanGraderV2 component
+  - No changes made, component still not loading
+  - Status: Further investigation needed
+
+## 2023-06-19
+- Added GlobalDebug component
+  - Created a new component that displays debug information globally
+  - Integrated GlobalDebug component into App.js
+  - Debug information is now visible on all pages, even if the main component fails to load
+  - Status: Implemented, needs testing
+
+## 2023-06-20
+- Updated ProductGenerator component
+  - Fixed issue with empty prompts after fetching
+  - Updated error handling to provide more detailed information
+  - Changed API endpoint back to '/api/generate' based on debug log
+  - Status: Implemented, needs testing
+- Next steps:
+  - Test updated ProductGenerator component
+  - Verify that prompts are being correctly fetched and stored
+  - Investigate why the API endpoint '/api/generate' is returning a 404 error
+  - Review backend API routes and controllers to ensure '/api/generate' endpoint is properly set up
+  - Continue debugging HumanGraderV2 component loading issues
