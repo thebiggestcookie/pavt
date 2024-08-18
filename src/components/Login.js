@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -6,7 +6,21 @@ const Login = ({ setIsAuthenticated, setUserRole }) => {
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('password');
   const [error, setError] = useState('');
+  const [debugMessage, setDebugMessage] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkDatabaseConnection = async () => {
+      try {
+        const response = await axios.get('/api/debug');
+        setDebugMessage(response.data.message + ' at ' + response.data.timestamp);
+      } catch (error) {
+        setDebugMessage('Error connecting to database: ' + error.message);
+      }
+    };
+
+    checkDatabaseConnection();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,6 +70,7 @@ const Login = ({ setIsAuthenticated, setUserRole }) => {
           </div>
         </form>
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+        {debugMessage && <p className="text-green-500 text-sm mt-2">{debugMessage}</p>}
       </div>
     </div>
   );
