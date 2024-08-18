@@ -3,7 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
-const fs = require('fs');
+const { Pool } = require('pg');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -14,214 +14,312 @@ app.use(bodyParser.json());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Load data from JSON files
-let llmConfigs = JSON.parse(fs.readFileSync('data/llmConfigs.json', 'utf8'));
-let prompts = JSON.parse(fs.readFileSync('data/prompts.json', 'utf8'));
-let subcategories = JSON.parse(fs.readFileSync('data/subcategories.json', 'utf8'));
-let attributes = JSON.parse(fs.readFileSync('data/attributes.json', 'utf8'));
-let users = JSON.parse(fs.readFileSync('data/users.json', 'utf8'));
-let products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
+// Database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
+});
 
-// Mock data for performance metrics
-let tokenUsage = JSON.parse(fs.readFileSync('data/tokenUsage.json', 'utf8'));
-let graderPerformance = JSON.parse(fs.readFileSync('data/graderPerformance.json', 'utf8'));
-let llmPerformance = JSON.parse(fs.readFileSync('data/llmPerformance.json', 'utf8'));
-
-// Helper function to save data to JSON files
-function saveData(filename, data) {
-  fs.writeFileSync(`data/${filename}.json`, JSON.stringify(data, null, 2));
-}
+// Helper function to query the database
+const query = (text, params) => pool.query(text, params);
 
 // Login endpoint
-app.post('/api/login', (req, res) => {
+app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    res.json({ token: 'fake-jwt-token', username: user.username, role: user.role });
-  } else {
-    res.status(400).json({ message: 'Username or password is incorrect' });
+  try {
+    const result = await query('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]);
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      res.json({ token: 'fake-jwt-token', username: user.username, role: user.role });
+    } else {
+      res.status(400).json({ message: 'Username or password is incorrect' });
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // LLM Configs endpoints
-app.get('/api/llm-configs', (req, res) => {
-  res.json(llmConfigs);
+app.get('/api/llm-configs', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM llm_configs');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching LLM configs:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.post('/api/llm-configs', (req, res) => {
-  const newConfig = {
-    id: Date.now().toString(),
-    ...req.body
-  };
-  llmConfigs.push(newConfig);
-  saveData('llmConfigs', llmConfigs);
-  res.status(201).json(newConfig);
+app.post('/api/llm-configs', async (req, res) => {
+  const { name, provider, model, apiKey, maxTokens } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO llm_configs (name, provider, model, api_key, max_tokens) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, provider, model, apiKey, maxTokens]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating LLM config:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.put('/api/llm-configs/:id', (req, res) => {
+app.put('/api/llm-configs/:id', async (req, res) => {
   const { id } = req.params;
-  const index = llmConfigs.findIndex(config => config.id === id);
-  if (index !== -1) {
-    llmConfigs[index] = { ...llmConfigs[index], ...req.body };
-    saveData('llmConfigs', llmConfigs);
-    res.json(llmConfigs[index]);
-  } else {
-    res.status(404).json({ message: 'Config not found' });
+  const { name, provider, model, apiKey, maxTokens } = req.body;
+  try {
+    const result = await query(
+      'UPDATE llm_configs SET name = $1, provider = $2, model = $3, api_key = $4, max_tokens = $5 WHERE id = $6 RETURNING *',
+      [name, provider, model, apiKey, maxTokens, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Config not found' });
+    }
+  } catch (error) {
+    console.error('Error updating LLM config:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Prompts endpoints
-app.get('/api/prompts', (req, res) => {
-  res.json(prompts);
-});
-
-app.post('/api/prompts', (req, res) => {
-  const newPrompt = {
-    id: Date.now().toString(),
-    ...req.body
-  };
-  prompts.push(newPrompt);
-  saveData('prompts', prompts);
-  res.status(201).json(newPrompt);
-});
-
-app.put('/api/prompts/:id', (req, res) => {
-  const { id } = req.params;
-  const index = prompts.findIndex(prompt => prompt.id === id);
-  if (index !== -1) {
-    prompts[index] = { ...prompts[index], ...req.body };
-    saveData('prompts', prompts);
-    res.json(prompts[index]);
-  } else {
-    res.status(404).json({ message: 'Prompt not found' });
+app.get('/api/prompts', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM prompts');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching prompts:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-app.delete('/api/prompts/:id', (req, res) => {
+app.post('/api/prompts', async (req, res) => {
+  const { name, content } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO prompts (name, content) VALUES ($1, $2) RETURNING *',
+      [name, content]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating prompt:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.put('/api/prompts/:id', async (req, res) => {
   const { id } = req.params;
-  const index = prompts.findIndex(prompt => prompt.id === id);
-  if (index !== -1) {
-    prompts.splice(index, 1);
-    saveData('prompts', prompts);
+  const { name, content } = req.body;
+  try {
+    const result = await query(
+      'UPDATE prompts SET name = $1, content = $2 WHERE id = $3 RETURNING *',
+      [name, content, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Prompt not found' });
+    }
+  } catch (error) {
+    console.error('Error updating prompt:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.delete('/api/prompts/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await query('DELETE FROM prompts WHERE id = $1', [id]);
     res.status(204).send();
-  } else {
-    res.status(404).json({ message: 'Prompt not found' });
+  } catch (error) {
+    console.error('Error deleting prompt:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Subcategories endpoints
-app.get('/api/subcategories', (req, res) => {
-  res.json(subcategories);
+app.get('/api/subcategories', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM subcategories');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching subcategories:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.post('/api/subcategories', (req, res) => {
-  const newSubcategory = {
-    id: Date.now().toString(),
-    ...req.body
-  };
-  subcategories.push(newSubcategory);
-  saveData('subcategories', subcategories);
-  res.status(201).json(newSubcategory);
+app.post('/api/subcategories', async (req, res) => {
+  const { name } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO subcategories (name) VALUES ($1) RETURNING *',
+      [name]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating subcategory:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.delete('/api/subcategories/:id', (req, res) => {
+app.delete('/api/subcategories/:id', async (req, res) => {
   const { id } = req.params;
-  const index = subcategories.findIndex(subcategory => subcategory.id === id);
-  if (index !== -1) {
-    subcategories.splice(index, 1);
-    saveData('subcategories', subcategories);
+  try {
+    await query('DELETE FROM subcategories WHERE id = $1', [id]);
     res.status(204).send();
-  } else {
-    res.status(404).json({ message: 'Subcategory not found' });
+  } catch (error) {
+    console.error('Error deleting subcategory:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Attributes endpoints
-app.get('/api/attributes', (req, res) => {
-  res.json(attributes);
+app.get('/api/attributes', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM attributes');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching attributes:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.put('/api/attributes', (req, res) => {
-  attributes = req.body;
-  saveData('attributes', attributes);
-  res.json(attributes);
+app.put('/api/attributes', async (req, res) => {
+  const attributes = req.body;
+  try {
+    await query('BEGIN');
+    await query('DELETE FROM attributes');
+    for (const attr of attributes) {
+      await query('INSERT INTO attributes (name, type) VALUES ($1, $2)', [attr.name, attr.type]);
+    }
+    await query('COMMIT');
+    res.json(attributes);
+  } catch (error) {
+    await query('ROLLBACK');
+    console.error('Error updating attributes:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 // User management endpoints
-app.get('/api/users', (req, res) => {
-  res.json(users.map(({ password, ...user }) => user));
-});
-
-app.post('/api/users', (req, res) => {
-  const newUser = {
-    id: Date.now().toString(),
-    ...req.body,
-    lastLogin: new Date().toISOString()
-  };
-  users.push(newUser);
-  saveData('users', users);
-  res.status(201).json(newUser);
-});
-
-app.put('/api/users/:id', (req, res) => {
-  const { id } = req.params;
-  const index = users.findIndex(user => user.id === id);
-  if (index !== -1) {
-    users[index] = { ...users[index], ...req.body };
-    saveData('users', users);
-    res.json(users[index]);
-  } else {
-    res.status(404).json({ message: 'User not found' });
+app.get('/api/users', async (req, res) => {
+  try {
+    const result = await query('SELECT id, username, role, last_login FROM users');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-app.delete('/api/users/:id', (req, res) => {
+app.post('/api/users', async (req, res) => {
+  const { username, password, role } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO users (username, password, role, last_login) VALUES ($1, $2, $3, NOW()) RETURNING id, username, role, last_login',
+      [username, password, role]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.put('/api/users/:id', async (req, res) => {
   const { id } = req.params;
-  const index = users.findIndex(user => user.id === id);
-  if (index !== -1) {
-    users.splice(index, 1);
-    saveData('users', users);
+  const { username, password, role } = req.body;
+  try {
+    const result = await query(
+      'UPDATE users SET username = $1, password = $2, role = $3 WHERE id = $4 RETURNING id, username, role, last_login',
+      [username, password, role, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await query('DELETE FROM users WHERE id = $1', [id]);
     res.status(204).send();
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-app.post('/api/users/:id/reset-password', (req, res) => {
+app.post('/api/users/:id/reset-password', async (req, res) => {
   const { id } = req.params;
-  const user = users.find(user => user.id === id);
-  if (user) {
-    // In a real application, you would generate a new password or send a reset link
-    res.json({ message: 'Password reset initiated' });
-  } else {
-    res.status(404).json({ message: 'User not found' });
+  const { newPassword } = req.body;
+  try {
+    const result = await query(
+      'UPDATE users SET password = $1 WHERE id = $2 RETURNING id',
+      [newPassword, id]
+    );
+    if (result.rows.length > 0) {
+      res.json({ message: 'Password reset successful' });
+    } else {
+      res.status(404).json({ message: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Products endpoints
-app.get('/api/products', (req, res) => {
-  res.json(products);
+app.get('/api/products', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM products');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.post('/api/products', (req, res) => {
-  const newProduct = {
-    id: products.length + 1,
-    ...req.body
-  };
-  products.push(newProduct);
-  saveData('products', products);
-  res.status(201).json(newProduct);
+app.post('/api/products', async (req, res) => {
+  const { name, attributes, humanAttributes, humanVerified } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO products (name, attributes, human_attributes, human_verified) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, JSON.stringify(attributes), JSON.stringify(humanAttributes), humanVerified]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating product:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.put('/api/products/:id', (req, res) => {
+app.put('/api/products/:id', async (req, res) => {
   const { id } = req.params;
-  const index = products.findIndex(product => product.id === parseInt(id));
-  if (index !== -1) {
-    products[index] = { ...products[index], ...req.body };
-    saveData('products', products);
-    res.json(products[index]);
-  } else {
-    res.status(404).json({ message: 'Product not found' });
+  const { name, attributes, humanAttributes, humanVerified } = req.body;
+  try {
+    const result = await query(
+      'UPDATE products SET name = $1, attributes = $2, human_attributes = $3, human_verified = $4 WHERE id = $5 RETURNING *',
+      [name, JSON.stringify(attributes), JSON.stringify(humanAttributes), humanVerified, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
@@ -284,85 +382,116 @@ app.post('/api/process-llm', async (req, res) => {
 });
 
 // Performance metrics endpoints
-app.get('/api/token-usage', (req, res) => {
+app.get('/api/token-usage', async (req, res) => {
   const { startDate, endDate } = req.query;
-  // In a real application, you would filter the data based on the date range
-  res.json(tokenUsage);
+  try {
+    const result = await query('SELECT * FROM token_usage WHERE date BETWEEN $1 AND $2', [startDate, endDate]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching token usage:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.get('/api/grader-performance', (req, res) => {
+app.get('/api/grader-performance', async (req, res) => {
   const { startDate, endDate } = req.query;
-  // In a real application, you would filter the data based on the date range
-  res.json(graderPerformance);
+  try {
+    const result = await query('SELECT * FROM grader_performance WHERE date BETWEEN $1 AND $2', [startDate, endDate]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching grader performance:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
-app.get('/api/llm-performance', (req, res) => {
+app.get('/api/llm-performance', async (req, res) => {
   const { startDate, endDate } = req.query;
-  // In a real application, you would filter the data based on the date range
-  res.json(llmPerformance);
+  try {
+    const result = await query('SELECT * FROM llm_performance WHERE date BETWEEN $1 AND $2', [startDate, endDate]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching LLM performance:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 // Regenerate attributes endpoint
 app.post('/api/regenerate-attributes', async (req, res) => {
   const { promptId, llmConfigs } = req.body;
-  const prompt = prompts.find(p => p.id === promptId);
-
-  if (!prompt) {
-    return res.status(404).json({ message: 'Prompt not found' });
-  }
-
   try {
+    const promptResult = await query('SELECT * FROM prompts WHERE id = $1', [promptId]);
+    if (promptResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Prompt not found' });
+    }
+    const prompt = promptResult.rows[0];
+
+    const productsResult = await query('SELECT * FROM products');
+    const products = productsResult.rows;
+
     const updatedProducts = await Promise.all(products.map(async (product) => {
       const [result1, result2] = await Promise.all([
         processWithLLM(prompt.content, product.name, llmConfigs[0]),
         processWithLLM(prompt.content, product.name, llmConfigs[1])
       ]);
 
-      if (JSON.stringify(result1.attributes) === JSON.stringify(result2.attributes)) {
-        return { ...product, attributes: result1.attributes, needsReview: false };
-      } else {
-        return { ...product, attributes: result1.attributes, needsReview: true };
-      }
+      const needsReview = JSON.stringify(result1.attributes) !== JSON.stringify(result2.attributes);
+      const updatedProduct = {
+        ...product,
+        attributes: result1.attributes,
+        needs_review: needsReview
+      };
+
+      await query(
+        'UPDATE products SET attributes = $1, needs_review = $2 WHERE id = $3',
+        [JSON.stringify(updatedProduct.attributes), updatedProduct.needs_review, updatedProduct.id]
+      );
+
+      return updatedProduct;
     }));
 
-    products = updatedProducts;
-    saveData('products', products);
     res.json(updatedProducts);
   } catch (error) {
     console.error('Error regenerating attributes:', error);
-    res.status(500).json({ message: 'Error regenerating attributes', error: error.message });
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
 // Accuracy metrics endpoint
-app.get('/api/accuracy-metrics/:promptId', (req, res) => {
+app.get('/api/accuracy-metrics/:promptId', async (req, res) => {
   const { promptId } = req.params;
-  const prompt = prompts.find(p => p.id === promptId);
+  try {
+    const promptResult = await query('SELECT * FROM prompts WHERE id = $1', [promptId]);
+    if (promptResult.rows.length === 0) {
+      return res.status(404).json({ message: 'Prompt not found' });
+    }
 
-  if (!prompt) {
-    return res.status(404).json({ message: 'Prompt not found' });
-  }
+    const productsResult = await query('SELECT * FROM products WHERE human_verified = true');
+    const products = productsResult.rows;
 
-  const metrics = {
-    accurate: 0,
-    inaccurate: 0,
-    missing: 0
-  };
+    const metrics = {
+      accurate: 0,
+      inaccurate: 0,
+      missing: 0
+    };
 
-  products.forEach(product => {
-    if (product.humanVerified) {
-      Object.keys(product.attributes).forEach(attr => {
-        if (product.attributes[attr] === product.humanAttributes[attr]) {
+    products.forEach(product => {
+      const attributes = JSON.parse(product.attributes);
+      const humanAttributes = JSON.parse(product.human_attributes);
+      Object.keys(attributes).forEach(attr => {
+        if (attributes[attr] === humanAttributes[attr]) {
           metrics.accurate++;
         } else {
           metrics.inaccurate++;
         }
       });
-      metrics.missing += Object.keys(product.humanAttributes).length - Object.keys(product.attributes).length;
-    }
-  });
+      metrics.missing += Object.keys(humanAttributes).length - Object.keys(attributes).length;
+    });
 
-  res.json(metrics);
+    res.json(metrics);
+  } catch (error) {
+    console.error('Error calculating accuracy metrics:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 // Helper function to process with LLM
