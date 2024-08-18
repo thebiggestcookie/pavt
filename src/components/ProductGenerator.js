@@ -8,46 +8,27 @@ const ProductGenerator = () => {
   const [subcategory, setSubcategory] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [prompts, setPrompts] = useState({ step1: '', step2: '', step3: '' });
+  const [prompts, setPrompts] = useState({
+    step1: 'Generate 5 realistic sample products for the given product type: $productname. Return the result as a JSON array of strings.',
+    step2: 'Given the following sample products: $sampleproducts\n\nDetermine the most appropriate subcategory for these products from the following list:\n$subcategories\n\nReturn only the name of the subcategory.',
+    step3: 'Given the product name "$productname" and the subcategory "$subcategory", generate appropriate values for the following attributes:\n\n$attributes\n\nReturn the result as a JSON object with attribute names as keys and generated values as values.'
+  });
   const [debugInfo, setDebugInfo] = useState('');
   const [showPrompts, setShowPrompts] = useState(false);
   const [generatedProducts, setGeneratedProducts] = useState([]);
   const [sampleProducts, setSampleProducts] = useState([]);
 
   useEffect(() => {
-    fetchPromptsData();
+    // Simulating prompt fetch from API
+    setPrompts(prevPrompts => ({
+      ...prevPrompts,
+      step2: prevPrompts.step2.replace('$subcategories', Object.keys(attributes).join(', '))
+    }));
   }, []);
-
-  const fetchPromptsData = async () => {
-    try {
-      debug('Fetching prompts');
-      const response = await fetchPrompts();
-      debug('Raw prompts response', response.data);
-      
-      const step1Prompt = response.data.find(prompt => prompt.name === 'Step 1')?.content;
-      const step2Prompt = response.data.find(prompt => prompt.name === 'Step 2')?.content;
-      const step3Prompt = response.data.find(prompt => prompt.name === 'Step 3')?.content;
-
-      if (!step1Prompt || !step2Prompt || !step3Prompt) {
-        throw new Error('One or more prompts are missing or empty');
-      }
-
-      setPrompts({ step1: step1Prompt, step2: step2Prompt, step3: step3Prompt });
-      debug('Prompts fetched successfully', { step1: step1Prompt, step2: step2Prompt, step3: step3Prompt });
-    } catch (error) {
-      console.error('Error fetching prompts:', error);
-      debug('Error fetching prompts', error);
-      setError(`Failed to fetch prompts: ${error.message}`);
-    }
-  };
 
   const handleGenerateProduct = async () => {
     if (!productName) {
       setError('Please enter a product name.');
-      return;
-    }
-    if (!prompts.step1 || !prompts.step2 || !prompts.step3) {
-      setError('Prompts are not loaded. Please try refreshing the page.');
       return;
     }
     setLoading(true);
@@ -76,10 +57,13 @@ const ProductGenerator = () => {
 
       // Step 3: Generate attributes
       const subcategoryAttributes = attributes[matchedSubcategory];
+      const attributesPrompt = Object.entries(subcategoryAttributes)
+        .map(([key, values]) => `${key}: [${values.join(', ')}]`)
+        .join('\n');
       const step3Prompt = prompts.step3
         .replace('$productname', productName)
         .replace('$subcategory', matchedSubcategory)
-        .replace('$attributes', JSON.stringify(subcategoryAttributes));
+        .replace('$attributes', attributesPrompt);
       debug('Step 3 prompt', step3Prompt);
       const step3Response = await generateProduct(step3Prompt);
       const generatedAttributes = JSON.parse(step3Response.data.response);
@@ -159,7 +143,7 @@ const ProductGenerator = () => {
       )}
       <button
         onClick={handleGenerateProduct}
-        disabled={loading || !prompts.step1 || !prompts.step2 || !prompts.step3}
+        disabled={loading || !productName}
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
       >
         {loading ? 'Generating...' : 'Generate Product'}
