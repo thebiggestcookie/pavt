@@ -1,133 +1,35 @@
 # Updates
 
-## Update #1
-- Fixed ProductGenerator component
-  - Issue: Prompts were not being fetched from the backend
-  - Solution: Added useEffect to fetch prompts on component mount
-  - Added error handling for JSON parsing of LLM response
-  - Implemented two-step generation process (subcategory, then attributes)
-  - Status: Partially working, prompts fetched but generation failing
-  - Technical details:
-    - Added `useEffect` hook to fetch prompts on component mount
-    - Implemented `fetchPrompts` function using axios to get prompts from '/api/prompts'
-    - Added try-catch block for error handling in `generateProduct` function
-
-## Update #2
-- Enhanced ProductGenerator component
-  - Added display of prompts
-  - Implemented debug information display
-  - Added save product functionality
-  - Status: UI updates successful, but API calls failing with 404 error
-  - Technical details:
-    - Added state variables for `subcategory`, `attributes`, and `debugInfo`
-    - Implemented `saveProduct` function using axios to post to '/api/products'
-    - Added UI elements to display prompts, generated subcategory, and attributes
-- Updated HumanGraderV2 component
-  - Implemented fetching of products to grade
-  - Added grading functionality
-  - Displayed product attributes for grading
-  - Status: Component not loading, possibly due to API issues
-  - Technical details:
-    - Added `useEffect` hook to fetch products on component mount
-    - Implemented `fetchProducts` function using axios to get from '/api/products-to-grade'
-    - Added `handleGrade` function to send grading results to '/api/grade-product'
-
-## Update #3
-- Further updates to ProductGenerator
-  - Added product name input field
-  - Modified prompts to use product name as a dynamic variable
-  - Enhanced error handling and debug information
-  - Status: Pending testing, API endpoints need to be verified
-  - Technical details:
-    - Added `productName` state variable and input field
-    - Updated prompt replacement logic to use `$productname` instead of `{productname}`
-    - Enhanced error handling in `generateProduct` function to provide more detailed error messages
-- Refined HumanGraderV2 error handling
-  - Added more specific error messages
-  - Status: Pending testing, API endpoints need to be verified
-  - Technical details:
-    - Updated error handling in `fetchProducts` and `handleGrade` functions to provide more specific error messages
-
-## Update #4
-- Implemented global debug functionality
-  - Added debug.js utility file with debug, getDebugLog, and clearDebugLog functions
-  - Integrated debug logging into ProductGenerator and HumanGraderV2 components
-  - Added "Copy Debug Log" button to both components for easy sharing of debug information
+## Update #10
+- Revised ProductGenerator component
+  - Added more robust error checking for prompt data
+  - Improved error messages for missing or invalid prompt data
   - Status: Implemented, needs testing
   - Technical details:
-    - Created `debug.js` utility file with `debug`, `getDebugLog`, and `clearDebugLog` functions
-    - Integrated `debug` function calls throughout ProductGenerator and HumanGraderV2 components
-    - Added `copyDebugLog` function to copy debug log to clipboard
-
-## Update #5
-- Updated ProductGenerator component
-  - Changed API endpoint from '/api/generate' to '/api/generate-prompt'
-  - Updated prompt variable syntax from {productname} to $productname
-  - Status: Pending testing, 404 error still occurring
-  - Technical details:
-    - Updated axios post request URL from '/api/generate' to '/api/generate-prompt'
-    - Modified prompt replacement logic to use `$productname` and `$subcategory`
-- Reviewed HumanGraderV2 component
-  - No changes made, component still not loading
-  - Status: Further investigation needed
-
-## Update #6
-- Added GlobalDebug component
-  - Created a new component that displays debug information globally
-  - Integrated GlobalDebug component into App.js
-  - Debug information is now visible on all pages, even if the main component fails to load
-  - Status: Implemented, needs testing
-  - Technical details:
-    - Created new `GlobalDebug.js` component with state for debug log and visibility
-    - Added useEffect hook to update debug log every second
-    - Implemented toggle functionality for showing/hiding debug information
-    - Added GlobalDebug component to App.js
-
-## Update #7
-- Updated ProductGenerator component
-  - Fixed issue with empty prompts after fetching
-  - Updated error handling to provide more detailed information
-  - Changed API endpoint back to '/api/generate' based on debug log
-  - Status: Implemented, needs testing
-  - Technical details:
-    - Modified `fetchPrompts` function to correctly set prompts state
-    - Updated error handling in `generateProduct` function to include more debug information
-    - Changed axios post request URL back to '/api/generate'
-
-## Update #8
-- Further updates to ProductGenerator component
-  - Added more detailed logging for prompt fetching
-  - Implemented checks for empty prompts before generation
-  - Updated UI to show loading state for prompts
-  - Status: Implemented, needs testing
-  - Technical details:
-    - Added debug logging for raw prompts response
-    - Implemented checks in `generateProduct` function to throw errors if prompts are empty
-    - Updated UI to display "Loading..." for prompts when they're not yet fetched
-- Updated HumanGraderV2 component
-  - Added more detailed logging for product fetching
-  - Status: Implemented, needs testing
-  - Technical details:
-    - Added debug logging for raw products response
-
-## Update #9
-- Improved debugging and troubleshooting process
-  - Added version control integration to track changes more effectively
-  - Implemented a systematic approach to reviewing past changes and their effects
-  - Status: Ongoing improvement
-  - Technical details:
-    - Added git commit hashes to update log entries for easy reference
-    - Implemented a review process to analyze the impact of each change
-    - Created a separate debugging notes section in the update log
+    - Added checks for array structure and content in fetchPrompts function
+    - Implemented specific error messages for missing prompts
+    - Updated UI to disable generate button when prompts are not loaded
   - Debugging notes:
-    - ProductGenerator: Prompts are still empty after fetching. Possible issues:
-      - Backend '/api/prompts' endpoint may not be returning expected data
-      - Data structure of the response might not match what the frontend expects
-    - HumanGraderV2: Component not loading. Possible issues:
-      - '/api/products-to-grade' endpoint might be failing or returning unexpected data
-      - There might be a rendering issue if the data structure is not as expected
-  - Next steps:
-    - Review backend API endpoints for '/api/prompts' and '/api/products-to-grade'
-    - Implement more detailed error logging on the backend
-    - Add data validation checks on both frontend and backend
-    - Consider implementing unit tests for critical functions
+    - Issue: Prompts stuck on "loading"
+    - Possible cause: '/api/prompts' endpoint not returning expected data structure
+    - Next step: Verify '/api/prompts' endpoint response format
+
+- Updated HumanGraderV2 component
+  - Added more robust error checking for product data
+  - Improved error handling and messages
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Added checks for array structure and content in fetchProducts function
+    - Implemented specific error message for no available products
+    - Added null check for currentProduct in handleGrade function
+  - Debugging notes:
+    - Issue: Component not loading
+    - Possible cause: '/api/products-to-grade' endpoint not returning expected data or failing
+    - Next step: Verify '/api/products-to-grade' endpoint functionality and response format
+
+- Next steps:
+  - Review and test '/api/prompts' endpoint
+  - Review and test '/api/products-to-grade' endpoint
+  - Verify data structures returned by both endpoints match frontend expectations
+  - Test ProductGenerator and HumanGraderV2 components with known good data
+  - Consider adding mock data for testing purposes if backend is not yet fully implemented
