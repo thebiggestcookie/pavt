@@ -15,6 +15,11 @@ This project is a React-based application for categorizing and managing e-commer
 - Prompt tester with comparison to human-graded results
 - Product generator for creating sample products using LLMs
 
+## Recent Changes
+
+- A default user (username: admin, password: password) has been set for testing purposes.
+- The navigation menu has been updated to show all available features for admin users.
+
 ## Recommendations for Future Improvements
 
 1. **Database Integration**: Replace in-memory storage with a proper database system (e.g., PostgreSQL, MongoDB) for persistent data storage and improved scalability.
