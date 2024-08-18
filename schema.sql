@@ -1,0 +1,63 @@
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL,
+  last_login TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS llm_configs (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  provider VARCHAR(50) NOT NULL,
+  model VARCHAR(255) NOT NULL,
+  api_key VARCHAR(255) NOT NULL,
+  max_tokens INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS prompts (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  step INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS subcategories (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS attributes (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  type VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  attributes JSONB,
+  human_attributes JSONB,
+  human_verified BOOLEAN DEFAULT FALSE,
+  needs_review BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS token_usage (
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  token_count INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS grader_performance (
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  accuracy FLOAT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS llm_performance (
+  id SERIAL PRIMARY KEY,
+  date DATE NOT NULL,
+  model VARCHAR(255) NOT NULL,
+  accuracy FLOAT NOT NULL
+);
+
