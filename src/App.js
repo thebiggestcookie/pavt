@@ -7,7 +7,6 @@ import HumanGraderInterface from './components/HumanGraderInterface';
 import HumanGraderV2 from './components/HumanGraderV2';
 import AdminPanel from './components/AdminPanel';
 import PromptManagement from './components/PromptManagement';
-import PerformanceMetrics from './components/PerformanceMetrics';
 import UserManagement from './components/UserManagement';
 import AttributeEditor from './components/AttributeEditor';
 import InvestorDashboard from './components/InvestorDashboard';
@@ -28,10 +27,9 @@ const App = () => {
                 <li><Link to="/grader-v2" className="text-blue-600 hover:text-blue-800">Human Grader V2</Link></li>
                 <li><Link to="/admin" className="text-blue-600 hover:text-blue-800">Admin Panel</Link></li>
                 <li><Link to="/prompts" className="text-blue-600 hover:text-blue-800">Prompt Management</Link></li>
-                <li><Link to="/metrics" className="text-blue-600 hover:text-blue-800">Performance Metrics</Link></li>
                 <li><Link to="/users" className="text-blue-600 hover:text-blue-800">User Management</Link></li>
                 <li><Link to="/attributes" className="text-blue-600 hover:text-blue-800">Attribute Editor</Link></li>
-                <li><Link to="/investor" className="text-blue-600 hover:text-blue-800">Investor Dashboard</Link></li>
+                <li><Link to="/reports" className="text-blue-600 hover:text-blue-800">Reports Dashboard</Link></li>
                 <li><Link to="/prompt-tester" className="text-blue-600 hover:text-blue-800">Prompt Tester</Link></li>
                 <li><Link to="/product-generator" className="text-blue-600 hover:text-blue-800">Product Generator</Link></li>
               </ul>
@@ -46,10 +44,9 @@ const App = () => {
               <Route path="/grader-v2" element={<HumanGraderV2 />} />
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/prompts" element={<PromptManagement />} />
-              <Route path="/metrics" element={<PerformanceMetrics />} />
               <Route path="/users" element={<UserManagement />} />
               <Route path="/attributes" element={<AttributeEditor />} />
-              <Route path="/investor" element={<InvestorDashboard />} />
+              <Route path="/reports" element={<InvestorDashboard />} />
               <Route path="/prompt-tester" element={<PromptTester />} />
               <Route path="/product-generator" element={<ProductGenerator />} />
             </Routes>
@@ -61,3 +58,4 @@ const App = () => {
 };
 
 export default App;
+
