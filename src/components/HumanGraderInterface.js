@@ -5,6 +5,8 @@ const HumanGraderInterface = () => {
   const [products, setProducts] = useState([]);
   const [currentProductIndex, setCurrentProductIndex] = useState(0);
   const [humanAttributes, setHumanAttributes] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchProducts();
@@ -12,10 +14,14 @@ const HumanGraderInterface = () => {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const response = await axios.get('/api/products');
       setProducts(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
+      setError('Failed to fetch products. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -35,11 +41,20 @@ const HumanGraderInterface = () => {
       setHumanAttributes({});
     } catch (error) {
       console.error('Error updating product:', error);
+      setError('Failed to update product. Please try again.');
     }
   };
 
-  if (products.length === 0) {
+  if (loading) {
     return <div>Loading products...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
+  if (products.length === 0) {
+    return <div>No products available for grading.</div>;
   }
 
   if (currentProductIndex >= products.length) {
