@@ -64,8 +64,45 @@
     - Removed redundant error checks that are now handled in the API utility
     - Updated error messages to directly use the error message from the API utility
 
+## Update #16
+- Updated API utility file (src/utils/api.js)
+  - Increased timeout to 30 seconds
+  - Added more detailed error logging
+  - Added console.log statements for debugging API responses
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Updated timeout in axios.create to 30000 ms
+    - Enhanced error logging in response interceptor
+    - Added console.log statements in each API function to log response data
+
+- Updated ProductGenerator component
+  - No changes made, but component will benefit from improved API error logging
+
+## Update #17
+- Updated ProductGenerator component
+  - Added editable prompts for Step 1 and Step 2
+  - Restored save product functionality
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Added textarea inputs for Step 1 and Step 2 prompts
+    - Implemented handlePromptChange function to update prompts
+    - Re-added handleSaveProduct function
+
+- Added dummyProducts.js
+  - Created file with 5 dummy products for testing
+  - Status: Implemented
+  - Technical details:
+    - Added dummy data for coffee beans and coffee pods with various attributes
+
+- Updated HumanGraderV2 component
+  - Implemented use of dummy products for testing
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Imported dummyProducts from new file
+    - Updated fetchProducts function to use dummy data
+    - Updated rendering of product attributes to handle arrays
+
 - Next steps:
-  - Test the updated API utility with the backend
-  - Verify that the data validation checks are working correctly
-  - Test ProductGenerator and HumanGraderV2 components with the updated error handling
-  - Investigate any persistent data format issues from the backend
+  - Test ProductGenerator with editable prompts and save functionality
+  - Verify HumanGraderV2 works correctly with dummy data
+  - Prepare for integration with backend API when ready

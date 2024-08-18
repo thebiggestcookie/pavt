@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { debug, getDebugLog } from '../utils/debug';
 import { fetchProductsToGrade, gradeProduct } from '../utils/api';
+import { dummyProducts } from '../data/dummyProducts';
 
 const HumanGraderV2 = () => {
   const [products, setProducts] = useState([]);
@@ -15,39 +16,22 @@ const HumanGraderV2 = () => {
   const fetchProducts = async () => {
     try {
       debug('Fetching products to grade');
-      const response = await fetchProductsToGrade();
-      debug('Raw products response', response.data);
+      // Uncomment the following line when the API is ready
+      // const response = await fetchProductsToGrade();
+      // debug('Raw products response', response.data);
       
-      if (!Array.isArray(response.data)) {
-        throw new Error('Received data is not an array');
-      }
+      // For now, use dummy data
+      const dummyResponse = { data: dummyProducts };
+      debug('Using dummy products', dummyResponse.data);
 
-      if (response.data.length === 0) {
-        setError('No products available for grading');
-        setLoading(false);
-        return;
-      }
-
-      setProducts(response.data);
-      setCurrentProduct(response.data[0]);
-      debug('Products fetched successfully', response.data);
+      setProducts(dummyResponse.data);
+      setCurrentProduct(dummyResponse.data[0]);
+      debug('Products fetched successfully', dummyResponse.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
       debug('Error fetching products', error);
-      if (error.response) {
-        debug('Error response', error.response);
-        if (error.response.status === 401) {
-          setError('Authentication failed. Please log in and try again.');
-        } else {
-          setError(`Failed to fetch products: ${error.message}. Status: ${error.response.status}`);
-        }
-      } else if (error.request) {
-        debug('Error request', error.request);
-        setError('No response received from the server. Please check your internet connection.');
-      } else {
-        setError(`Failed to fetch products: ${error.message}`);
-      }
+      setError(`Failed to fetch products: ${error.message}`);
       setLoading(false);
     }
   };
@@ -58,7 +42,8 @@ const HumanGraderV2 = () => {
         throw new Error('No product selected for grading');
       }
       debug('Grading product', { productId: currentProduct.id, grade });
-      await gradeProduct(currentProduct.id, grade);
+      // Uncomment the following line when the API is ready
+      // await gradeProduct(currentProduct.id, grade);
       debug('Product graded successfully');
       // Move to next product
       const nextProductIndex = products.findIndex(p => p.id === currentProduct.id) + 1;
@@ -122,7 +107,7 @@ const HumanGraderV2 = () => {
         <ul className="list-disc pl-5 mb-4">
           {Object.entries(currentProduct.attributes).map(([key, value]) => (
             <li key={key}>
-              <span className="font-semibold">{key}:</span> {value}
+              <span className="font-semibold">{key}:</span> {Array.isArray(value) ? value.join(', ') : value.toString()}
             </li>
           ))}
         </ul>

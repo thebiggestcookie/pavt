@@ -73,6 +73,7 @@ const ProductGenerator = () => {
     }
   };
 
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-4">Product Generator</h1>
@@ -108,22 +109,7 @@ const ProductGenerator = () => {
         />
       </div>
       <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="llmConfig">
-          LLM Configuration
-        </label>
-        <select
-          id="llmConfig"
-          value={selectedLlmConfig}
-          onChange={(e) => setSelectedLlmConfig(e.target.value)}
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        >
-          <option value="">Select LLM configuration</option>
-          {llmConfigs.map((config) => (
-            <option key={config.id} value={config.id}>
-              {config.name}
-            </option>
-          ))}
-        </select>
+
       </div>
       <button
         onClick={handleGenerateProduct}
