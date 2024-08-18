@@ -116,4 +116,15 @@ CREATE TABLE llm_performance (
 
 Your LLM Product Categorizer should now be set up and running on Render. You can access it via the URL provided in your web service dashboard.
 
+## 5. Troubleshooting
+
+If you encounter build errors related to missing dependencies, follow these steps:
+
+1. In your local development environment, run `npm install react-dropzone @babel/plugin-proposal-private-property-in-object` to add the missing dependencies.
+2. Update your `package.json` file with the new dependencies.
+3. Commit and push these changes to your GitHub repository.
+4. In the Render dashboard, go to your web service and click on "Manual Deploy" > "Deploy latest commit".
+
+This should resolve the build errors related to missing dependencies.
+
 Remember to secure your application properly, especially if you're handling sensitive data. Consider implementing proper authentication, using environment variables for sensitive information, and following security best practices.
