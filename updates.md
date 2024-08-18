@@ -37,9 +37,18 @@
   - Added "Copy Debug Log" button to both components for easy sharing of debug information
   - Status: Implemented, needs testing
 
+## 2023-06-18
+- Updated ProductGenerator component
+  - Changed API endpoint from '/api/generate' to '/api/generate-prompt'
+  - Updated prompt variable syntax from {productname} to $productname
+  - Status: Pending testing, 404 error still occurring
+- Reviewed HumanGraderV2 component
+  - No changes made, component still not loading
+  - Status: Further investigation needed
+
 Next steps:
-- Test debug functionality in ProductGenerator and HumanGraderV2
-- Verify API endpoints for both components
-- Test product generation with new product name field
-- Investigate and resolve 404 errors in API calls
-- Review and analyze debug logs to identify any remaining issues
+- Verify API endpoint '/api/generate-prompt' exists and is correctly implemented on the backend
+- Test product generation with updated endpoint and variable syntax
+- Investigate why HumanGraderV2 is not loading, check for any console errors
+- Review backend routes and controllers for both components
+- Consider adding more detailed error logging in the backend to help diagnose issues
