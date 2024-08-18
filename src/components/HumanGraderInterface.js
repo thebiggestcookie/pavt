@@ -17,7 +17,7 @@ const HumanGraderInterface = () => {
     try {
       setLoading(true);
       const response = await axios.get('/api/products');
-      setProducts(response.data);
+      setProducts(response.data.filter(product => !product.human_verified));
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -78,7 +78,6 @@ const HumanGraderInterface = () => {
 
   const currentProduct = products[currentProductIndex];
 
-  // Dummy data for attribute options
   const attributeOptions = {
     'Roast Level': ['Light', 'Medium', 'Dark', 'French', 'Italian', 'City', 'Full City', 'Vienna'],
     'Origin': ['Ethiopia', 'Colombia', 'Brazil', 'Kenya', 'Indonesia', 'Guatemala', 'Costa Rica', 'Jamaica', 'Hawaii', 'Vietnam'],
@@ -106,11 +105,11 @@ const HumanGraderInterface = () => {
               </label>
               <select
                 id={key}
-                value={humanAttributes[key] || value}
+                value={humanAttributes[key] || ''}
                 onChange={(e) => handleAttributeChange(key, e.target.value)}
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
-                <option value={value}>{value}</option>
+                <option value="">Select an option</option>
                 {attributeOptions[key] && attributeOptions[key].map(option => (
                   <option key={option} value={option}>{option}</option>
                 ))}
@@ -124,6 +123,7 @@ const HumanGraderInterface = () => {
                   onChange={(e) => handleAttributeChange(key, e.target.value)}
                 />
               )}
+              <p className="mt-1 text-sm text-gray-600">LLM generated value: {value}</p>
             </div>
           ))}
         </div>
@@ -148,3 +148,4 @@ const HumanGraderInterface = () => {
 };
 
 export default HumanGraderInterface;
+
