@@ -67,11 +67,13 @@ const ProductGenerator = () => {
     setError('');
 
     try {
+      const selectedLlmConfigData = llmConfigs.find(c => c.id === parseInt(selectedLlmConfig));
+      
       // Step 1: Identify subcategory
       const subcategoryResponse = await axios.post('/api/process-llm', {
-        prompt: prompts.find(p => p.id === selectedPrompt1).content,
+        prompt: prompts.find(p => p.id === parseInt(selectedPrompt1)).content,
         productName: productName,
-        llmConfig: llmConfigs.find(c => c.id === selectedLlmConfig)
+        llmConfig: selectedLlmConfigData
       });
       const identifiedSubcategory = subcategoryResponse.data.attributes.trim();
       setSubcategory(identifiedSubcategory);
@@ -81,15 +83,23 @@ const ProductGenerator = () => {
 
       // Step 2: Generate attributes
       const attributesResponse = await axios.post('/api/process-llm', {
-        prompt: prompts.find(p => p.id === selectedPrompt2).content,
+        prompt: prompts.find(p => p.id === parseInt(selectedPrompt2)).content,
         productName: productName,
         subcategory: identifiedSubcategory,
-        llmConfig: llmConfigs.find(c => c.id === selectedLlmConfig)
+        llmConfig: selectedLlmConfigData
       });
       setAttributes(JSON.parse(attributesResponse.data.attributes));
+
+      // Save the generated product to the database
+      await axios.post('/api/products', {
+        name: productName,
+        subcategory: identifiedSubcategory,
+        attributes: JSON.parse(attributesResponse.data.attributes)
+      });
+
     } catch (error) {
       console.error('Error generating product:', error);
-      setError('Failed to generate product attributes');
+      setError('Failed to generate product attributes: ' + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
     }
