@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { debug, getDebugLog } from '../utils/debug';
 import { fetchProductsToGrade, gradeProduct } from '../utils/api';
 import { dummyProducts } from '../data/dummyProducts';
+import { attributes } from '../data/attributes';
 
 const HumanGraderV2 = () => {
   const [products, setProducts] = useState([]);
@@ -60,6 +61,16 @@ const HumanGraderV2 = () => {
     }
   };
 
+  const handleAttributeChange = (key, value) => {
+    setCurrentProduct(prevProduct => ({
+      ...prevProduct,
+      attributes: {
+        ...prevProduct.attributes,
+        [key]: value
+      }
+    }));
+  };
+
   const copyDebugLog = () => {
     navigator.clipboard.writeText(getDebugLog());
     alert('Debug log copied to clipboard!');
@@ -106,8 +117,19 @@ const HumanGraderV2 = () => {
         <h3 className="text-xl font-bold mb-2">Attributes:</h3>
         <ul className="list-disc pl-5 mb-4">
           {Object.entries(currentProduct.attributes).map(([key, value]) => (
-            <li key={key}>
-              <span className="font-semibold">{key}:</span> {Array.isArray(value) ? value.join(', ') : value.toString()}
+            <li key={key} className="mb-2">
+              <span className="font-semibold">{key}:</span>
+              <select
+                value={value}
+                onChange={(e) => handleAttributeChange(key, e.target.value)}
+                className="ml-2 p-1 border rounded"
+              >
+                {attributes[currentProduct.subcategory][key].map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
             </li>
           ))}
         </ul>
