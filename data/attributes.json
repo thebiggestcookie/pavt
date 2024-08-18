@@ -1,0 +1,26 @@
+{
+  "Whole Bean Coffee": {
+    "Origin": ["Colombia", "Ethiopia", "Brazil", "Kenya", "Guatemala"],
+    "Roast Level": ["Light", "Medium", "Dark", "French"],
+    "Flavor Profile": ["Fruity", "Nutty", "Chocolatey", "Floral", "Spicy"],
+    "Organic": ["Yes", "No"],
+    "Fair Trade": ["Yes", "No"],
+    "Processing Method": ["Washed", "Natural", "Honey"]
+  },
+  "Ground Coffee": {
+    "Origin": ["Colombia", "Ethiopia", "Brazil", "Kenya", "Guatemala"],
+    "Roast Level": ["Light", "Medium", "Dark", "French"],
+    "Grind Size": ["Fine", "Medium", "Coarse"],
+    "Flavor Profile": ["Fruity", "Nutty", "Chocolatey", "Floral", "Spicy"],
+    "Organic": ["Yes", "No"],
+    "Fair Trade": ["Yes", "No"]
+  },
+  "Coffee Pods": {
+    "Origin": ["Colombia", "Ethiopia", "Brazil", "Kenya", "Guatemala"],
+    "Roast Level": ["Light", "Medium", "Dark"],
+    "Flavor Profile": ["Fruity", "Nutty", "Chocolatey", "Floral", "Spicy"],
+    "Organic": ["Yes", "No"],
+    "Fair Trade": ["Yes", "No"],
+    "Compatibility": ["Keurig", "Nespresso", "Tassimo"]
+  }
+}
