@@ -343,16 +343,19 @@ app.post('/api/process-llm', async (req, res) => {
       fullPrompt = fullPrompt.replace('[Subcategory Here]', subcategory);
     }
 
+    console.log('Full Prompt:', fullPrompt);
+    console.log('LLM Config:', llmConfig);
+
     let response;
     switch (llmConfig.provider) {
       case 'openai':
         response = await axios.post('https://api.openai.com/v1/chat/completions', {
           model: llmConfig.model,
           messages: [{ role: 'user', content: fullPrompt }],
-          max_tokens: parseInt(llmConfig.maxTokens)
+          max_tokens: parseInt(llmConfig.max_tokens)
         }, {
           headers: {
-            'Authorization': `Bearer ${llmConfig.apiKey}`,
+            'Authorization': `Bearer ${llmConfig.api_key}`,
             'Content-Type': 'application/json'
           }
         });
@@ -361,10 +364,10 @@ app.post('/api/process-llm', async (req, res) => {
         response = await axios.post('https://api.anthropic.com/v1/complete', {
           prompt: fullPrompt,
           model: llmConfig.model,
-          max_tokens_to_sample: parseInt(llmConfig.maxTokens)
+          max_tokens_to_sample: parseInt(llmConfig.max_tokens)
         }, {
           headers: {
-            'X-API-Key': llmConfig.apiKey,
+            'X-API-Key': llmConfig.api_key,
             'Content-Type': 'application/json'
           }
         });
@@ -372,6 +375,8 @@ app.post('/api/process-llm', async (req, res) => {
       default:
         throw new Error('Unsupported LLM provider');
     }
+
+    console.log('LLM Response:', response.data);
 
     let attributes;
     if (llmConfig.provider === 'openai') {
