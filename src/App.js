@@ -13,6 +13,7 @@ import InvestorDashboard from './components/InvestorDashboard';
 import PromptTester from './components/PromptTester';
 import ProductGenerator from './components/ProductGenerator';
 import Login from './components/Login';
+import GlobalDebug from './components/GlobalDebug';
 
 const App = () => {
   return (
@@ -51,6 +52,7 @@ const App = () => {
               <Route path="/product-generator" element={<ProductGenerator />} />
             </Routes>
           </div>
+          <GlobalDebug />
         </div>
       </Router>
     </Provider>
@@ -58,3 +60,4 @@ const App = () => {
 };
 
 export default App;
+
