@@ -64,9 +64,29 @@
     - Updated API utility functions to handle new endpoints
     - Implemented error handling for API failures
 
+## Update #22
+- Implemented detailed prompts for each step of the product generation process
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Created specific prompts for generating sample products, matching subcategories, and generating attributes
+    - Integrated prompts into the ProductGenerator component
+    - Updated prompt handling to replace placeholders with actual data
+
+- Enhanced subcategory matching process
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Updated Step 2 prompt to include all available subcategories from attributes.js
+    - Improved error handling for subcategory matching
+
+- Refined attribute generation process
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Updated Step 3 prompt to include specific attribute options for the matched subcategory
+    - Improved error handling for attribute generation
+
 Next steps:
-- Conduct user acceptance testing
-- Finalize backend API endpoints
-- Implement user authentication and authorization
-- Create documentation for the product generation process
-- Plan for deployment and monitoring
+- Conduct thorough testing of the updated product generation process
+- Fine-tune prompts based on testing results
+- Implement additional error handling and edge case management
+- Prepare for integration with actual LLM API
+- Create documentation for prompt engineering and product generation workflow
