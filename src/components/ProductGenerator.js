@@ -19,6 +19,7 @@ const ProductGenerator = () => {
     try {
       debug('Fetching prompts');
       const response = await axios.get('/api/prompts');
+      debug('Raw prompts response', response.data);
       const step1Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content || '';
       const step2Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content || '';
       setPrompts({ step1: step1Prompt, step2: step2Prompt });
@@ -43,7 +44,10 @@ const ProductGenerator = () => {
       // Step 1: Generate subcategory
       const step1Prompt = prompts.step1.replace('$productname', productName);
       debug('Step 1 prompt', step1Prompt);
-      const step1Response = await axios.post('/api/generate-prompt', { prompt: step1Prompt });
+      if (!step1Prompt) {
+        throw new Error('Step 1 prompt is empty. Please check if prompts are loaded correctly.');
+      }
+      const step1Response = await axios.post('/api/generate', { prompt: step1Prompt });
       const generatedSubcategory = step1Response.data.response.trim();
       setSubcategory(generatedSubcategory);
       debug('Generated subcategory', generatedSubcategory);
@@ -52,7 +56,10 @@ const ProductGenerator = () => {
       // Step 2: Generate attributes
       const step2Prompt = prompts.step2.replace('$productname', productName).replace('$subcategory', generatedSubcategory);
       debug('Step 2 prompt', step2Prompt);
-      const step2Response = await axios.post('/api/generate-prompt', { prompt: step2Prompt });
+      if (!step2Prompt) {
+        throw new Error('Step 2 prompt is empty. Please check if prompts are loaded correctly.');
+      }
+      const step2Response = await axios.post('/api/generate', { prompt: step2Prompt });
       setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${step2Response.data.response}\n\n`);
       const generatedAttributes = JSON.parse(step2Response.data.response);
       setAttributes(generatedAttributes);
@@ -104,16 +111,16 @@ const ProductGenerator = () => {
         <h2 className="text-xl font-bold mb-2">Prompts:</h2>
         <div className="mb-2">
           <h3 className="font-bold">Step 1:</h3>
-          <pre className="bg-gray-100 p-2 rounded">{prompts.step1}</pre>
+          <pre className="bg-gray-100 p-2 rounded">{prompts.step1 || 'Loading...'}</pre>
         </div>
         <div>
           <h3 className="font-bold">Step 2:</h3>
-          <pre className="bg-gray-100 p-2 rounded">{prompts.step2}</pre>
+          <pre className="bg-gray-100 p-2 rounded">{prompts.step2 || 'Loading...'}</pre>
         </div>
       </div>
       <button
         onClick={generateProduct}
-        disabled={loading}
+        disabled={loading || !prompts.step1 || !prompts.step2}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
       >
         {loading ? 'Generating...' : 'Generate Product'}
