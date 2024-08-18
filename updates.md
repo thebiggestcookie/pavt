@@ -93,9 +93,25 @@
     - Modified `fetchPrompts` function to correctly set prompts state
     - Updated error handling in `generateProduct` function to include more debug information
     - Changed axios post request URL back to '/api/generate'
+
+## Update #8
+- Further updates to ProductGenerator component
+  - Added more detailed logging for prompt fetching
+  - Implemented checks for empty prompts before generation
+  - Updated UI to show loading state for prompts
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Added debug logging for raw prompts response
+    - Implemented checks in `generateProduct` function to throw errors if prompts are empty
+    - Updated UI to display "Loading..." for prompts when they're not yet fetched
+- Updated HumanGraderV2 component
+  - Added more detailed logging for product fetching
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Added debug logging for raw products response
 - Next steps:
-  - Test updated ProductGenerator component
-  - Verify that prompts are being correctly fetched and stored
-  - Investigate why the API endpoint '/api/generate' is returning a 404 error
-  - Review backend API routes and controllers to ensure '/api/generate' endpoint is properly set up
+  - Investigate why prompts are empty after fetching in ProductGenerator
+  - Check backend API for '/api/prompts' endpoint to ensure it's returning the correct data
+  - Review '/api/generate' endpoint on the backend to resolve 404 error
   - Continue debugging HumanGraderV2 component loading issues
+  - Test both components with the new debug information
