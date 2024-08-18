@@ -62,8 +62,8 @@ const HumanGraderV2 = () => {
     return <div>Error: {error}</div>;
   }
 
-  if (products.length === 0) {
-    return <div>No products available for grading.</div>;
+  if (products.length === 0 || attributes.length === 0) {
+    return <div>No products or attributes available for grading.</div>;
   }
 
   if (currentProductIndex >= products.length) {
