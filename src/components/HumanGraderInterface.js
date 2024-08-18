@@ -78,6 +78,16 @@ const HumanGraderInterface = () => {
 
   const currentProduct = products[currentProductIndex];
 
+  // Dummy data for attribute options
+  const attributeOptions = {
+    'Roast Level': ['Light', 'Medium', 'Dark', 'French'],
+    'Origin': ['Ethiopia', 'Colombia', 'Brazil', 'Kenya', 'Indonesia'],
+    'Flavor Notes': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
+    'Grind Type': ['Whole Bean', 'Ground', 'Espresso'],
+    'Organic': ['Yes', 'No'],
+    'Fair Trade': ['Yes', 'No'],
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-4">Human Grader Interface</h1>
@@ -97,7 +107,9 @@ const HumanGraderInterface = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
                 <option value={value}>{value}</option>
-                {/* Add more options based on your attribute types */}
+                {attributeOptions[key] && attributeOptions[key].map(option => (
+                  <option key={option} value={option}>{option}</option>
+                ))}
                 <option value="Other">Other</option>
               </select>
               {humanAttributes[key] === 'Other' && (
