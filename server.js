@@ -53,7 +53,7 @@ async function initializeDatabase() {
     const products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
     for (const product of products) {
       await query(
-        'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET subcategory = $2, attributes = $3',
+        'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET subcategory = EXCLUDED.subcategory, attributes = EXCLUDED.attributes',
         [product.name, product.subcategory, JSON.stringify(product.attributes)]
       );
     }
@@ -238,6 +238,42 @@ app.put('/api/products/:id', async (req, res) => {
     }
   } catch (error) {
     console.error('Error updating product:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// User management endpoints
+app.get('/api/users', async (req, res) => {
+  try {
+    const result = await query('SELECT id, username, role FROM users');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.post('/api/users', async (req, res) => {
+  const { username, password, role } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO users (username, password, role) VALUES ($1, $2, $3) RETURNING id, username, role',
+      [username, password, role]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating user:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.delete('/api/users/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await query('DELETE FROM users WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting user:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
