@@ -46,11 +46,19 @@ initializeDatabase();
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   try {
-    const result = await query('SELECT * FROM users WHERE username = $1 AND password = $2', [username, password]);
+    console.log(`Attempting login for username: ${username}`);
+    const result = await query('SELECT * FROM users WHERE username = $1', [username]);
     if (result.rows.length > 0) {
       const user = result.rows[0];
-      res.json({ token: 'fake-jwt-token', username: user.username, role: user.role });
+      console.log(`User found: ${JSON.stringify(user)}`);
+      if (user.password === password) {
+        res.json({ token: 'fake-jwt-token', username: user.username, role: user.role });
+      } else {
+        console.log('Password incorrect');
+        res.status(400).json({ message: 'Username or password is incorrect' });
+      }
     } else {
+      console.log('User not found');
       res.status(400).json({ message: 'Username or password is incorrect' });
     }
   } catch (error) {
