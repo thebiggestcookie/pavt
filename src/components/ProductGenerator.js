@@ -7,6 +7,7 @@ const ProductGenerator = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [prompts, setPrompts] = useState({ step1: '', step2: '' });
+  const [debugInfo, setDebugInfo] = useState('');
 
   useEffect(() => {
     fetchPrompts();
@@ -28,34 +29,66 @@ const ProductGenerator = () => {
   const generateProduct = async () => {
     setLoading(true);
     setError('');
+    setDebugInfo('');
     try {
       // Step 1: Generate subcategory
       const step1Response = await axios.post('/api/generate', { prompt: prompts.step1 });
       const generatedSubcategory = step1Response.data.response.trim();
       setSubcategory(generatedSubcategory);
+      setDebugInfo(prevDebug => prevDebug + `Step 1 Response:\n${generatedSubcategory}\n\n`);
 
       // Step 2: Generate attributes
       const step2Prompt = prompts.step2.replace('{subcategory}', generatedSubcategory);
       const step2Response = await axios.post('/api/generate', { prompt: step2Prompt });
+      setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${step2Response.data.response}\n\n`);
       const generatedAttributes = JSON.parse(step2Response.data.response);
       setAttributes(generatedAttributes);
     } catch (error) {
       console.error('Error generating product:', error);
       setError('Failed to generate product. Please try again.');
+      setDebugInfo(prevDebug => prevDebug + `Error: ${error.message}\n`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveProduct = async () => {
+    try {
+      await axios.post('/api/products', { subcategory, attributes });
+      alert('Product saved successfully!');
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setError('Failed to save product. Please try again.');
     }
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">Product Generator</h1>
+      <div className="mb-4">
+        <h2 className="text-xl font-bold mb-2">Prompts:</h2>
+        <div className="mb-2">
+          <h3 className="font-bold">Step 1:</h3>
+          <pre className="bg-gray-100 p-2 rounded">{prompts.step1}</pre>
+        </div>
+        <div>
+          <h3 className="font-bold">Step 2:</h3>
+          <pre className="bg-gray-100 p-2 rounded">{prompts.step2}</pre>
+        </div>
+      </div>
       <button
         onClick={generateProduct}
         disabled={loading}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
       >
         {loading ? 'Generating...' : 'Generate Product'}
+      </button>
+      <button
+        onClick={saveProduct}
+        disabled={!subcategory || Object.keys(attributes).length === 0}
+        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Save Product
       </button>
       {error && <p className="text-red-500 mt-4">{error}</p>}
       {subcategory && (
@@ -70,6 +103,12 @@ const ProductGenerator = () => {
           <pre className="bg-gray-100 p-4 rounded">
             {JSON.stringify(attributes, null, 2)}
           </pre>
+        </div>
+      )}
+      {debugInfo && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold mb-2">Debug Information:</h2>
+          <pre className="bg-gray-100 p-4 rounded">{debugInfo}</pre>
         </div>
       )}
     </div>
