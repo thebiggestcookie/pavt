@@ -117,7 +117,55 @@ async function initializeDatabase() {
   }
 }
 
-initializeDatabase();
+// New function to check and update database schema
+async function checkAndUpdateSchema() {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    // Check if the products table exists
+    const tableExists = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_name = 'products'
+      );
+    `);
+
+    if (tableExists.rows[0].exists) {
+      // Check if the name column has a unique constraint
+      const constraintExists = await client.query(`
+        SELECT COUNT(*) 
+        FROM pg_constraint 
+        WHERE conrelid = 'products'::regclass 
+        AND contype = 'u' 
+        AND conkey @> ARRAY[
+          (SELECT attnum 
+           FROM pg_attribute 
+           WHERE attrelid = 'products'::regclass 
+           AND attname = 'name')
+        ];
+      `);
+
+      if (constraintExists.rows[0].count === '0') {
+        // Add unique constraint if it doesn't exist
+        await client.query('ALTER TABLE products ADD CONSTRAINT products_name_key UNIQUE (name);');
+        console.log('Added unique constraint to products table');
+      }
+    }
+
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error checking/updating schema:', error);
+  } finally {
+    client.release();
+  }
+}
+
+// Run schema check and update before initializing
+checkAndUpdateSchema().then(() => {
+  initializeDatabase();
+});
 
 // Debug endpoint to check database connection
 app.get('/api/debug', async (req, res) => {
