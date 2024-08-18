@@ -1,33 +1,21 @@
 # Updates
 
-## Update #18
+## Update #19
 - Updated ProductGenerator component
-  - Added functionality to show and edit prompts
-  - Implemented display of generated products with save buttons
+  - Implemented multi-step product generation process
+  - Added functionality to generate sample products
+  - Integrated subcategory matching and attribute generation
   - Status: Implemented, needs testing
   - Technical details:
-    - Added state for showing/hiding prompts
-    - Created a list to store and display generated products
-    - Implemented save functionality for individual products
-
-- Updated HumanGraderV2 component
-  - Added dropdown menus for attribute modification
-  - Status: Implemented, needs testing
-  - Technical details:
-    - Imported attributes from new attributes.js file
-    - Implemented handleAttributeChange function for updating attributes
-    - Updated attribute display to use select elements
-
-- Added attributes.js file
-  - Created structured attributes for coffee beans and coffee pods
-  - Status: Implemented
-  - Technical details:
-    - Defined attributes object with subcategories and their respective attributes
-    - Included various options for each attribute
+    - Added state for sample products and subcategory
+    - Implemented three-step generation process using separate prompts
+    - Updated UI to display sample products and generated products
+    - Integrated attributes from attributes.js for subcategory-specific attribute generation
 
 - Next steps:
-  - Test ProductGenerator with new prompt editing and product saving features
-  - Verify HumanGraderV2 works correctly with attribute dropdowns
-  - Ensure attributes in attributes.js cover all necessary options for coffee beans and pods
-  - Consider adding more subcategories and attributes as needed
+  - Test the new multi-step product generation process
+  - Verify that subcategory matching and attribute generation work correctly
+  - Ensure proper error handling and user feedback throughout the process
+  - Consider adding loading indicators for each step of the generation process
+  - Review and refine prompts for optimal results
   - Prepare for integration with backend API when ready
