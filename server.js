@@ -26,14 +26,9 @@ const pool = new Pool({
 // Helper function to query the database
 const query = (text, params) => pool.query(text, params);
 
-// Initialize database with admin user and tables
+// Initialize database with admin user
 async function initializeDatabase() {
   try {
-    const schemaPath = path.join(__dirname, 'schema.sql');
-    const schema = fs.readFileSync(schemaPath, 'utf8');
-    await query(schema);
-    console.log('Database schema initialized successfully');
-
     const userExists = await query('SELECT * FROM users WHERE username = $1', ['admin']);
     if (userExists.rows.length === 0) {
       await query('INSERT INTO users (username, password, role) VALUES ($1, $2, $3)', ['admin', 'password', 'admin']);
@@ -313,3 +308,4 @@ app.get('*', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
