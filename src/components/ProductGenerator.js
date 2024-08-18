@@ -12,10 +12,13 @@ const ProductGenerator = () => {
   const [selectedLlmConfig, setSelectedLlmConfig] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [subcategories, setSubcategories] = useState([]);
+  const [subcategoryAttributes, setSubcategoryAttributes] = useState([]);
 
   useEffect(() => {
     fetchPrompts();
     fetchLlmConfigs();
+    fetchSubcategories();
   }, []);
 
   const fetchPrompts = async () => {
@@ -38,6 +41,26 @@ const ProductGenerator = () => {
     }
   };
 
+  const fetchSubcategories = async () => {
+    try {
+      const response = await axios.get('/api/subcategories');
+      setSubcategories(response.data);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+      setError('Failed to fetch subcategories');
+    }
+  };
+
+  const fetchSubcategoryAttributes = async (subcategory) => {
+    try {
+      const response = await axios.get(`/api/subcategory-attributes/${subcategory}`);
+      setSubcategoryAttributes(response.data);
+    } catch (error) {
+      console.error('Error fetching subcategory attributes:', error);
+      setError('Failed to fetch subcategory attributes');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,16 +73,20 @@ const ProductGenerator = () => {
         productName: productName,
         llmConfig: llmConfigs.find(c => c.id === selectedLlmConfig)
       });
-      setSubcategory(subcategoryResponse.data.attributes);
+      const identifiedSubcategory = subcategoryResponse.data.attributes.trim();
+      setSubcategory(identifiedSubcategory);
+
+      // Fetch attributes for the identified subcategory
+      await fetchSubcategoryAttributes(identifiedSubcategory);
 
       // Step 2: Generate attributes
       const attributesResponse = await axios.post('/api/process-llm', {
         prompt: prompts.find(p => p.id === selectedPrompt2).content,
         productName: productName,
-        subcategory: subcategoryResponse.data.attributes,
+        subcategory: identifiedSubcategory,
         llmConfig: llmConfigs.find(c => c.id === selectedLlmConfig)
       });
-      setAttributes(attributesResponse.data.attributes);
+      setAttributes(JSON.parse(attributesResponse.data.attributes));
     } catch (error) {
       console.error('Error generating product:', error);
       setError('Failed to generate product attributes');
