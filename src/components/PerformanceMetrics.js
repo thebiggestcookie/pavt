@@ -6,8 +6,8 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const PerformanceMetrics = () => {
-  const [tokenUsageData, setTokenUsageData] = useState(null);
-  const [llmPerformanceData, setLlmPerformanceData] = useState(null);
+  const [tokenUsageData, setTokenUsageData] = useState([]);
+  const [llmPerformanceData, setLlmPerformanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -38,7 +38,7 @@ const PerformanceMetrics = () => {
     return <div className="text-red-500">{error}</div>;
   }
 
-  if (!tokenUsageData || !llmPerformanceData) {
+  if (tokenUsageData.length === 0 && llmPerformanceData.length === 0) {
     return <div>No performance data available.</div>;
   }
 
@@ -83,11 +83,19 @@ const PerformanceMetrics = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h2 className="text-xl font-semibold mb-2">Token Usage Over Time</h2>
-          <Bar data={tokenUsageChartData} options={chartOptions} />
+          {tokenUsageData.length > 0 ? (
+            <Bar data={tokenUsageChartData} options={chartOptions} />
+          ) : (
+            <p>No token usage data available.</p>
+          )}
         </div>
         <div>
           <h2 className="text-xl font-semibold mb-2">LLM Performance</h2>
-          <Bar data={llmPerformanceChartData} options={chartOptions} />
+          {llmPerformanceData.length > 0 ? (
+            <Bar data={llmPerformanceChartData} options={chartOptions} />
+          ) : (
+            <p>No LLM performance data available.</p>
+          )}
         </div>
       </div>
     </div>

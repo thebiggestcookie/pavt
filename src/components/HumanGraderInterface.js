@@ -71,7 +71,7 @@ const HumanGraderInterface = () => {
         <div className="mb-4">
           <h3 className="text-lg font-semibold">LLM Generated Attributes:</h3>
           <ul>
-            {Object.entries(currentProduct.attributes).map(([key, value]) => (
+            {Object.entries(JSON.parse(currentProduct.attributes)).map(([key, value]) => (
               <li key={key} className="mb-2">
                 <span className="font-medium">{key}:</span> {value}
               </li>
@@ -80,7 +80,7 @@ const HumanGraderInterface = () => {
         </div>
         <div className="mb-4">
           <h3 className="text-lg font-semibold">Human Verification:</h3>
-          {Object.keys(currentProduct.attributes).map(attribute => (
+          {Object.keys(JSON.parse(currentProduct.attributes)).map(attribute => (
             <div key={attribute} className="mb-2">
               <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor={attribute}>
                 {attribute}:
