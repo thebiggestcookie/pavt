@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
 const { Pool } = require('pg');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -35,6 +36,29 @@ async function initializeDatabase() {
     } else {
       console.log('Admin user already exists');
     }
+
+    // Initialize subcategories
+    const subcategories = JSON.parse(fs.readFileSync('data/subcategories.json', 'utf8'));
+    for (const subcategory of subcategories) {
+      await query('INSERT INTO subcategories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [subcategory.name]);
+    }
+
+    // Initialize attributes
+    const attributes = JSON.parse(fs.readFileSync('data/attributes.json', 'utf8'));
+    for (const attribute of attributes) {
+      await query('INSERT INTO attributes (name, type) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [attribute.name, attribute.type]);
+    }
+
+    // Initialize products
+    const products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
+    for (const product of products) {
+      await query(
+        'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) ON CONFLICT (name) DO NOTHING',
+        [product.name, product.subcategory, JSON.stringify(product.attributes)]
+      );
+    }
+
+    console.log('Database initialized successfully');
   } catch (error) {
     console.error('Error initializing database:', error);
   }
@@ -184,6 +208,36 @@ app.delete('/api/llm-configs/:id', async (req, res) => {
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting LLM config:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Products endpoints
+app.get('/api/products', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM products');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.put('/api/products/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, subcategory, attributes, humanAttributes, humanVerified } = req.body;
+  try {
+    const result = await query(
+      'UPDATE products SET name = $1, subcategory = $2, attributes = $3, human_attributes = $4, human_verified = $5 WHERE id = $6 RETURNING *',
+      [name, subcategory, JSON.stringify(attributes), JSON.stringify(humanAttributes), humanVerified, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Product not found' });
+    }
+  } catch (error) {
+    console.error('Error updating product:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
