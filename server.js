@@ -123,33 +123,36 @@ async function checkAndUpdateSchema() {
   try {
     await client.query('BEGIN');
 
-    // Check if the products table exists
-    const tableExists = await client.query(`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_name = 'products'
-      );
-    `);
+    // Check and update all tables
+    const tables = ['users', 'subcategories', 'attributes', 'products', 'prompts', 'llm_configs'];
+    for (const table of tables) {
+      const tableExists = await client.query(`
+        SELECT EXISTS (
+          SELECT FROM information_schema.tables 
+          WHERE table_name = $1
+        );
+      `, [table]);
 
-    if (tableExists.rows[0].exists) {
-      // Check if the name column has a unique constraint
-      const constraintExists = await client.query(`
-        SELECT COUNT(*) 
-        FROM pg_constraint 
-        WHERE conrelid = 'products'::regclass 
-        AND contype = 'u' 
-        AND conkey @> ARRAY[
-          (SELECT attnum 
-           FROM pg_attribute 
-           WHERE attrelid = 'products'::regclass 
-           AND attname = 'name')
-        ];
-      `);
+      if (tableExists.rows[0].exists) {
+        // Check if the name column has a unique constraint
+        const constraintExists = await client.query(`
+          SELECT COUNT(*) 
+          FROM pg_constraint 
+          WHERE conrelid = $1::regclass 
+          AND contype = 'u' 
+          AND conkey @> ARRAY[
+            (SELECT attnum 
+             FROM pg_attribute 
+             WHERE attrelid = $1::regclass 
+             AND attname = 'name')
+          ];
+        `, [table]);
 
-      if (constraintExists.rows[0].count === '0') {
-        // Add unique constraint if it doesn't exist
-        await client.query('ALTER TABLE products ADD CONSTRAINT products_name_key UNIQUE (name);');
-        console.log('Added unique constraint to products table');
+        if (constraintExists.rows[0].count === '0') {
+          // Add unique constraint if it doesn't exist
+          await client.query(`ALTER TABLE ${table} ADD CONSTRAINT ${table}_name_key UNIQUE (name);`);
+          console.log(`Added unique constraint to ${table} table`);
+        }
       }
     }
 
@@ -163,9 +166,10 @@ async function checkAndUpdateSchema() {
 }
 
 // Run schema check and update before initializing
-checkAndUpdateSchema().then(() => {
-  initializeDatabase();
-});
+(async () => {
+  await checkAndUpdateSchema();
+  await initializeDatabase();
+})();
 
 // Debug endpoint to check database connection
 app.get('/api/debug', async (req, res) => {
