@@ -239,11 +239,11 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, subcategory, attributes, humanAttributes, humanVerified } = req.body;
+  const { name, subcategory, attributes, human_attributes, human_verified } = req.body;
   try {
     const result = await query(
       'UPDATE products SET name = $1, subcategory = $2, attributes = $3, human_attributes = $4, human_verified = $5 WHERE id = $6 RETURNING *',
-      [name, subcategory, JSON.stringify(attributes), JSON.stringify(humanAttributes), humanVerified, id]
+      [name, subcategory, JSON.stringify(attributes), JSON.stringify(human_attributes), human_verified, id]
     );
     if (result.rows.length > 0) {
       res.json(result.rows[0]);
@@ -414,3 +414,4 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
