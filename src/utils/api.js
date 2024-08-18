@@ -59,15 +59,15 @@ export const saveProduct = async (product) => {
 };
 
 export const fetchProductsToGrade = async () => {
-  const response = await api.get('/api/products-to-grade');
+  const response = await api.get('/api/products');
   if (!Array.isArray(response.data)) {
     throw new Error('Received data is not in the expected format');
   }
-  return response;
+  return response.data.filter(product => !product.human_verified);
 };
 
-export const gradeProduct = async (productId, grade) => {
-  const response = await api.post('/api/grade-product', { productId, grade });
+export const gradeProduct = async (productId, humanAttributes) => {
+  const response = await api.put(`/api/products/${productId}`, { human_attributes: humanAttributes, human_verified: true });
   if (typeof response.data !== 'object') {
     throw new Error('Received data is not in the expected format');
   }
