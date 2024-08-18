@@ -6,6 +6,8 @@ const PromptManagement = () => {
   const [newPrompt, setNewPrompt] = useState({ name: '', content: '', step: 1 });
   const [subcategories, setSubcategories] = useState([]);
   const [attributes, setAttributes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchPrompts();
@@ -15,10 +17,14 @@ const PromptManagement = () => {
 
   const fetchPrompts = async () => {
     try {
+      setLoading(true);
       const response = await axios.get('/api/prompts');
       setPrompts(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching prompts:', error);
+      setError('Failed to fetch prompts. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -28,6 +34,7 @@ const PromptManagement = () => {
       setSubcategories(response.data);
     } catch (error) {
       console.error('Error fetching subcategories:', error);
+      setError('Failed to fetch subcategories. Please try again.');
     }
   };
 
@@ -37,6 +44,7 @@ const PromptManagement = () => {
       setAttributes(response.data);
     } catch (error) {
       console.error('Error fetching attributes:', error);
+      setError('Failed to fetch attributes. Please try again.');
     }
   };
 
@@ -53,6 +61,7 @@ const PromptManagement = () => {
       fetchPrompts();
     } catch (error) {
       console.error('Error creating prompt:', error);
+      setError('Failed to create prompt. Please try again.');
     }
   };
 
@@ -62,6 +71,7 @@ const PromptManagement = () => {
       fetchPrompts();
     } catch (error) {
       console.error('Error deleting prompt:', error);
+      setError('Failed to delete prompt. Please try again.');
     }
   };
 
@@ -85,6 +95,14 @@ Product Name: [Product Name Here]
 Subcategory: [Subcategory Here]`;
     }
   };
+
+  if (loading) {
+    return <div>Loading prompts...</div>;
+  }
+
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
