@@ -78,9 +78,31 @@
 - Updated ProductGenerator component
   - No changes made, but component will benefit from improved API error logging
 
+## Update #17
+- Updated ProductGenerator component
+  - Added editable prompts for Step 1 and Step 2
+  - Restored save product functionality
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Added textarea inputs for Step 1 and Step 2 prompts
+    - Implemented handlePromptChange function to update prompts
+    - Re-added handleSaveProduct function
+
+- Added dummyProducts.js
+  - Created file with 5 dummy products for testing
+  - Status: Implemented
+  - Technical details:
+    - Added dummy data for coffee beans and coffee pods with various attributes
+
+- Updated HumanGraderV2 component
+  - Implemented use of dummy products for testing
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Imported dummyProducts from new file
+    - Updated fetchProducts function to use dummy data
+    - Updated rendering of product attributes to handle arrays
+
 - Next steps:
-  - Test the updated API utility with the backend
-  - Monitor console logs for API responses to identify any data format issues
-  - Verify that the increased timeout resolves any connection issues
-  - Investigate why prompts are missing or empty in the ProductGenerator
-  - Debug the connection issues in HumanGraderV2
+  - Test ProductGenerator with editable prompts and save functionality
+  - Verify HumanGraderV2 works correctly with dummy data
+  - Prepare for integration with backend API when ready
