@@ -80,12 +80,16 @@ const HumanGraderInterface = () => {
 
   // Dummy data for attribute options
   const attributeOptions = {
-    'Roast Level': ['Light', 'Medium', 'Dark', 'French'],
-    'Origin': ['Ethiopia', 'Colombia', 'Brazil', 'Kenya', 'Indonesia'],
-    'Flavor Notes': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
-    'Grind Type': ['Whole Bean', 'Ground', 'Espresso'],
+    'Roast Level': ['Light', 'Medium', 'Dark', 'French', 'Italian', 'City', 'Full City', 'Vienna'],
+    'Origin': ['Ethiopia', 'Colombia', 'Brazil', 'Kenya', 'Indonesia', 'Guatemala', 'Costa Rica', 'Jamaica', 'Hawaii', 'Vietnam'],
+    'Flavor Notes': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy', 'Earthy', 'Citrusy', 'Caramel', 'Smoky', 'Berry', 'Vanilla', 'Honey'],
+    'Grind Type': ['Whole Bean', 'Ground', 'Espresso', 'French Press', 'Drip', 'Turkish'],
     'Organic': ['Yes', 'No'],
     'Fair Trade': ['Yes', 'No'],
+    'Processing Method': ['Washed', 'Natural', 'Honey', 'Wet-Hulled'],
+    'Altitude': ['Low', 'Medium', 'High'],
+    'Body': ['Light', 'Medium', 'Full'],
+    'Acidity': ['Low', 'Medium', 'High'],
   };
 
   return (
