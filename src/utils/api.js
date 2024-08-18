@@ -23,26 +23,56 @@ api.interceptors.response.use((response) => {
   return response;
 }, (error) => {
   if (error.response) {
-    // The request was made and the server responded with a status code
-    // that falls out of the range of 2xx
     console.error("Response error:", error.response.data);
     console.error("Status:", error.response.status);
     console.error("Headers:", error.response.headers);
   } else if (error.request) {
-    // The request was made but no response was received
     console.error("Request error:", error.request);
   } else {
-    // Something happened in setting up the request that triggered an Error
     console.error("Error:", error.message);
   }
   return Promise.reject(error);
 });
 
-export const fetchPrompts = () => api.get('/api/prompts');
-export const generateProduct = (prompt) => api.post('/api/generate', { prompt });
-export const saveProduct = (product) => api.post('/api/products', product);
-export const fetchProductsToGrade = () => api.get('/api/products-to-grade');
-export const gradeProduct = (productId, grade) => api.post('/api/grade-product', { productId, grade });
+export const fetchPrompts = async () => {
+  const response = await api.get('/api/prompts');
+  if (!Array.isArray(response.data)) {
+    throw new Error('Received data is not in the expected format');
+  }
+  return response;
+};
+
+export const generateProduct = async (prompt) => {
+  const response = await api.post('/api/generate', { prompt });
+  if (typeof response.data !== 'object' || !response.data.response) {
+    throw new Error('Received data is not in the expected format');
+  }
+  return response;
+};
+
+export const saveProduct = async (product) => {
+  const response = await api.post('/api/products', product);
+  if (typeof response.data !== 'object') {
+    throw new Error('Received data is not in the expected format');
+  }
+  return response;
+};
+
+export const fetchProductsToGrade = async () => {
+  const response = await api.get('/api/products-to-grade');
+  if (!Array.isArray(response.data)) {
+    throw new Error('Received data is not in the expected format');
+  }
+  return response;
+};
+
+export const gradeProduct = async (productId, grade) => {
+  const response = await api.post('/api/grade-product', { productId, grade });
+  if (typeof response.data !== 'object') {
+    throw new Error('Received data is not in the expected format');
+  }
+  return response;
+};
 
 export default api;
 
