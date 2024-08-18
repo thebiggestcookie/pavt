@@ -1,0 +1,7 @@
+[
+  { "name": "Alice", "accuracy": 95, "speed": 120, "score": 114 },
+  { "name": "Bob", "accuracy": 92, "speed": 110, "score": 101.2 },
+  { "name": "Charlie", "accuracy": 88, "speed": 130, "score": 114.4 },
+  { "name": "David", "accuracy": 91, "speed": 115, "score": 104.65 },
+  { "name": "Eve", "accuracy": 94, "speed": 105, "score": 98.7 }
+]

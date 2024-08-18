@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const axios = require('axios');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -13,152 +14,23 @@ app.use(bodyParser.json());
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
 
-// In-memory storage for demo purposes
-let llmConfigs = [
-  {
-    id: '1',
-    name: 'OpenAI GPT-3.5',
-    provider: 'openai',
-    model: 'gpt-3.5-turbo',
-    apiKey: 'your-openai-api-key-here',
-    maxTokens: 150
-  },
-  {
-    id: '2',
-    name: 'Anthropic Claude',
-    provider: 'anthropic',
-    model: 'claude-v1',
-    apiKey: 'your-anthropic-api-key-here',
-    maxTokens: 150
-  }
-];
-let prompts = [
-  { id: '1', name: 'Coffee Attribute Extractor', content: 'Extract attributes from the given coffee product description. Return the result as a JSON object with the following structure: {"Origin": "...", "RoastLevel": "...", "FlavorProfile": "...", "Organic": "...", "FairTrade": "...", "ProcessingMethod": "..."}. Use "Unknown" if an attribute is not mentioned.' },
-  { id: '2', name: 'Coffee Categorizer', content: 'Categorize the given coffee product into appropriate subcategories. Return the result as a JSON object with the following structure: {"Subcategory": "..."}. Choose from: "Whole Bean Coffee", "Ground Coffee", or "Coffee Pods".' },
-];
-let subcategories = [
-  { id: '1', name: 'Whole Bean Coffee', parentCategory: 'Coffee' },
-  { id: '2', name: 'Ground Coffee', parentCategory: 'Coffee' },
-  { id: '3', name: 'Coffee Pods', parentCategory: 'Coffee' },
-];
-let attributes = {
-  'Whole Bean Coffee': {
-    'Origin': ['Colombia', 'Ethiopia', 'Brazil', 'Kenya', 'Guatemala'],
-    'Roast Level': ['Light', 'Medium', 'Dark', 'French'],
-    'Flavor Profile': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
-    'Organic': ['Yes', 'No'],
-    'Fair Trade': ['Yes', 'No'],
-    'Processing Method': ['Washed', 'Natural', 'Honey'],
-  },
-  'Ground Coffee': {
-    'Origin': ['Colombia', 'Ethiopia', 'Brazil', 'Kenya', 'Guatemala'],
-    'Roast Level': ['Light', 'Medium', 'Dark', 'French'],
-    'Grind Size': ['Fine', 'Medium', 'Coarse'],
-    'Flavor Profile': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
-    'Organic': ['Yes', 'No'],
-    'Fair Trade': ['Yes', 'No'],
-  },
-  'Coffee Pods': {
-    'Origin': ['Colombia', 'Ethiopia', 'Brazil', 'Kenya', 'Guatemala'],
-    'Roast Level': ['Light', 'Medium', 'Dark'],
-    'Flavor Profile': ['Fruity', 'Nutty', 'Chocolatey', 'Floral', 'Spicy'],
-    'Organic': ['Yes', 'No'],
-    'Fair Trade': ['Yes', 'No'],
-    'Compatibility': ['Keurig', 'Nespresso', 'Tassimo'],
-  },
-};
-let users = [
-  { id: '1', username: 'test123', password: 'test123', role: 'admin' }
-];
-let products = [
-  {
-    id: 1,
-    name: "Mountain Blend Coffee",
-    subcategory: "Whole Bean Coffee",
-    attributes: {
-      Origin: "Colombia",
-      'Roast Level': "Medium",
-      'Flavor Profile': "Nutty, Chocolatey",
-      Organic: "Yes",
-      'Fair Trade': "Yes",
-      'Processing Method': "Washed"
-    },
-    humanVerified: true,
-    humanAttributes: {
-      Origin: "Colombia",
-      'Roast Level': "Medium",
-      'Flavor Profile': "Nutty, Chocolatey",
-      Organic: "Yes",
-      'Fair Trade': "Yes",
-      'Processing Method': "Washed"
-    }
-  },
-  {
-    id: 2,
-    name: "Sunrise Espresso",
-    subcategory: "Ground Coffee",
-    attributes: {
-      Origin: "Brazil",
-      'Roast Level': "Dark",
-      'Grind Size': "Fine",
-      'Flavor Profile': "Chocolatey, Spicy",
-      Organic: "No",
-      'Fair Trade': "Yes"
-    },
-    humanVerified: true,
-    humanAttributes: {
-      Origin: "Brazil",
-      'Roast Level': "Dark",
-      'Grind Size': "Fine",
-      'Flavor Profile': "Chocolatey, Spicy",
-      Organic: "No",
-      'Fair Trade': "Yes"
-    }
-  },
-  {
-    id: 3,
-    name: "Tropical Paradise Coffee Pods",
-    subcategory: "Coffee Pods",
-    attributes: {
-      Origin: "Ethiopia",
-      'Roast Level': "Light",
-      'Flavor Profile': "Fruity, Floral",
-      Organic: "Yes",
-      'Fair Trade': "No",
-      Compatibility: "Keurig"
-    },
-    humanVerified: true,
-    humanAttributes: {
-      Origin: "Ethiopia",
-      'Roast Level': "Light",
-      'Flavor Profile': "Fruity, Floral",
-      Organic: "Yes",
-      'Fair Trade': "No",
-      Compatibility: "Keurig"
-    }
-  }
-];
+// Load data from JSON files
+let llmConfigs = JSON.parse(fs.readFileSync('data/llmConfigs.json', 'utf8'));
+let prompts = JSON.parse(fs.readFileSync('data/prompts.json', 'utf8'));
+let subcategories = JSON.parse(fs.readFileSync('data/subcategories.json', 'utf8'));
+let attributes = JSON.parse(fs.readFileSync('data/attributes.json', 'utf8'));
+let users = JSON.parse(fs.readFileSync('data/users.json', 'utf8'));
+let products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
 
 // Mock data for performance metrics
-let tokenUsage = {
-  'OpenAI GPT-3.5': 1000000,
-  'Anthropic Claude': 750000,
-  'Cohere Command': 500000
-};
+let tokenUsage = JSON.parse(fs.readFileSync('data/tokenUsage.json', 'utf8'));
+let graderPerformance = JSON.parse(fs.readFileSync('data/graderPerformance.json', 'utf8'));
+let llmPerformance = JSON.parse(fs.readFileSync('data/llmPerformance.json', 'utf8'));
 
-let graderPerformance = [
-  { name: 'Alice', accuracy: 95, speed: 120, score: 114 },
-  { name: 'Bob', accuracy: 92, speed: 110, score: 101.2 },
-  { name: 'Charlie', accuracy: 88, speed: 130, score: 114.4 },
-  { name: 'David', accuracy: 91, speed: 115, score: 104.65 },
-  { name: 'Eve', accuracy: 94, speed: 105, score: 98.7 }
-];
-
-let llmPerformance = [
-  { name: 'OpenAI GPT-3.5', accuracy: 88 },
-  { name: 'Anthropic Claude', accuracy: 85 },
-  { name: 'Cohere Command', accuracy: 82 }
-];
+// Helper function to save data to JSON files
+function saveData(filename, data) {
+  fs.writeFileSync(`data/${filename}.json`, JSON.stringify(data, null, 2));
+}
 
 // Login endpoint
 app.post('/api/login', (req, res) => {
@@ -182,6 +54,7 @@ app.post('/api/llm-configs', (req, res) => {
     ...req.body
   };
   llmConfigs.push(newConfig);
+  saveData('llmConfigs', llmConfigs);
   res.status(201).json(newConfig);
 });
 
@@ -190,6 +63,7 @@ app.put('/api/llm-configs/:id', (req, res) => {
   const index = llmConfigs.findIndex(config => config.id === id);
   if (index !== -1) {
     llmConfigs[index] = { ...llmConfigs[index], ...req.body };
+    saveData('llmConfigs', llmConfigs);
     res.json(llmConfigs[index]);
   } else {
     res.status(404).json({ message: 'Config not found' });
@@ -207,6 +81,7 @@ app.post('/api/prompts', (req, res) => {
     ...req.body
   };
   prompts.push(newPrompt);
+  saveData('prompts', prompts);
   res.status(201).json(newPrompt);
 });
 
@@ -215,6 +90,7 @@ app.put('/api/prompts/:id', (req, res) => {
   const index = prompts.findIndex(prompt => prompt.id === id);
   if (index !== -1) {
     prompts[index] = { ...prompts[index], ...req.body };
+    saveData('prompts', prompts);
     res.json(prompts[index]);
   } else {
     res.status(404).json({ message: 'Prompt not found' });
@@ -226,6 +102,7 @@ app.delete('/api/prompts/:id', (req, res) => {
   const index = prompts.findIndex(prompt => prompt.id === id);
   if (index !== -1) {
     prompts.splice(index, 1);
+    saveData('prompts', prompts);
     res.status(204).send();
   } else {
     res.status(404).json({ message: 'Prompt not found' });
@@ -243,6 +120,7 @@ app.post('/api/subcategories', (req, res) => {
     ...req.body
   };
   subcategories.push(newSubcategory);
+  saveData('subcategories', subcategories);
   res.status(201).json(newSubcategory);
 });
 
@@ -251,6 +129,7 @@ app.delete('/api/subcategories/:id', (req, res) => {
   const index = subcategories.findIndex(subcategory => subcategory.id === id);
   if (index !== -1) {
     subcategories.splice(index, 1);
+    saveData('subcategories', subcategories);
     res.status(204).send();
   } else {
     res.status(404).json({ message: 'Subcategory not found' });
@@ -264,6 +143,7 @@ app.get('/api/attributes', (req, res) => {
 
 app.put('/api/attributes', (req, res) => {
   attributes = req.body;
+  saveData('attributes', attributes);
   res.json(attributes);
 });
 
@@ -279,6 +159,7 @@ app.post('/api/users', (req, res) => {
     lastLogin: new Date().toISOString()
   };
   users.push(newUser);
+  saveData('users', users);
   res.status(201).json(newUser);
 });
 
@@ -287,6 +168,7 @@ app.put('/api/users/:id', (req, res) => {
   const index = users.findIndex(user => user.id === id);
   if (index !== -1) {
     users[index] = { ...users[index], ...req.body };
+    saveData('users', users);
     res.json(users[index]);
   } else {
     res.status(404).json({ message: 'User not found' });
@@ -298,6 +180,7 @@ app.delete('/api/users/:id', (req, res) => {
   const index = users.findIndex(user => user.id === id);
   if (index !== -1) {
     users.splice(index, 1);
+    saveData('users', users);
     res.status(204).send();
   } else {
     res.status(404).json({ message: 'User not found' });
@@ -326,6 +209,7 @@ app.post('/api/products', (req, res) => {
     ...req.body
   };
   products.push(newProduct);
+  saveData('products', products);
   res.status(201).json(newProduct);
 });
 
@@ -334,6 +218,7 @@ app.put('/api/products/:id', (req, res) => {
   const index = products.findIndex(product => product.id === parseInt(id));
   if (index !== -1) {
     products[index] = { ...products[index], ...req.body };
+    saveData('products', products);
     res.json(products[index]);
   } else {
     res.status(404).json({ message: 'Product not found' });
@@ -441,6 +326,7 @@ app.post('/api/regenerate-attributes', async (req, res) => {
     }));
 
     products = updatedProducts;
+    saveData('products', products);
     res.json(updatedProducts);
   } catch (error) {
     console.error('Error regenerating attributes:', error);

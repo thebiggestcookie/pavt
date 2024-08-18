@@ -80,3 +80,25 @@ This project is a React-based application for categorizing and managing e-commer
 15. **Onboarding Flow**: Create a smooth onboarding flow for new users to quickly set up their account and understand key features.
 
 By implementing these improvements, the LLM Product Categorizer can become more robust, user-friendly, and ready for production use in a variety of e-commerce scenarios.
+
+## Configuration Changes for Render
+
+To ensure that the database doesn't reset every time you redeploy the service on Render, you need to use a persistent storage solution. Here are the steps to configure this:
+
+1. **Use a Persistent Database**: Instead of using in-memory storage or local JSON files, set up a persistent database service on Render or use an external database service.
+
+2. **Environment Variables**: Use environment variables to store database connection information. In your Render dashboard, go to the Environment section of your service and add the following variables:
+   - `DATABASE_URL`: The connection string for your database
+   - `NODE_ENV`: Set this to "production"
+
+3. **Update Dependencies**: In your `package.json`, add the necessary database driver (e.g., `pg` for PostgreSQL or `mongodb` for MongoDB).
+
+4. **Update Server Code**: Modify your `server.js` to use the database instead of local JSON files. Use the `DATABASE_URL` environment variable to connect to your database.
+
+5. **Data Migration**: Create a script to migrate your existing data from JSON files to the database. Run this script once after setting up the database.
+
+6. **Render Disk**: If you need to store files (like uploads), use Render Disk, which provides persistent storage. You can mount it to your service and use it for file storage.
+
+7. **Backup Strategy**: Implement a regular backup strategy for your database to prevent data loss.
+
+By following these steps, your data will persist across redeployments on Render, ensuring that your database doesn't reset.

@@ -1,0 +1,68 @@
+[
+  {
+    "id": 1,
+    "name": "Mountain Blend Coffee",
+    "subcategory": "Whole Bean Coffee",
+    "attributes": {
+      "Origin": "Colombia",
+      "Roast Level": "Medium",
+      "Flavor Profile": "Nutty, Chocolatey",
+      "Organic": "Yes",
+      "Fair Trade": "Yes",
+      "Processing Method": "Washed"
+    },
+    "humanVerified": true,
+    "humanAttributes": {
+      "Origin": "Colombia",
+      "Roast Level": "Medium",
+      "Flavor Profile": "Nutty, Chocolatey",
+      "Organic": "Yes",
+      "Fair Trade": "Yes",
+      "Processing Method": "Washed"
+    }
+  },
+  {
+    "id": 2,
+    "name": "Sunrise Espresso",
+    "subcategory": "Ground Coffee",
+    "attributes": {
+      "Origin": "Brazil",
+      "Roast Level": "Dark",
+      "Grind Size": "Fine",
+      "Flavor Profile": "Chocolatey, Spicy",
+      "Organic": "No",
+      "Fair Trade": "Yes"
+    },
+    "humanVerified": true,
+    "humanAttributes": {
+      "Origin": "Brazil",
+      "Roast Level": "Dark",
+      "Grind Size": "Fine",
+      "Flavor Profile": "Chocolatey, Spicy",
+      "Organic": "No",
+      "Fair Trade": "Yes"
+    }
+  },
+  {
+    "id": 3,
+    "name": "Tropical Paradise Coffee Pods",
+    "subcategory": "Coffee Pods",
+    "attributes": {
+      "Origin": "Ethiopia",
+      "Roast Level": "Light",
+      "Flavor Profile": "Fruity, Floral",
+      "Organic": "Yes",
+      "Fair Trade": "No",
+      "Compatibility": "Keurig"
+    },
+    "humanVerified": true,
+    "humanAttributes": {
+      "Origin": "Ethiopia",
+      "Roast Level": "Light",
+      "Flavor Profile": "Fruity, Floral",
+      "Organic": "Yes",
+      "Fair Trade": "No",
+      "Compatibility": "Keurig"
+    }
+  }
+]

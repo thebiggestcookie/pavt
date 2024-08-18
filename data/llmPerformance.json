@@ -1,0 +1,5 @@
+[
+  { "name": "OpenAI GPT-3.5", "accuracy": 88 },
+  { "name": "Anthropic Claude", "accuracy": 85 },
+  { "name": "Cohere Command", "accuracy": 82 }
+]
