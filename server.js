@@ -53,7 +53,7 @@ async function initializeDatabase() {
     const products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
     for (const product of products) {
       await query(
-        'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) ON CONFLICT (name) DO NOTHING',
+        'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET subcategory = $2, attributes = $3',
         [product.name, product.subcategory, JSON.stringify(product.attributes)]
       );
     }
