@@ -25,9 +25,30 @@
     - Possible cause: Server configuration issue or authentication problem
     - Next step: Check server routes and middleware, ensure proper API endpoint configuration
 
+## Update #12
+- Further updated HumanGraderV2 component
+  - Enhanced error handling for API requests
+  - Added explicit headers to axios request
+  - Status: Implemented, needs testing
+  - Technical details:
+    - Added 'Accept' and 'Content-Type' headers to axios request
+    - Implemented more detailed error logging for different types of errors (response, request, other)
+    - Added specific error message for authentication failure (401 status)
+  - Debugging notes:
+    - Issue: Receiving HTML instead of JSON persists
+    - Possible causes:
+      1. Authentication issue: User might not be logged in or session expired
+      2. Server-side routing issue: API endpoint might be misconfigured
+      3. CORS issue: Server might not be set up to handle requests from the frontend origin
+    - Next steps:
+      1. Verify user authentication status and implement proper login flow if needed
+      2. Review server-side routing for '/api/products-to-grade' endpoint
+      3. Check CORS configuration on the server
+      4. Implement server-side logging to capture any errors occurring during the API request handling
+
 - Next steps:
-  - Review and update prompt content in the database
-  - Investigate server configuration for '/api/products-to-grade' endpoint
-  - Test ProductGenerator with updated prompt fetching logic
-  - Test HumanGraderV2 with proper JSON response from server
-  - Consider implementing server-side logging for better debugging of API responses
+  - Test updated HumanGraderV2 component with proper authentication
+  - Review server-side code for '/api/products-to-grade' endpoint
+  - Implement server-side logging for API requests and responses
+  - Consider adding a health check endpoint to verify API availability
+  - Review and update prompt content in the database for ProductGenerator
