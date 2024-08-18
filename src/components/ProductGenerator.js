@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 const ProductGenerator = () => {
+  const [productName, setProductName] = useState('');
   const [subcategory, setSubcategory] = useState('');
   const [attributes, setAttributes] = useState({});
   const [loading, setLoading] = useState(false);
@@ -27,25 +28,30 @@ const ProductGenerator = () => {
   };
 
   const generateProduct = async () => {
+    if (!productName) {
+      setError('Please enter a product name.');
+      return;
+    }
     setLoading(true);
     setError('');
     setDebugInfo('');
     try {
       // Step 1: Generate subcategory
-      const step1Response = await axios.post('/api/generate', { prompt: prompts.step1 });
+      const step1Prompt = prompts.step1.replace('{product_name}', productName);
+      const step1Response = await axios.post('/api/generate', { prompt: step1Prompt });
       const generatedSubcategory = step1Response.data.response.trim();
       setSubcategory(generatedSubcategory);
       setDebugInfo(prevDebug => prevDebug + `Step 1 Response:\n${generatedSubcategory}\n\n`);
 
       // Step 2: Generate attributes
-      const step2Prompt = prompts.step2.replace('{subcategory}', generatedSubcategory);
+      const step2Prompt = prompts.step2.replace('{product_name}', productName).replace('{subcategory}', generatedSubcategory);
       const step2Response = await axios.post('/api/generate', { prompt: step2Prompt });
       setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${step2Response.data.response}\n\n`);
       const generatedAttributes = JSON.parse(step2Response.data.response);
       setAttributes(generatedAttributes);
     } catch (error) {
       console.error('Error generating product:', error);
-      setError('Failed to generate product. Please try again.');
+      setError(`Failed to generate product: ${error.message}`);
       setDebugInfo(prevDebug => prevDebug + `Error: ${error.message}\n`);
     } finally {
       setLoading(false);
@@ -54,7 +60,7 @@ const ProductGenerator = () => {
 
   const saveProduct = async () => {
     try {
-      await axios.post('/api/products', { subcategory, attributes });
+      await axios.post('/api/products', { name: productName, subcategory, attributes });
       alert('Product saved successfully!');
     } catch (error) {
       console.error('Error saving product:', error);
@@ -65,6 +71,18 @@ const ProductGenerator = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">Product Generator</h1>
+      <div className="mb-4">
+        <label htmlFor="productName" className="block text-sm font-medium text-gray-700">
+          Product Name
+        </label>
+        <input
+          type="text"
+          id="productName"
+          value={productName}
+          onChange={(e) => setProductName(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        />
+      </div>
       <div className="mb-4">
         <h2 className="text-xl font-bold mb-2">Prompts:</h2>
         <div className="mb-2">
