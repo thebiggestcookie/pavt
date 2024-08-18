@@ -93,7 +93,7 @@ const HumanGraderV2 = () => {
                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
                 <option value="">Select {attr.name}</option>
-                {attr.options.map(option => (
+                {attr.options && attr.options.map(option => (
                   <option key={option} value={option}>{option}</option>
                 ))}
                 <option value="__other__">Other</option>
