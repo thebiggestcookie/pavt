@@ -1,35 +1,33 @@
 # Updates
 
-## Update #10
+## Update #11
 - Revised ProductGenerator component
-  - Added more robust error checking for prompt data
-  - Improved error messages for missing or invalid prompt data
+  - Updated prompt fetching logic to match the actual API response format
+  - Added check for empty prompt content
   - Status: Implemented, needs testing
   - Technical details:
-    - Added checks for array structure and content in fetchPrompts function
-    - Implemented specific error messages for missing prompts
-    - Updated UI to disable generate button when prompts are not loaded
+    - Changed prompt name checks from 'Product Generator Step 1' to 'Step 1' and 'Product Generator Step 2' to 'Step 2'
+    - Added error message for empty prompt content
   - Debugging notes:
-    - Issue: Prompts stuck on "loading"
-    - Possible cause: '/api/prompts' endpoint not returning expected data structure
-    - Next step: Verify '/api/prompts' endpoint response format
+    - Issue: Prompts are fetched but content is empty
+    - Possible cause: Prompts in the database have empty content
+    - Next step: Verify prompt content in the database and update if necessary
 
 - Updated HumanGraderV2 component
-  - Added more robust error checking for product data
-  - Improved error handling and messages
+  - Added check for HTML response instead of JSON
+  - Improved error handling for empty product list
   - Status: Implemented, needs testing
   - Technical details:
-    - Added checks for array structure and content in fetchProducts function
-    - Implemented specific error message for no available products
-    - Added null check for currentProduct in handleGrade function
+    - Added check for HTML string in response data
+    - Updated error message when no products are available for grading
   - Debugging notes:
-    - Issue: Component not loading
-    - Possible cause: '/api/products-to-grade' endpoint not returning expected data or failing
-    - Next step: Verify '/api/products-to-grade' endpoint functionality and response format
+    - Issue: Receiving HTML instead of JSON for product data
+    - Possible cause: Server configuration issue or authentication problem
+    - Next step: Check server routes and middleware, ensure proper API endpoint configuration
 
 - Next steps:
-  - Review and test '/api/prompts' endpoint
-  - Review and test '/api/products-to-grade' endpoint
-  - Verify data structures returned by both endpoints match frontend expectations
-  - Test ProductGenerator and HumanGraderV2 components with known good data
-  - Consider adding mock data for testing purposes if backend is not yet fully implemented
+  - Review and update prompt content in the database
+  - Investigate server configuration for '/api/products-to-grade' endpoint
+  - Test ProductGenerator with updated prompt fetching logic
+  - Test HumanGraderV2 with proper JSON response from server
+  - Consider implementing server-side logging for better debugging of API responses
