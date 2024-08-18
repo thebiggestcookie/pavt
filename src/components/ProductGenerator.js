@@ -21,10 +21,6 @@ const ProductGenerator = () => {
       const response = await fetchPrompts();
       debug('Raw prompts response', response.data);
       
-      if (!Array.isArray(response.data) || response.data.length === 0) {
-        throw new Error('Prompts data is not in the expected format');
-      }
-
       const step1Prompt = response.data.find(prompt => prompt.name === 'Step 1')?.content;
       const step2Prompt = response.data.find(prompt => prompt.name === 'Step 2')?.content;
 
@@ -37,13 +33,7 @@ const ProductGenerator = () => {
     } catch (error) {
       console.error('Error fetching prompts:', error);
       debug('Error fetching prompts', error);
-      if (error.response) {
-        setError(`Failed to fetch prompts: ${error.response.data.message || error.message}`);
-      } else if (error.request) {
-        setError('No response received from the server. Please check your internet connection and try again.');
-      } else {
-        setError(`Failed to fetch prompts: ${error.message}`);
-      }
+      setError(`Failed to fetch prompts: ${error.message}`);
     }
   };
 
@@ -81,13 +71,7 @@ const ProductGenerator = () => {
     } catch (error) {
       console.error('Error generating product:', error);
       debug('Error generating product', error);
-      if (error.response) {
-        setError(`Failed to generate product: ${error.response.data.message || error.message}`);
-      } else if (error.request) {
-        setError('No response received from the server. Please check your internet connection and try again.');
-      } else {
-        setError(`Failed to generate product: ${error.message}`);
-      }
+      setError(`Failed to generate product: ${error.message}`);
       setDebugInfo(prevDebug => prevDebug + `Error: ${error.message}\n`);
     } finally {
       setLoading(false);
@@ -103,13 +87,7 @@ const ProductGenerator = () => {
     } catch (error) {
       console.error('Error saving product:', error);
       debug('Error saving product', error);
-      if (error.response) {
-        setError(`Failed to save product: ${error.response.data.message || error.message}`);
-      } else if (error.request) {
-        setError('No response received from the server. Please check your internet connection and try again.');
-      } else {
-        setError(`Failed to save product: ${error.message}`);
-      }
+      setError(`Failed to save product: ${error.message}`);
     }
   };
 
