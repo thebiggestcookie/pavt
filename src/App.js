@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import UploadInterface from './components/UploadInterface';
 import HumanGraderInterface from './components/HumanGraderInterface';
 import AdminPanel from './components/AdminPanel';
@@ -49,41 +49,19 @@ const App = () => {
         )}
 
         <div className="container mx-auto px-6 py-8">
-          <Switch>
-            <Route exact path="/login">
-              <Login setIsAuthenticated={setIsAuthenticated} />
-            </Route>
-            <PrivateRoute exact path="/">
-              <UploadInterface />
-            </PrivateRoute>
-            <PrivateRoute path="/grader">
-              <HumanGraderInterface />
-            </PrivateRoute>
-            <PrivateRoute path="/admin">
-              <AdminPanel />
-            </PrivateRoute>
-            <PrivateRoute path="/prompts">
-              <PromptManagement />
-            </PrivateRoute>
-            <PrivateRoute path="/metrics">
-              <PerformanceMetrics />
-            </PrivateRoute>
-            <PrivateRoute path="/users">
-              <UserManagement />
-            </PrivateRoute>
-            <PrivateRoute path="/attributes">
-              <AttributeEditor />
-            </PrivateRoute>
-            <PrivateRoute path="/investor">
-              <InvestorDashboard />
-            </PrivateRoute>
-            <PrivateRoute path="/prompt-tester">
-              <PromptTester />
-            </PrivateRoute>
-            <PrivateRoute path="/product-generator">
-              <ProductGenerator />
-            </PrivateRoute>
-          </Switch>
+          <Routes>
+            <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+            <Route path="/" element={<PrivateRoute><UploadInterface /></PrivateRoute>} />
+            <Route path="/grader" element={<PrivateRoute><HumanGraderInterface /></PrivateRoute>} />
+            <Route path="/admin" element={<PrivateRoute><AdminPanel /></PrivateRoute>} />
+            <Route path="/prompts" element={<PrivateRoute><PromptManagement /></PrivateRoute>} />
+            <Route path="/metrics" element={<PrivateRoute><PerformanceMetrics /></PrivateRoute>} />
+            <Route path="/users" element={<PrivateRoute><UserManagement /></PrivateRoute>} />
+            <Route path="/attributes" element={<PrivateRoute><AttributeEditor /></PrivateRoute>} />
+            <Route path="/investor" element={<PrivateRoute><InvestorDashboard /></PrivateRoute>} />
+            <Route path="/prompt-tester" element={<PrivateRoute><PromptTester /></PrivateRoute>} />
+            <Route path="/product-generator" element={<PrivateRoute><ProductGenerator /></PrivateRoute>} />
+          </Routes>
         </div>
       </div>
     </Router>
