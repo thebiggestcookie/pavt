@@ -15,11 +15,16 @@ const HumanGraderV2 = () => {
   const fetchProducts = async () => {
     try {
       debug('Fetching products to grade');
-      const response = await axios.get('/api/products-to-grade');
+      const response = await axios.get('/api/products-to-grade', {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
+      });
       debug('Raw products response', response.data);
       
       if (typeof response.data === 'string' && response.data.includes('<!doctype html>')) {
-        throw new Error('Received HTML instead of JSON. Check server configuration.');
+        throw new Error('Received HTML instead of JSON. Check server configuration and ensure you are authenticated.');
       }
 
       if (!Array.isArray(response.data)) {
@@ -39,7 +44,19 @@ const HumanGraderV2 = () => {
     } catch (error) {
       console.error('Error fetching products:', error);
       debug('Error fetching products', error);
-      setError(`Failed to fetch products: ${error.message}`);
+      if (error.response) {
+        debug('Error response', error.response);
+        if (error.response.status === 401) {
+          setError('Authentication failed. Please log in and try again.');
+        } else {
+          setError(`Failed to fetch products: ${error.message}. Status: ${error.response.status}`);
+        }
+      } else if (error.request) {
+        debug('Error request', error.request);
+        setError('No response received from the server. Please check your internet connection.');
+      } else {
+        setError(`Failed to fetch products: ${error.message}`);
+      }
       setLoading(false);
     }
   };
