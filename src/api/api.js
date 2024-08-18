@@ -189,9 +189,9 @@ export const updateApiKey = async (provider, apiKey) => {
   }
 };
 
-export const getTokenUsage = async () => {
+export const getTokenUsage = async (startDate, endDate) => {
   try {
-    const response = await api.get('/token-usage');
+    const response = await api.get('/token-usage', { params: { startDate, endDate } });
     return response.data;
   } catch (error) {
     debugLogger('Error in getTokenUsage:', error);
@@ -199,9 +199,9 @@ export const getTokenUsage = async () => {
   }
 };
 
-export const getGraderPerformance = async () => {
+export const getGraderPerformance = async (startDate, endDate) => {
   try {
-    const response = await api.get('/grader-performance');
+    const response = await api.get('/grader-performance', { params: { startDate, endDate } });
     return response.data;
   } catch (error) {
     debugLogger('Error in getGraderPerformance:', error);
@@ -209,9 +209,9 @@ export const getGraderPerformance = async () => {
   }
 };
 
-export const getLlmPerformance = async () => {
+export const getLlmPerformance = async (startDate, endDate) => {
   try {
-    const response = await api.get('/llm-performance');
+    const response = await api.get('/llm-performance', { params: { startDate, endDate } });
     return response.data;
   } catch (error) {
     debugLogger('Error in getLlmPerformance:', error);
