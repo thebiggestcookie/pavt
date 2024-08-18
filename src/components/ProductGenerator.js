@@ -19,11 +19,10 @@ const ProductGenerator = () => {
     try {
       debug('Fetching prompts');
       const response = await axios.get('/api/prompts');
-      setPrompts({
-        step1: response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content || '',
-        step2: response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content || ''
-      });
-      debug('Prompts fetched successfully', prompts);
+      const step1Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 1')?.content || '';
+      const step2Prompt = response.data.find(prompt => prompt.name === 'Product Generator Step 2')?.content || '';
+      setPrompts({ step1: step1Prompt, step2: step2Prompt });
+      debug('Prompts fetched successfully', { step1: step1Prompt, step2: step2Prompt });
     } catch (error) {
       console.error('Error fetching prompts:', error);
       debug('Error fetching prompts', error);
