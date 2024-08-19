@@ -405,6 +405,22 @@ app.post('/api/process-llm', async (req, res) => {
   }
 });
 
+// Generate product endpoint
+app.post('/api/generate', async (req, res) => {
+  const { prompt } = req.body;
+  try {
+    // Here you would typically call your LLM service
+    // For now, we'll just return a mock response
+    const mockResponse = {
+      response: JSON.stringify(['Sample Product 1', 'Sample Product 2', 'Sample Product 3', 'Sample Product 4', 'Sample Product 5'])
+    };
+    res.json(mockResponse);
+  } catch (error) {
+    console.error('Error generating product:', error);
+    res.status(500).json({ message: 'Error generating product', error: error.message });
+  }
+});
+
 // The "catchall" handler: for any request that doesn't
 // match one above, send back React's index.html file.
 app.get('*', (req, res) => {
@@ -414,4 +430,3 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
