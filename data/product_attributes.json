@@ -1,0 +1,582 @@
+{
+  "Food": {
+    "Coffee": {
+      "Whole Bean": [
+        {
+          "name": "Origin",
+          "type": "select",
+          "values": ["Ethiopia", "Colombia", "Brazil", "Kenya", "Guatemala", "Costa Rica", "Indonesia", "Jamaica", "Hawaii", "Vietnam"]
+        },
+        {
+          "name": "Roast Level",
+          "type": "select",
+          "values": ["Light", "Medium", "Medium-Dark", "Dark", "French"]
+        },
+        {
+          "name": "Flavor Notes",
+          "type": "multiselect",
+          "values": ["Fruity", "Nutty", "Chocolatey", "Caramel", "Floral", "Earthy", "Spicy", "Citrus", "Berry", "Vanilla"]
+        },
+        {
+          "name": "Processing Method",
+          "type": "select",
+          "values": ["Washed", "Natural", "Honey", "Wet-Hulled"]
+        },
+        {
+          "name": "Altitude",
+          "type": "range",
+          "min": 0,
+          "max": 2500,
+          "unit": "meters"
+        },
+        {
+          "name": "Variety",
+          "type": "select",
+          "values": ["Arabica", "Robusta", "Bourbon", "Typica", "Caturra", "Gesha"]
+        },
+        {
+          "name": "Certification",
+          "type": "multiselect",
+          "values": ["Organic", "Fair Trade", "Rainforest Alliance", "Bird Friendly", "UTZ"]
+        },
+        {
+          "name": "Bag Size",
+          "type": "select",
+          "values": ["250g", "500g", "1kg", "2kg", "5lb"]
+        },
+        {
+          "name": "Roast Date",
+          "type": "date"
+        }
+      ],
+      "Ground Coffee": [
+        {
+          "name": "Origin",
+          "type": "select",
+          "values": ["Ethiopia", "Colombia", "Brazil", "Kenya", "Guatemala", "Costa Rica", "Indonesia", "Jamaica", "Hawaii", "Vietnam"]
+        },
+        {
+          "name": "Roast Level",
+          "type": "select",
+          "values": ["Light", "Medium", "Medium-Dark", "Dark", "French"]
+        },
+        {
+          "name": "Grind Size",
+          "type": "select",
+          "values": ["Extra Fine", "Fine", "Medium-Fine", "Medium", "Medium-Coarse", "Coarse"]
+        },
+        {
+          "name": "Flavor Notes",
+          "type": "multiselect",
+          "values": ["Fruity", "Nutty", "Chocolatey", "Caramel", "Floral", "Earthy", "Spicy", "Citrus", "Berry", "Vanilla"]
+        },
+        {
+          "name": "Processing Method",
+          "type": "select",
+          "values": ["Washed", "Natural", "Honey", "Wet-Hulled"]
+        },
+        {
+          "name": "Certification",
+          "type": "multiselect",
+          "values": ["Organic", "Fair Trade", "Rainforest Alliance", "Bird Friendly", "UTZ"]
+        },
+        {
+          "name": "Bag Size",
+          "type": "select",
+          "values": ["250g", "500g", "1kg", "2kg", "5lb"]
+        },
+        {
+          "name": "Roast Date",
+          "type": "date"
+        }
+      ],
+      "Instant Coffee": [
+        {
+          "name": "Origin",
+          "type": "select",
+          "values": ["Blend", "Single Origin"]
+        },
+        {
+          "name": "Roast Level",
+          "type": "select",
+          "values": ["Light", "Medium", "Dark"]
+        },
+        {
+          "name": "Flavor Notes",
+          "type": "multiselect",
+          "values": ["Rich", "Smooth", "Bold", "Mild", "Aromatic"]
+        },
+        {
+          "name": "Serving Size",
+          "type": "select",
+          "values": ["1.5g", "2g", "3g"]
+        },
+        {
+          "name": "Packaging Type",
+          "type": "select",
+          "values": ["Jar", "Sachet", "Stick"]
+        },
+        {
+          "name": "Caffeine Content",
+          "type": "select",
+          "values": ["Regular", "Decaf"]
+        }
+      ],
+      "Coffee Pods": [
+        {
+          "name": "Compatibility",
+          "type": "select",
+          "values": ["Nespresso", "Keurig", "Tassimo", "Dolce Gusto", "Senseo"]
+        },
+        {
+          "name": "Origin",
+          "type": "select",
+          "values": ["Blend", "Single Origin"]
+        },
+        {
+          "name": "Roast Level",
+          "type": "select",
+          "values": ["Light", "Medium", "Dark"]
+        },
+        {
+          "name": "Flavor Notes",
+          "type": "multiselect",
+          "values": ["Intense", "Balanced", "Fruity", "Spicy", "Chocolatey", "Caramel"]
+        },
+        {
+          "name": "Pod Count",
+          "type": "select",
+          "values": ["10", "20", "30", "50", "100"]
+        },
+        {
+          "name": "Certification",
+          "type": "multiselect",
+          "values": ["Organic", "Fair Trade", "Rainforest Alliance"]
+        }
+      ],
+      "Cold Brew": [
+        {
+          "name": "Origin",
+          "type": "select",
+          "values": ["Blend", "Single Origin"]
+        },
+        {
+          "name": "Roast Level",
+          "type": "select",
+          "values": ["Light", "Medium", "Dark"]
+        },
+        {
+          "name": "Flavor Notes",
+          "type": "multiselect",
+          "values": ["Smooth", "Bold", "Chocolatey", "Fruity", "Nutty"]
+        },
+        {
+          "name": "Concentrate Ratio",
+          "type": "select",
+          "values": ["1:1", "1:2", "1:3"]
+        },
+        {
+          "name": "Bottle Size",
+          "type": "select",
+          "values": ["250ml", "500ml", "1L"]
+        },
+        {
+          "name": "Shelf Life",
+          "type": "select",
+          "values": ["1 week", "2 weeks", "1 month"]
+        }
+      ]
+    },
+    "Coffee Makers": {
+      "Drip Coffee Makers": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["4 cups", "8 cups", "10 cups", "12 cups", "14 cups"]
+        },
+        {
+          "name": "Programmable",
+          "type": "boolean"
+        },
+        {
+          "name": "Brew Strength Control",
+          "type": "boolean"
+        },
+        {
+          "name": "Carafe Type",
+          "type": "select",
+          "values": ["Glass", "Thermal"]
+        },
+        {
+          "name": "Water Filter",
+          "type": "boolean"
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        },
+        {
+          "name": "Warranty",
+          "type": "select",
+          "values": ["1 year", "2 years", "3 years", "5 years"]
+        }
+      ],
+      "Espresso Machines": [
+        {
+          "name": "Pump Pressure",
+          "type": "select",
+          "values": ["9 bar", "15 bar", "19 bar"]
+        },
+        {
+          "name": "Milk Frother",
+          "type": "select",
+          "values": ["Manual", "Automatic", "None"]
+        },
+        {
+          "name": "Water Tank Capacity",
+          "type": "select",
+          "values": ["1L", "1.5L", "2L", "2.5L"]
+        },
+        {
+          "name": "Grinder Included",
+          "type": "boolean"
+        },
+        {
+          "name": "Programmable Shots",
+          "type": "boolean"
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        },
+        {
+          "name": "Warranty",
+          "type": "select",
+          "values": ["1 year", "2 years", "3 years", "5 years"]
+        }
+      ],
+      "French Press": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["3 cups", "4 cups", "6 cups", "8 cups", "12 cups"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Glass", "Stainless Steel", "Ceramic"]
+        },
+        {
+          "name": "Filter Type",
+          "type": "select",
+          "values": ["Stainless Steel", "Nylon"]
+        },
+        {
+          "name": "Dishwasher Safe",
+          "type": "boolean"
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        }
+      ],
+      "Pour Over": [
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Glass", "Ceramic", "Plastic"]
+        },
+        {
+          "name": "Filter Type",
+          "type": "select",
+          "values": ["Paper", "Cloth", "Metal"]
+        },
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["1 cup", "2 cups", "4 cups", "6 cups"]
+        },
+        {
+          "name": "Dishwasher Safe",
+          "type": "boolean"
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        }
+      ],
+      "Cold Brew Makers": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["1L", "1.5L", "2L"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Glass", "Plastic", "Stainless Steel"]
+        },
+        {
+          "name": "Filter Type",
+          "type": "select",
+          "values": ["Stainless Steel", "Nylon", "Paper"]
+        },
+        {
+          "name": "Brew Time",
+          "type": "select",
+          "values": ["12 hours", "18 hours", "24 hours"]
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        },
+        {
+          "name": "Dishwasher Safe",
+          "type": "boolean"
+        }
+      ],
+      "Moka Pots": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["1 cup", "3 cups", "6 cups", "9 cups", "12 cups"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Aluminum", "Stainless Steel"]
+        },
+        {
+          "name": "Stovetop Compatibility",
+          "type": "multiselect",
+          "values": ["Gas", "Electric", "Induction"]
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        }
+      ]
+    },
+    "Coffee Grinders": {
+      "Blade Grinders": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["30g", "60g", "90g"]
+        },
+        {
+          "name": "Power",
+          "type": "select",
+          "values": ["150W", "200W", "250W"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Plastic", "Stainless Steel"]
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        },
+        {
+          "name": "Warranty",
+          "type": "select",
+          "values": ["1 year", "2 years", "3 years"]
+        }
+      ],
+      "Burr Grinders": [
+        {
+          "name": "Grind Settings",
+          "type": "select",
+          "values": ["10", "15", "20", "30", "40"]
+        },
+        {
+          "name": "Burr Material",
+          "type": "select",
+          "values": ["Ceramic", "Steel"]
+        },
+        {
+          "name": "Hopper Capacity",
+          "type": "select",
+          "values": ["200g", "300g", "400g", "500g"]
+        },
+        {
+          "name": "Dosing Options",
+          "type": "select",
+          "values": ["Timer", "Weight", "Manual"]
+        },
+        {
+          "name": "Power",
+          "type": "select",
+          "values": ["100W", "150W", "200W", "250W"]
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        },
+        {
+          "name": "Warranty",
+          "type": "select",
+          "values": ["1 year", "2 years", "3 years", "5 years"]
+        }
+      ],
+      "Manual Grinders": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["20g", "30g", "40g"]
+        },
+        {
+          "name": "Burr Material",
+          "type": "select",
+          "values": ["Ceramic", "Steel"]
+        },
+        {
+          "name": "Grind Settings",
+          "type": "select",
+          "values": ["5", "10", "15"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Plastic", "Stainless Steel", "Wood"]
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        }
+      ]
+    },
+    "Coffee Accessories": {
+      "Filters": [
+        {
+          "name": "Compatibility",
+          "type": "select",
+          "values": ["Drip Machine", "Pour Over", "AeroPress"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Paper", "Cloth", "Metal"]
+        },
+        {
+          "name": "Size",
+          "type": "select",
+          "values": ["#1", "#2", "#4", "#6"]
+        },
+        {
+          "name": "Quantity",
+          "type": "select",
+          "values": ["40", "100", "200"]
+        },
+        {
+          "name": "Reusable",
+          "type": "boolean"
+        }
+      ],
+      "Milk Frothers": [
+        {
+          "name": "Type",
+          "type": "select",
+          "values": ["Manual", "Electric Handheld", "Electric Jug"]
+        },
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["100ml", "200ml", "300ml", "400ml"]
+        },
+        {
+          "name": "Power",
+          "type": "select",
+          "values": ["NA", "100W", "200W", "300W"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Plastic", "Stainless Steel"]
+        },
+        {
+          "name": "Dishwasher Safe",
+          "type": "boolean"
+        }
+      ],
+      "Coffee Scales": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["1kg", "2kg", "3kg"]
+        },
+        {
+          "name": "Precision",
+          "type": "select",
+          "values": ["0.1g", "0.5g", "1g"]
+        },
+        {
+          "name": "Units",
+          "type": "multiselect",
+          "values": ["Grams", "Ounces", "Pounds"]
+        },
+        {
+          "name": "Battery Life",
+          "type": "select",
+          "values": ["20 hours", "40 hours", "60 hours"]
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        }
+      ],
+      "Travel Mugs": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["12oz", "16oz", "20oz"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Stainless Steel", "Ceramic", "Plastic"]
+        },
+        {
+          "name": "Insulation",
+          "type": "select",
+          "values": ["Single Wall", "Double Wall", "Vacuum Insulated"]
+        },
+        {
+          "name": "Lid Type",
+          "type": "select",
+          "values": ["Flip", "Sliding", "Screw-on"]
+        },
+        {
+          "name": "Dishwasher Safe",
+          "type": "boolean"
+        }
+      ],
+      "Coffee Storage": [
+        {
+          "name": "Capacity",
+          "type": "select",
+          "values": ["250g", "500g", "1kg"]
+        },
+        {
+          "name": "Material",
+          "type": "select",
+          "values": ["Glass", "Ceramic", "Stainless Steel", "Plastic"]
+        },
+        {
+          "name": "Airtight Seal",
+          "type": "boolean"
+        },
+        {
+          "name": "UV Protection",
+          "type": "boolean"
+        },
+        {
+          "name": "Dimensions",
+          "type": "text"
+        }
+      ]
+    }
+  }
+}
+
