@@ -57,3 +57,4 @@ CREATE TABLE IF NOT EXISTS products (
     FOREIGN KEY (category) REFERENCES categories(name),
     FOREIGN KEY (subcategory) REFERENCES subcategories(name)
 );
+
