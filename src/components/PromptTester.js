@@ -48,4 +48,3 @@ const PromptTester = () => {
 };
 
 export default PromptTester;
-
