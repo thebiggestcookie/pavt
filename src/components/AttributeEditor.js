@@ -31,7 +31,8 @@ const AttributeEditor = () => {
       const fetchedCategories = await fetchCategories();
       setCategories(fetchedCategories);
     } catch (error) {
-      setError('Failed to load categories: ' + error.message);
+      console.error('Error loading categories:', error);
+      setError('Failed to load categories: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -42,7 +43,8 @@ const AttributeEditor = () => {
       setSubcategories(filteredSubcategories);
       setSelectedSubcategory('');
     } catch (error) {
-      setError('Failed to load subcategories: ' + error.message);
+      console.error('Error loading subcategories:', error);
+      setError('Failed to load subcategories: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -52,7 +54,8 @@ const AttributeEditor = () => {
       const filteredAttributes = fetchedAttributes.filter(attr => attr.category === category && attr.subcategory === subcategory);
       setAttributes(filteredAttributes);
     } catch (error) {
-      setError('Failed to load attributes: ' + error.message);
+      console.error('Error loading attributes:', error);
+      setError('Failed to load attributes: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -96,7 +99,8 @@ const AttributeEditor = () => {
       loadAttributes(selectedCategory, selectedSubcategory);
       setError('');
     } catch (error) {
-      setError('Failed to save attribute: ' + error.message);
+      console.error('Error saving attribute:', error);
+      setError('Failed to save attribute: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -106,7 +110,8 @@ const AttributeEditor = () => {
       loadAttributes(selectedCategory, selectedSubcategory);
       setError('');
     } catch (error) {
-      setError('Failed to delete attribute: ' + error.message);
+      console.error('Error deleting attribute:', error);
+      setError('Failed to delete attribute: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -117,7 +122,8 @@ const AttributeEditor = () => {
       setNewAttribute({ name: '', type: 'select', values: [] });
       setError('');
     } catch (error) {
-      setError('Failed to add new attribute: ' + error.message);
+      console.error('Error adding new attribute:', error);
+      setError('Failed to add new attribute: ' + (error.response?.data?.error || error.message));
     }
   };
 
