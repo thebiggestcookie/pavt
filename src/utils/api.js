@@ -95,9 +95,9 @@ export const deletePrompt = async (id) => {
   }
 };
 
-export const generateProduct = async (prompt) => {
+export const generateProduct = async (prompt, llmConfigId) => {
   try {
-    const response = await api.post('/api/generate', { prompt });
+    const response = await api.post('/api/generate', { prompt, llmConfigId });
     console.log("Generate product response:", response.data);
     if (typeof response.data !== 'object' || !response.data.response) {
       throw new Error('Received data is not in the expected format');
@@ -171,6 +171,34 @@ export const updateAttributes = async (attributes) => {
     return response.data;
   } catch (error) {
     console.error("Error in updateAttributes:", error);
+    throw error;
+  }
+};
+
+export const fetchLLMConfigs = async () => {
+  try {
+    const response = await api.get('/api/llm-configs');
+    console.log("LLM Configs response:", response.data);
+    if (!Array.isArray(response.data)) {
+      throw new Error('Received data is not in the expected format');
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetchLLMConfigs:", error);
+    throw error;
+  }
+};
+
+export const fetchSubcategories = async () => {
+  try {
+    const response = await api.get('/api/subcategories');
+    console.log("Subcategories response:", response.data);
+    if (!Array.isArray(response.data)) {
+      throw new Error('Received data is not in the expected format');
+    }
+    return response.data.map(subcategory => subcategory.name);
+  } catch (error) {
+    console.error("Error in fetchSubcategories:", error);
     throw error;
   }
 };
