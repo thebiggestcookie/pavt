@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Navigation from './components/Navigation';
-import Upload from './components/Upload';
+import Dashboard from './components/Dashboard';
 import HumanGrader from './components/HumanGrader';
 import HumanGraderV2 from './components/HumanGraderV2';
 import AdminPanel from './components/AdminPanel';
@@ -20,7 +20,7 @@ function App() {
       <div className="App">
         <Navigation />
         <Routes>
-          <Route path="/" element={<Upload />} />
+          <Route path="/" element={<Dashboard />} />
           <Route path="/grader" element={<HumanGrader />} />
           <Route path="/grader-v2" element={<HumanGraderV2 />} />
           <Route path="/admin" element={<AdminPanel />} />
