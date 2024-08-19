@@ -35,6 +35,23 @@ api.interceptors.response.use((response) => {
   return Promise.reject(error);
 });
 
+export const login = async (username, password) => {
+  try {
+    const response = await api.post('/api/login', { username, password });
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+};
+
 export const fetchPrompts = async () => {
   try {
     const response = await api.get('/api/prompts');
@@ -42,9 +59,38 @@ export const fetchPrompts = async () => {
     if (!Array.isArray(response.data)) {
       throw new Error('Received data is not in the expected format');
     }
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error in fetchPrompts:", error);
+    throw error;
+  }
+};
+
+export const createPrompt = async (prompt) => {
+  try {
+    const response = await api.post('/api/prompts', prompt);
+    return response.data;
+  } catch (error) {
+    console.error("Error in createPrompt:", error);
+    throw error;
+  }
+};
+
+export const updatePrompt = async (id, prompt) => {
+  try {
+    const response = await api.put(`/api/prompts/${id}`, prompt);
+    return response.data;
+  } catch (error) {
+    console.error("Error in updatePrompt:", error);
+    throw error;
+  }
+};
+
+export const deletePrompt = async (id) => {
+  try {
+    await api.delete(`/api/prompts/${id}`);
+  } catch (error) {
+    console.error("Error in deletePrompt:", error);
     throw error;
   }
 };
@@ -56,7 +102,7 @@ export const generateProduct = async (prompt) => {
     if (typeof response.data !== 'object' || !response.data.response) {
       throw new Error('Received data is not in the expected format');
     }
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error in generateProduct:", error);
     throw error;
@@ -70,7 +116,7 @@ export const saveProduct = async (product) => {
     if (typeof response.data !== 'object') {
       throw new Error('Received data is not in the expected format');
     }
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error in saveProduct:", error);
     throw error;
@@ -84,7 +130,7 @@ export const fetchProductsToGrade = async () => {
     if (!Array.isArray(response.data)) {
       throw new Error('Received data is not in the expected format');
     }
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error in fetchProductsToGrade:", error);
     throw error;
@@ -98,9 +144,33 @@ export const gradeProduct = async (productId, grade) => {
     if (typeof response.data !== 'object') {
       throw new Error('Received data is not in the expected format');
     }
-    return response;
+    return response.data;
   } catch (error) {
     console.error("Error in gradeProduct:", error);
+    throw error;
+  }
+};
+
+export const fetchAttributes = async () => {
+  try {
+    const response = await api.get('/api/attributes');
+    console.log("Attributes response:", response.data);
+    if (typeof response.data !== 'object') {
+      throw new Error('Received data is not in the expected format');
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetchAttributes:", error);
+    throw error;
+  }
+};
+
+export const updateAttributes = async (attributes) => {
+  try {
+    const response = await api.put('/api/attributes', attributes);
+    return response.data;
+  } catch (error) {
+    console.error("Error in updateAttributes:", error);
     throw error;
   }
 };
