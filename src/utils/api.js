@@ -1,242 +1,111 @@
 import axios from 'axios';
 
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:3001';
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'https://pavt-db.onrender.com',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
   },
-  timeout: 30000, // 30 seconds timeout
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
-
-api.interceptors.response.use((response) => {
-  return response;
-}, (error) => {
-  console.error("API Error:", error);
-  if (error.response) {
-    console.error("Response data:", error.response.data);
-    console.error("Response status:", error.response.status);
-    console.error("Response headers:", error.response.headers);
-  } else if (error.request) {
-    console.error("Request error:", error.request);
-  } else {
-    console.error("Error message:", error.message);
-  }
-  return Promise.reject(error);
-});
-
-export const login = async (username, password) => {
-  try {
-    const response = await api.post('/api/login', { username, password });
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Login error:", error);
-    throw error;
-  }
+export const login = async (email, password) => {
+  const response = await api.post('/auth/login', { email, password });
+  localStorage.setItem('token', response.data.token);
+  return response.data;
 };
 
 export const logout = () => {
   localStorage.removeItem('token');
 };
 
-export const fetchPrompts = async () => {
-  try {
-    const response = await api.get('/api/prompts');
-    console.log("Prompts response:", response.data);
-    if (!Array.isArray(response.data)) {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in fetchPrompts:", error);
-    throw error;
-  }
+export const fetchCategories = async () => {
+  const response = await api.get('/categories');
+  return response.data;
 };
 
-export const createPrompt = async (prompt) => {
-  try {
-    const response = await api.post('/api/prompts', prompt);
-    return response.data;
-  } catch (error) {
-    console.error("Error in createPrompt:", error);
-    throw error;
-  }
+export const fetchSubcategories = async () => {
+  const response = await api.get('/subcategories');
+  return response.data;
 };
 
-export const updatePrompt = async (id, prompt) => {
-  try {
-    const response = await api.put(`/api/prompts/${id}`, prompt);
-    return response.data;
-  } catch (error) {
-    console.error("Error in updatePrompt:", error);
-    throw error;
-  }
-};
-
-export const deletePrompt = async (id) => {
-  try {
-    await api.delete(`/api/prompts/${id}`);
-  } catch (error) {
-    console.error("Error in deletePrompt:", error);
-    throw error;
-  }
-};
-
-export const generateProduct = async (prompt, llmConfigId) => {
-  try {
-    const response = await api.post('/api/generate', { prompt, llmConfigId });
-    console.log("Generate product response:", response.data);
-    if (typeof response.data !== 'object' || !response.data.response) {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in generateProduct:", error);
-    throw error;
-  }
-};
-
-export const saveProduct = async (product) => {
-  try {
-    const response = await api.post('/api/products', product);
-    console.log("Save product response:", response.data);
-    if (typeof response.data !== 'object') {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in saveProduct:", error);
-    throw error;
-  }
-};
-
-export const fetchProductsToGrade = async () => {
-  try {
-    const response = await api.get('/api/products-to-grade');
-    console.log("Products to grade response:", response.data);
-    if (!Array.isArray(response.data)) {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in fetchProductsToGrade:", error);
-    throw error;
-  }
-};
-
-export const gradeProduct = async (productId, grade) => {
-  try {
-    const response = await api.post('/api/grade-product', { productId, grade });
-    console.log("Grade product response:", response.data);
-    if (typeof response.data !== 'object') {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in gradeProduct:", error);
-    throw error;
-  }
-};
-
-export const fetchAttributes = async (category, subcategory, searchTerm = '', page = 1, limit = 20) => {
-  try {
-    const response = await api.get('/api/attributes', {
-      params: { category, subcategory, searchTerm, page, limit }
-    });
-    console.log("Attributes response:", response.data);
-    if (!Array.isArray(response.data)) {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in fetchAttributes:", error);
-    throw error;
-  }
-};
-
-export const createAttribute = async (attribute) => {
-  try {
-    const response = await api.post('/api/attributes', attribute);
-    return response.data;
-  } catch (error) {
-    console.error("Error in createAttribute:", error);
-    throw error;
-  }
+export const fetchAttributes = async () => {
+  const response = await api.get('/attributes');
+  return response.data;
 };
 
 export const updateAttribute = async (id, attribute) => {
-  try {
-    const response = await api.put(`/api/attributes/${id}`, attribute);
-    return response.data;
-  } catch (error) {
-    console.error("Error in updateAttribute:", error);
-    throw error;
-  }
+  const response = await api.put(`/attributes/${id}`, attribute);
+  return response.data;
+};
+
+export const createAttribute = async (attribute) => {
+  const response = await api.post('/attributes', attribute);
+  return response.data;
 };
 
 export const deleteAttribute = async (id) => {
-  try {
-    await api.delete(`/api/attributes/${id}`);
-  } catch (error) {
-    console.error("Error in deleteAttribute:", error);
-    throw error;
-  }
+  const response = await api.delete(`/attributes/${id}`);
+  return response.data;
+};
+
+export const fetchPrompts = async () => {
+  const response = await api.get('/prompts');
+  return response.data;
+};
+
+export const updatePrompt = async (id, prompt) => {
+  const response = await api.put(`/prompts/${id}`, prompt);
+  return response.data;
+};
+
+export const generateProduct = async (prompt, llmConfig) => {
+  const response = await api.post('/generate-product', { prompt, llmConfig });
+  return response.data;
+};
+
+export const saveProduct = async (product) => {
+  const response = await api.post('/products', product);
+  return response.data;
+};
+
+export const fetchProductsToGrade = async () => {
+  const response = await api.get('/products-to-grade');
+  return response.data;
+};
+
+export const gradeProduct = async (id, grade, feedback) => {
+  const response = await api.post(`/grade-product/${id}`, { grade, feedback });
+  return response.data;
 };
 
 export const fetchLLMConfigs = async () => {
-  try {
-    const response = await api.get('/api/llm-configs');
-    console.log("LLM Configs response:", response.data);
-    if (!Array.isArray(response.data)) {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in fetchLLMConfigs:", error);
-    throw error;
-  }
+  const response = await api.get('/llm-configs');
+  return response.data;
 };
 
-export const fetchCategories = async () => {
-  try {
-    const response = await api.get('/api/categories');
-    console.log("Categories response:", response.data);
-    if (!Array.isArray(response.data)) {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in fetchCategories:", error);
-    throw error;
-  }
+export const fetchUsers = async () => {
+  const response = await api.get('/users');
+  return response.data;
 };
 
-export const fetchSubcategories = async (category) => {
-  try {
-    const response = await api.get('/api/subcategories', { params: { category } });
-    console.log("Subcategories response:", response.data);
-    if (!Array.isArray(response.data)) {
-      throw new Error('Received data is not in the expected format');
-    }
-    return response.data;
-  } catch (error) {
-    console.error("Error in fetchSubcategories:", error);
-    throw error;
-  }
+export const updateUser = async (id, updates) => {
+  const response = await api.put(`/users/${id}`, updates);
+  return response.data;
 };
 
-export default api;
+export const deleteUser = async (id) => {
+  const response = await api.delete(`/users/${id}`);
+  return response.data;
+};
+
+export const fetchReports = async () => {
+  const response = await api.get('/reports');
+  return response.data;
+};
+
+export const testPrompt = async (prompt) => {
+  const response = await api.post('/test-prompt', { prompt });
+  return response.data;
+};
 
