@@ -97,27 +97,12 @@ export const deletePrompt = async (id) => {
 
 export const generateProduct = async (prompt) => {
   try {
-    // First, try the '/api/generate' endpoint
-    try {
-      const response = await api.post('/api/generate', { prompt });
-      console.log("Generate product response:", response.data);
-      if (typeof response.data !== 'object' || !response.data.response) {
-        throw new Error('Received data is not in the expected format');
-      }
-      return response.data;
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
-        // If 404, try the '/api/generate-product' endpoint
-        const fallbackResponse = await api.post('/api/generate-product', { prompt });
-        console.log("Generate product fallback response:", fallbackResponse.data);
-        if (typeof fallbackResponse.data !== 'object' || !fallbackResponse.data.response) {
-          throw new Error('Received data is not in the expected format');
-        }
-        return fallbackResponse.data;
-      } else {
-        throw error;
-      }
+    const response = await api.post('/api/generate', { prompt });
+    console.log("Generate product response:", response.data);
+    if (typeof response.data !== 'object' || !response.data.response) {
+      throw new Error('Received data is not in the expected format');
     }
+    return response.data;
   } catch (error) {
     console.error("Error in generateProduct:", error);
     throw error;
