@@ -78,7 +78,7 @@ async function initializeAttributes(client, attributes, parentCategory = null, p
   }
 }
 
-initializeDatabase();
+initializeDatabase().catch(console.error);
 
 // Debug endpoint to check database connection
 app.get('/api/debug', async (req, res) => {
@@ -333,13 +333,48 @@ app.get('/api/subcategories', async (req, res) => {
 app.get('/api/attributes', async (req, res) => {
   try {
     const result = await query('SELECT * FROM attributes');
+    res.json(result.rows);
   } catch (error) {
     console.error('Error fetching attributes:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
+app.post('/api/attributes', async (req, res) => {
+  const { name, type, values, category, subcategory } = req.body;
+  try {
+    const result = await query(
+      'INSERT INTO attributes (name, type, values, category, subcategory) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, type, JSON.stringify(values), category, subcategory]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating attribute:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
+app.put('/api/attributes/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, type, values, category, subcategory } = req.body;
+  try {
+    const result = await query(
+      'UPDATE attributes SET name = $1, type = $2, values = $3, category = $4, subcategory = $5 WHERE id = $6 RETURNING *',
+      [name, type, JSON.stringify(values), category, subcategory, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Attribute not found' });
+    }
+  } catch (error) {
+    console.error('Error updating attribute:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.delete('/api/attributes/:id', async (req, res) => {
+  const { id } = req.params;
   try {
     await query('DELETE FROM attributes WHERE id = $1', [id]);
     res.status(204).send();
