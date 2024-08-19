@@ -49,8 +49,42 @@
 - Stored prompts in component state
 - Allowed editing of prompts in the UI for testing purposes
 
+# Attempted Solutions That Did Not Work
+
+1. Changing API Endpoint
+   - Tried both '/api/generate' and '/api/generate-product'
+   - Both resulted in 404 errors
+
+2. Fallback Mechanism
+   - Implemented fallback from '/api/generate' to '/api/generate-product'
+   - Did not resolve the issue as both endpoints returned 404
+
+3. Timeout Adjustment
+   - Increased timeout from default to 30 seconds
+   - Did not resolve the issue as the problem was a 404 error, not a timeout
+
+4. Authentication Token
+   - Added 'Bearer' token to requests
+   - Did not resolve the 404 error, suggesting it's not an authentication issue
+
+5. Error Handling Improvements
+   - Enhanced error logging and display
+   - Helped in debugging but did not resolve the underlying issue
+
+6. Response Validation
+   - Added checks for expected response format
+   - Never reached this point due to 404 errors
+
+7. Environment Variable for API URL
+   - Used REACT_APP_API_URL with fallback
+   - Did not resolve the issue, suggesting the problem is not with the base URL
+
+8. Prompt Management
+   - Implemented fetching and editing of prompts
+   - Worked for prompt management, but did not affect the product generation issue
+
 Current Status:
-- Product generation still fails with 404 error
+- Product generation consistently fails with 404 error
 - Both '/api/generate' and '/api/generate-product' endpoints return 404
 - Suspicion: Backend API might not have these endpoints implemented or accessible
 
