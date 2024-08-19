@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { debug, getDebugLog } from '../utils/debug';
-import { fetchPrompts, generateProduct, saveProduct } from '../utils/api';
+import { fetchPrompts, generateProduct, saveProduct, fetchLLMConfigs, fetchSubcategories, fetchAttributes } from '../utils/api';
 
 const ProductGenerator = () => {
   const [productName, setProductName] = useState('');
@@ -16,9 +16,16 @@ const ProductGenerator = () => {
   const [showPrompts, setShowPrompts] = useState(false);
   const [generatedProducts, setGeneratedProducts] = useState([]);
   const [sampleProducts, setSampleProducts] = useState([]);
+  const [llmConfigs, setLLMConfigs] = useState([]);
+  const [selectedLLMConfig, setSelectedLLMConfig] = useState('');
+  const [subcategories, setSubcategories] = useState([]);
+  const [attributes, setAttributes] = useState({});
 
   useEffect(() => {
     fetchPromptsData();
+    fetchLLMConfigsData();
+    fetchSubcategoriesData();
+    fetchAttributesData();
   }, []);
 
   const fetchPromptsData = async () => {
@@ -37,47 +44,88 @@ const ProductGenerator = () => {
     }
   };
 
+  const fetchLLMConfigsData = async () => {
+    try {
+      const configs = await fetchLLMConfigs();
+      setLLMConfigs(configs);
+      if (configs.length > 0) {
+        setSelectedLLMConfig(configs[0].id);
+      }
+    } catch (error) {
+      console.error('Error fetching LLM configs:', error);
+      setError('Failed to fetch LLM configs: ' + error.message);
+    }
+  };
+
+  const fetchSubcategoriesData = async () => {
+    try {
+      const fetchedSubcategories = await fetchSubcategories();
+      setSubcategories(fetchedSubcategories);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+      setError('Failed to fetch subcategories: ' + error.message);
+    }
+  };
+
+  const fetchAttributesData = async () => {
+    try {
+      const fetchedAttributes = await fetchAttributes();
+      setAttributes(fetchedAttributes);
+    } catch (error) {
+      console.error('Error fetching attributes:', error);
+      setError('Failed to fetch attributes: ' + error.message);
+    }
+  };
+
   const handleGenerateProduct = async () => {
-    if (!productName) {
-      setError('Please enter a product name.');
+    if (!productName || !selectedLLMConfig) {
+      setError('Please enter a product name and select an LLM configuration.');
       return;
     }
     setLoading(true);
     setError('');
     setDebugInfo('');
     try {
-      debug('Generating product', { productName });
+      debug('Generating product', { productName, llmConfig: selectedLLMConfig });
       
       // Step 1: Generate 5 sample products
       const step1Prompt = prompts.step1.replace('$productname', productName);
       debug('Step 1 prompt', step1Prompt);
-      const step1Response = await generateProduct(step1Prompt);
+      const step1Response = await generateProduct(step1Prompt, selectedLLMConfig);
       const generatedSamples = JSON.parse(step1Response.response);
       setSampleProducts(generatedSamples);
       debug('Generated sample products', generatedSamples);
       setDebugInfo(prevDebug => prevDebug + `Step 1 Response:\n${JSON.stringify(generatedSamples, null, 2)}\n\n`);
 
-      // Step 2: Match subcategory
-      const step2Prompt = prompts.step2.replace('$sampleproducts', JSON.stringify(generatedSamples));
-      debug('Step 2 prompt', step2Prompt);
-      const step2Response = await generateProduct(step2Prompt);
-      const matchedSubcategory = step2Response.response.trim();
-      setSubcategory(matchedSubcategory);
-      debug('Matched subcategory', matchedSubcategory);
-      setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${matchedSubcategory}\n\n`);
+      // Step 2: Match subcategory for each sample product
+      const matchedSubcategories = await Promise.all(generatedSamples.map(async (sample) => {
+        const step2Prompt = prompts.step2
+          .replace('$sampleproducts', JSON.stringify([sample]))
+          .replace('$subcategories', subcategories.join(', '));
+        debug('Step 2 prompt', step2Prompt);
+        const step2Response = await generateProduct(step2Prompt, selectedLLMConfig);
+        const matchedSubcategory = step2Response.response.trim();
+        debug('Matched subcategory', { sample, matchedSubcategory });
+        return { sample, subcategory: matchedSubcategory };
+      }));
+      setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${JSON.stringify(matchedSubcategories, null, 2)}\n\n`);
 
-      // Step 3: Generate attributes
-      const step3Prompt = prompts.step3
-        .replace('$productname', productName)
-        .replace('$subcategory', matchedSubcategory);
-      debug('Step 3 prompt', step3Prompt);
-      const step3Response = await generateProduct(step3Prompt);
-      const generatedAttributes = JSON.parse(step3Response.response);
-      debug('Generated attributes', generatedAttributes);
-      setDebugInfo(prevDebug => prevDebug + `Step 3 Response:\n${JSON.stringify(generatedAttributes, null, 2)}\n\n`);
+      // Step 3: Generate attributes for each sample product
+      const generatedProducts = await Promise.all(matchedSubcategories.map(async ({ sample, subcategory }) => {
+        const relevantAttributes = attributes[subcategory] || [];
+        const step3Prompt = prompts.step3
+          .replace('$productname', sample)
+          .replace('$subcategory', subcategory)
+          .replace('$attributes', relevantAttributes.join(', '));
+        debug('Step 3 prompt', step3Prompt);
+        const step3Response = await generateProduct(step3Prompt, selectedLLMConfig);
+        const generatedAttributes = JSON.parse(step3Response.response);
+        debug('Generated attributes', { sample, subcategory, attributes: generatedAttributes });
+        return { name: sample, subcategory, attributes: generatedAttributes };
+      }));
 
-      // Add generated product to the list
-      setGeneratedProducts(prevProducts => [...prevProducts, { name: productName, subcategory: matchedSubcategory, attributes: generatedAttributes }]);
+      setGeneratedProducts(generatedProducts);
+      setDebugInfo(prevDebug => prevDebug + `Step 3 Response:\n${JSON.stringify(generatedProducts, null, 2)}\n\n`);
     } catch (error) {
       console.error('Error generating product:', error);
       debug('Error generating product', error);
@@ -125,6 +173,21 @@ const ProductGenerator = () => {
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
         />
       </div>
+      <div className="mb-4">
+        <label htmlFor="llmConfig" className="block text-sm font-medium text-gray-700">
+          LLM Configuration
+        </label>
+        <select
+          id="llmConfig"
+          value={selectedLLMConfig}
+          onChange={(e) => setSelectedLLMConfig(e.target.value)}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+        >
+          {llmConfigs.map((config) => (
+            <option key={config.id} value={config.id}>{config.name}</option>
+          ))}
+        </select>
+      </div>
       <button
         onClick={() => setShowPrompts(!showPrompts)}
         className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4"
@@ -149,7 +212,7 @@ const ProductGenerator = () => {
       )}
       <button
         onClick={handleGenerateProduct}
-        disabled={loading || !productName}
+        disabled={loading || !productName || !selectedLLMConfig}
         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
       >
         {loading ? 'Generating...' : 'Generate Product'}

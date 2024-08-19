@@ -292,7 +292,7 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
-// Subcategories endpoint
+//Subcategories endpoint
 app.get('/api/subcategories', async (req, res) => {
   try {
     const result = await query('SELECT * FROM subcategories');
@@ -307,7 +307,14 @@ app.get('/api/subcategories', async (req, res) => {
 app.get('/api/attributes', async (req, res) => {
   try {
     const result = await query('SELECT * FROM attributes');
-    res.json(result.rows);
+    const attributes = result.rows.reduce((acc, attr) => {
+      if (!acc[attr.subcategory]) {
+        acc[attr.subcategory] = [];
+      }
+      acc[attr.subcategory].push(attr.name);
+      return acc;
+    }, {});
+    res.json(attributes);
   } catch (error) {
     console.error('Error fetching attributes:', error);
     res.status(500).json({ message: 'Internal server error' });
@@ -348,10 +355,17 @@ app.get('/api/llm-performance', async (req, res) => {
 });
 
 // LLM processing endpoint
-app.post('/api/process-llm', async (req, res) => {
-  const { prompt, productName, subcategory, llmConfig } = req.body;
+app.post('/api/generate', async (req, res) => {
+  const { prompt, llmConfigId } = req.body;
 
   try {
+    // Fetch LLM config
+    const configResult = await query('SELECT * FROM llm_configs WHERE id = $1', [llmConfigId]);
+    if (configResult.rows.length === 0) {
+      return res.status(404).json({ message: 'LLM configuration not found' });
+    }
+    const llmConfig = configResult.rows[0];
+
     console.log('Full Prompt:', prompt);
     console.log('LLM Config:', llmConfig);
 
@@ -387,14 +401,14 @@ app.post('/api/process-llm', async (req, res) => {
 
     console.log('LLM Response:', response.data);
 
-    let attributes;
+    let generatedResponse;
     if (llmConfig.provider === 'openai') {
-      attributes = response.data.choices[0].message.content.trim();
+      generatedResponse = response.data.choices[0].message.content.trim();
     } else if (llmConfig.provider === 'anthropic') {
-      attributes = response.data.completion.trim();
+      generatedResponse = response.data.completion.trim();
     }
 
-    res.json({ attributes });
+    res.json({ response: generatedResponse });
   } catch (error) {
     console.error('Error processing with LLM:', error.response ? error.response.data : error.message);
     res.status(500).json({ 
@@ -402,22 +416,6 @@ app.post('/api/process-llm', async (req, res) => {
       error: error.response ? error.response.data : error.message,
       rawResponse: error.response ? error.response.data : null
     });
-  }
-});
-
-// Generate product endpoint
-app.post('/api/generate', async (req, res) => {
-  const { prompt } = req.body;
-  try {
-    // Here you would typically call your LLM service
-    // For now, we'll just return a mock response
-    const mockResponse = {
-      response: JSON.stringify(['Sample Product 1', 'Sample Product 2', 'Sample Product 3', 'Sample Product 4', 'Sample Product 5'])
-    };
-    res.json(mockResponse);
-  } catch (error) {
-    console.error('Error generating product:', error);
-    res.status(500).json({ message: 'Error generating product', error: error.message });
   }
 });
 
