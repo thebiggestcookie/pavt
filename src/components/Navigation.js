@@ -18,8 +18,8 @@ const Navigation = () => {
   return (
     <nav className="bg-white shadow-md">
       <div className="container mx-auto px-6 py-3">
-        <ul className="flex space-x-4">
-          <li><Link to="/" className="text-blue-600 hover:text-blue-800">Upload</Link></li>
+        <ul className="flex flex-wrap space-x-4">
+          <li><Link to="/" className="text-blue-600 hover:text-blue-800">Dashboard</Link></li>
           <li><Link to="/grader" className="text-blue-600 hover:text-blue-800">Human Grader</Link></li>
           <li><Link to="/grader-v2" className="text-blue-600 hover:text-blue-800">Human Grader V2</Link></li>
           <li><Link to="/admin" className="text-blue-600 hover:text-blue-800">Admin Panel</Link></li>
@@ -37,4 +37,3 @@ const Navigation = () => {
 };
 
 export default Navigation;
-
