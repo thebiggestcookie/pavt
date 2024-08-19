@@ -320,8 +320,14 @@ app.get('/api/categories', async (req, res) => {
 
 // Subcategories endpoint
 app.get('/api/subcategories', async (req, res) => {
+  const { category } = req.query;
   try {
-    const result = await query('SELECT * FROM subcategories');
+    let result;
+    if (category) {
+      result = await query('SELECT * FROM subcategories WHERE category = $1', [category]);
+    } else {
+      result = await query('SELECT * FROM subcategories');
+    }
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching subcategories:', error);
@@ -331,8 +337,34 @@ app.get('/api/subcategories', async (req, res) => {
 
 // Attributes endpoint
 app.get('/api/attributes', async (req, res) => {
+  const { category, subcategory, searchTerm, page = 1, limit = 20 } = req.query;
   try {
-    const result = await query('SELECT * FROM attributes');
+    let query = 'SELECT * FROM attributes WHERE 1=1';
+    const queryParams = [];
+    let paramCount = 1;
+
+    if (category) {
+      query += ` AND category = $${paramCount}`;
+      queryParams.push(category);
+      paramCount++;
+    }
+
+    if (subcategory) {
+      query += ` AND subcategory = $${paramCount}`;
+      queryParams.push(subcategory);
+      paramCount++;
+    }
+
+    if (searchTerm) {
+      query += ` AND name ILIKE $${paramCount}`;
+      queryParams.push(`%${searchTerm}%`);
+      paramCount++;
+    }
+
+    query += ` LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
+    queryParams.push(limit, (page - 1) * limit);
+
+    const result = await pool.query(query, queryParams);
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching attributes:', error);
@@ -380,18 +412,6 @@ app.delete('/api/attributes/:id', async (req, res) => {
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting attribute:', error);
-    res.status(500).json({ message: 'Internal server error', error: error.message, stack: error.stack });
-  }
-});
-
-// Get attributes for a specific category and subcategory
-app.get('/api/attributes/:category/:subcategory', async (req, res) => {
-  const { category, subcategory } = req.params;
-  try {
-    const result = await query('SELECT * FROM attributes WHERE category = $1 AND subcategory = $2', [category, subcategory]);
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching attributes:', error);
     res.status(500).json({ message: 'Internal server error', error: error.message, stack: error.stack });
   }
 });
