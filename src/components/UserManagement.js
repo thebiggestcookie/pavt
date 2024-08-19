@@ -1,136 +1,93 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { fetchUsers, updateUser, deleteUser } from '../utils/api';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [newUser, setNewUser] = useState({ username: '', password: '', role: 'user' });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchUsers();
+    loadUsers();
   }, []);
 
-  const fetchUsers = async () => {
+  const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/users');
-      setUsers(response.data);
+      const fetchedUsers = await fetchUsers();
+      setUsers(fetchedUsers);
       setLoading(false);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      setError('Failed to fetch users. Please try again.');
+    } catch (err) {
+      setError('Failed to load users: ' + err.message);
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewUser(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleUpdateUser = async (id, updates) => {
     try {
-      await axios.post('/api/users', newUser);
-      setNewUser({ username: '', password: '', role: 'user' });
-      fetchUsers();
-    } catch (error) {
-      console.error('Error creating user:', error);
-      setError('Failed to create user. Please try again.');
+      await updateUser(id, updates);
+      setUsers(users.map(user => 
+        user.id === id ? { ...user, ...updates } : user
+      ));
+      alert('User updated successfully');
+    } catch (err) {
+      setError('Failed to update user: ' + err.message);
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`/api/users/${id}`);
-      fetchUsers();
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      setError('Failed to delete user. Please try again.');
+  const handleDeleteUser = async (id) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await deleteUser(id);
+        setUsers(users.filter(user => user.id !== id));
+        alert('User deleted successfully');
+      } catch (err) {
+        setError('Failed to delete user: ' + err.message);
+      }
     }
   };
 
-  if (loading) {
-    return <div>Loading users...</div>;
-  }
-
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-4">User Management</h1>
-      <form onSubmit={handleSubmit} className="mb-8">
-        <div className="mb-4">
-          <label htmlFor="username" className="block text-gray-700 text-sm font-bold mb-2">
-            Username:
-          </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={newUser.username}
-            onChange={handleInputChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
-            Password:
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={newUser.password}
-            onChange={handleInputChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="role" className="block text-gray-700 text-sm font-bold mb-2">
-            Role:
-          </label>
-          <select
-            id="role"
-            name="role"
-            value={newUser.role}
-            onChange={handleInputChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            required
-          >
-            <option value="user">User</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Add User
-        </button>
-      </form>
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Existing Users</h2>
-        {users.map(user => (
-          <div key={user.id} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-            <p><strong>Username:</strong> {user.username}</p>
-            <p><strong>Role:</strong> {user.role}</p>
-            <button
-              onClick={() => handleDelete(user.id)}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded focus:outline-none focus:shadow-outline mt-2"
-            >
-              Delete
-            </button>
-          </div>
-        ))}
-      </div>
+      <h1 className="text-3xl font-bold mb-4">User Management</h1>
+      <table className="w-full">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users.map(user => (
+            <tr key={user.id}>
+              <td>{user.name}</td>
+              <td>{user.email}</td>
+              <td>{user.role}</td>
+              <td>
+                <button
+                  onClick={() => handleUpdateUser(user.id, { role: user.role === 'admin' ? 'user' : 'admin' })}
+                  className="mr-2 bg-blue-500 text-white px-2 py-1 rounded"
+                >
+                  Toggle Admin
+                </button>
+                <button
+                  onClick={() => handleDeleteUser(user.id)}
+                  className="bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  Delete
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
 export default UserManagement;
+

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { fetchPrompts, createPrompt, updatePrompt, deletePrompt } from '../utils/api';
+import { fetchPrompts, updatePrompt } from '../utils/api';
 
 const PromptManagement = () => {
   const [prompts, setPrompts] = useState([]);
-  const [newPrompt, setNewPrompt] = useState({ name: '', content: '', step: 1 });
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadPrompts();
@@ -12,98 +12,54 @@ const PromptManagement = () => {
 
   const loadPrompts = async () => {
     try {
+      setLoading(true);
       const fetchedPrompts = await fetchPrompts();
       setPrompts(fetchedPrompts);
+      setLoading(false);
     } catch (err) {
-      setError('Failed to load prompts');
+      setError('Failed to load prompts: ' + err.message);
+      setLoading(false);
     }
   };
 
-  const handleCreatePrompt = async () => {
+  const handlePromptChange = (id, content) => {
+    setPrompts(prompts.map(prompt => 
+      prompt.id === id ? { ...prompt, content } : prompt
+    ));
+  };
+
+  const handleSavePrompt = async (id) => {
     try {
-      await createPrompt(newPrompt);
-      setNewPrompt({ name: '', content: '', step: 1 });
-      loadPrompts();
+      const promptToUpdate = prompts.find(prompt => prompt.id === id);
+      await updatePrompt(id, promptToUpdate);
+      alert('Prompt updated successfully');
     } catch (err) {
-      setError('Failed to create prompt');
+      setError('Failed to update prompt: ' + err.message);
     }
   };
 
-  const handleUpdatePrompt = async (id, updatedPrompt) => {
-    try {
-      await updatePrompt(id, updatedPrompt);
-      loadPrompts();
-    } catch (err) {
-      setError('Failed to update prompt');
-    }
-  };
-
-  const handleDeletePrompt = async (id) => {
-    try {
-      await deletePrompt(id);
-      loadPrompts();
-    } catch (err) {
-      setError('Failed to delete prompt');
-    }
-  };
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">Prompt Management</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-2">Create New Prompt</h2>
-        <input
-          type="text"
-          placeholder="Prompt Name"
-          value={newPrompt.name}
-          onChange={(e) => setNewPrompt({...newPrompt, name: e.target.value})}
-          className="w-full p-2 mb-2 border rounded"
-        />
-        <textarea
-          placeholder="Prompt Content"
-          value={newPrompt.content}
-          onChange={(e) => setNewPrompt({...newPrompt, content: e.target.value})}
-          className="w-full p-2 mb-2 border rounded"
-          rows="4"
-        />
-        <input
-          type="number"
-          placeholder="Step"
-          value={newPrompt.step}
-          onChange={(e) => setNewPrompt({...newPrompt, step: parseInt(e.target.value)})}
-          className="w-full p-2 mb-2 border rounded"
-        />
-        <button
-          onClick={handleCreatePrompt}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Create Prompt
-        </button>
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Existing Prompts</h2>
-        {prompts.map((prompt) => (
-          <div key={prompt.id} className="mb-4 p-4 border rounded">
-            <h3 className="text-xl font-bold">{prompt.name}</h3>
-            <p className="mb-2">Step: {prompt.step}</p>
-            <textarea
-              value={prompt.content}
-              onChange={(e) => handleUpdatePrompt(prompt.id, {...prompt, content: e.target.value})}
-              className="w-full p-2 mb-2 border rounded"
-              rows="4"
-            />
-            <button
-              onClick={() => handleDeletePrompt(prompt.id)}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-            >
-              Delete
-            </button>
-          </div>
-        ))}
-      </div>
+      {prompts.map(prompt => (
+        <div key={prompt.id} className="mb-4">
+          <h2 className="text-xl font-bold">{prompt.name}</h2>
+          <textarea
+            value={prompt.content}
+            onChange={(e) => handlePromptChange(prompt.id, e.target.value)}
+            className="w-full h-32 p-2 border rounded"
+          />
+          <button
+            onClick={() => handleSavePrompt(prompt.id)}
+            className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Save
+          </button>
+        </div>
+      ))}
     </div>
   );
 };
