@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import ProductGenerator from './components/ProductGenerator';
 import AttributeEditor from './components/AttributeEditor';
 import AttributeEditorV2 from './components/AttributeEditorV2';
@@ -26,20 +26,12 @@ function App() {
           </ul>
         </nav>
 
-        <Switch>
-          <Route path="/" exact>
-            <h1>Welcome to the Product Attribute Value Tool</h1>
-          </Route>
-          <Route path="/product-generator">
-            <ProductGenerator />
-          </Route>
-          <Route path="/attribute-editor">
-            <AttributeEditor />
-          </Route>
-          <Route path="/attribute-editor-v2">
-            <AttributeEditorV2 />
-          </Route>
-        </Switch>
+        <Routes>
+          <Route path="/" element={<h1>Welcome to the Product Attribute Value Tool</h1>} />
+          <Route path="/product-generator" element={<ProductGenerator />} />
+          <Route path="/attribute-editor" element={<AttributeEditor />} />
+          <Route path="/attribute-editor-v2" element={<AttributeEditorV2 />} />
+        </Routes>
       </div>
     </Router>
   );
