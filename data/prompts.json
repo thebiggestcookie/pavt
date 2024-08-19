@@ -2,11 +2,11 @@
   {
     "id": "1",
     "name": "Coffee Attribute Extractor",
-    "content": "Extract attributes from the given coffee product description. Return the result as a JSON object with the following structure: {\"Origin\": \"...\", \"RoastLevel\": \"...\", \"FlavorProfile\": \"...\", \"Organic\": \"...\", \"FairTrade\": \"...\", \"ProcessingMethod\": \"...\"}. Use \"Unknown\" if an attribute is not mentioned."
+    "content": "Extract attributes from the given coffee product description. Return the result as a JSON object with the following structure: {\"Brand\": \"...\", \"Origin\": \"...\", \"RoastLevel\": \"...\", \"FlavorNotes\": [...], \"Weight\": \"...\", \"Price\": \"...\", \"GrindType\": \"...\", \"Organic\": true/false, \"FairTrade\": true/false}. Use \"Unknown\" if an attribute is not mentioned. For Coffee Pods, include \"PodsPerPack\" and \"CompatibleMachines\" instead of \"Weight\" and \"GrindType\". For Coffee Makers, use {\"Brand\": \"...\", \"Type\": \"...\", \"Capacity\": \"...\", \"Price\": \"...\", \"Features\": [...], \"Color\": \"...\", \"Warranty\": \"...\"}."
   },
   {
     "id": "2",
     "name": "Coffee Categorizer",
-    "content": "Categorize the given coffee product into appropriate subcategories. Return the result as a JSON object with the following structure: {\"Subcategory\": \"...\"}. Choose from: \"Whole Bean Coffee\", \"Ground Coffee\", or \"Coffee Pods\"."
+    "content": "Categorize the given coffee product into appropriate categories and subcategories. Return the result as a JSON object with the following structure: {\"Category\": \"Food\", \"Subcategory\": \"Coffee\", \"SubSubcategory\": \"...\"}. Choose from: \"Coffee Beans\", \"Coffee Pods\", or \"Coffee Makers\" for the SubSubcategory."
   }
 ]
