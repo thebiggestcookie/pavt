@@ -51,7 +51,7 @@ export const fetchPrompts = async () => {
 
 export const generateProduct = async (prompt) => {
   try {
-    const response = await api.post('/api/generate', { prompt });
+    const response = await api.post('/api/generate-product', { prompt });
     console.log("Generate product response:", response.data);
     if (typeof response.data !== 'object' || !response.data.response) {
       throw new Error('Received data is not in the expected format');
@@ -106,3 +106,4 @@ export const gradeProduct = async (productId, grade) => {
 };
 
 export default api;
+
