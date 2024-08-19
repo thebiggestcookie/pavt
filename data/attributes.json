@@ -1,57 +1,139 @@
-[
-  {
-    "id": 1,
-    "name": "Brand",
-    "type": "string"
-  },
-  {
-    "id": 2,
-    "name": "Origin",
-    "type": "string"
-  },
-  {
-    "id": 3,
-    "name": "Roast Level",
-    "type": "string"
-  },
-  {
-    "id": 4,
-    "name": "Flavor Notes",
-    "type": "array"
-  },
-  {
-    "id": 5,
-    "name": "Weight",
-    "type": "number"
-  },
-  {
-    "id": 6,
-    "name": "Price",
-    "type": "number"
-  },
-  {
-    "id": 7,
-    "name": "Grind Type",
-    "type": "string"
-  },
-  {
-    "id": 8,
-    "name": "Organic",
-    "type": "boolean"
-  },
-  {
-    "id": 9,
-    "name": "Fair Trade",
-    "type": "boolean"
-  },
-  {
-    "id": 10,
-    "name": "Pods per Pack",
-    "type": "number"
-  },
-  {
-    "id": 11,
-    "name": "Compatible Machines",
-    "type": "array"
+{
+  "Food": {
+    "Coffee": {
+      "Coffee Beans": [
+        {
+          "id": 1,
+          "name": "Brand",
+          "type": "string"
+        },
+        {
+          "id": 2,
+          "name": "Origin",
+          "type": "string"
+        },
+        {
+          "id": 3,
+          "name": "Roast Level",
+          "type":
+ "string"
+        },
+        {
+          "id": 4,
+          "name": "Flavor Notes",
+          "type": "array"
+        },
+        {
+          "id": 5,
+          "name": "Weight",
+          "type": "number"
+        },
+        {
+          "id": 6,
+          "name": "Price",
+          "type": "number"
+        },
+        {
+          "id": 7,
+          "name": "Grind Type",
+          "type": "string"
+        },
+        {
+          "id": 8,
+          "name": "Organic",
+          "type": "boolean"
+        },
+        {
+          "id": 9,
+          "name": "Fair Trade",
+          "type": "boolean"
+        }
+      ],
+      "Coffee Pods": [
+        {
+          "id": 1,
+          "name": "Brand",
+          "type": "string"
+        },
+        {
+          "id": 2,
+          "name": "Origin",
+          "type": "string"
+        },
+        {
+          "id": 3,
+          "name": "Roast Level",
+          "type": "string"
+        },
+        {
+          "id": 4,
+          "name": "Flavor Notes",
+          "type": "array"
+        },
+        {
+          "id": 5,
+          "name": "Pods per Pack",
+          "type": "number"
+        },
+        {
+          "id": 6,
+          "name": "Price",
+          "type": "number"
+        },
+        {
+          "id": 7,
+          "name": "Compatible Machines",
+          "type": "array"
+        },
+        {
+          "id": 8,
+          "name": "Organic",
+          "type": "boolean"
+        },
+        {
+          "id": 9,
+          "name": "Fair Trade",
+          "type": "boolean"
+        }
+      ],
+      "Coffee Makers": [
+        {
+          "id": 1,
+          "name": "Brand",
+          "type": "string"
+        },
+        {
+          "id": 2,
+          "name": "Type",
+          "type": "string"
+        },
+        {
+          "id": 3,
+          "name": "Capacity",
+          "type": "number"
+        },
+        {
+          "id": 4,
+          "name": "Price",
+          "type": "number"
+        },
+        {
+          "id": 5,
+          "name": "Features",
+          "type": "array"
+        },
+        {
+          "id": 6,
+          "name": "Color",
+          "type": "string"
+        },
+        {
+          "id": 7,
+          "name": "Warranty",
+          "type": "string"
+        }
+      ]
+    }
   }
-]
+}
+
