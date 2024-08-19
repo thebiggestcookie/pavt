@@ -2,9 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { fetchAttributes, updateAttributes } from '../utils/api';
 
 const AttributeEditor = () => {
-  const [attributes, setAttributes] = useState({});
+  const [categories, setCategories] = useState({});
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubCategory, setSelectedSubCategory] = useState('');
+  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState('');
+  const [attributes, setAttributes] = useState([]);
+  const [newAttribute, setNewAttribute] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadAttributes();
@@ -12,73 +16,156 @@ const AttributeEditor = () => {
 
   const loadAttributes = async () => {
     try {
-      setLoading(true);
       const fetchedAttributes = await fetchAttributes();
-      setAttributes(fetchedAttributes);
-      setError('');
-    } catch (err) {
-      setError('Failed to load attributes: ' + err.message);
-    } finally {
-      setLoading(false);
+      setCategories(fetchedAttributes);
+    } catch (error) {
+      setError('Failed to load attributes: ' + error.message);
     }
   };
 
-  const handleAttributeChange = (subcategory, attribute, value) => {
-    setAttributes(prevAttributes => ({
-      ...prevAttributes,
-      [subcategory]: {
-        ...prevAttributes[subcategory],
-        [attribute]: value.split(',').map(item => item.trim())
-      }
-    }));
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+    setSelectedSubCategory('');
+    setSelectedSubSubCategory('');
+    setAttributes([]);
   };
 
-  const handleSaveAttributes = async () => {
+  const handleSubCategoryChange = (event) => {
+    setSelectedSubCategory(event.target.value);
+    setSelectedSubSubCategory('');
+    setAttributes([]);
+  };
+
+  const handleSubSubCategoryChange = (event) => {
+    setSelectedSubSubCategory(event.target.value);
+    setAttributes(categories[selectedCategory][selectedSubCategory][event.target.value] || []);
+  };
+
+  const handleAddAttribute = () => {
+    if (newAttribute && !attributes.includes(newAttribute)) {
+      setAttributes([...attributes, newAttribute]);
+      setNewAttribute('');
+    }
+  };
+
+  const handleRemoveAttribute = (attr) => {
+    setAttributes(attributes.filter((a) => a !== attr));
+  };
+
+  const handleSave = async () => {
     try {
-      setLoading(true);
-      await updateAttributes(attributes);
+      const updatedCategories = {
+        ...categories,
+        [selectedCategory]: {
+          ...categories[selectedCategory],
+          [selectedSubCategory]: {
+            ...categories[selectedCategory][selectedSubCategory],
+            [selectedSubSubCategory]: attributes
+          }
+        }
+      };
+      await updateAttributes(updatedCategories);
+      setCategories(updatedCategories);
       setError('');
-      alert('Attributes saved successfully!');
-    } catch (err) {
-      setError('Failed to save attributes: ' + err.message);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      setError('Failed to save attributes: ' + error.message);
     }
   };
-
-  if (loading) {
-    return <div>Loading attributes...</div>;
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-4">Attribute Editor</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
-      
-      {Object.entries(attributes).map(([subcategory, subcategoryAttributes]) => (
-        <div key={subcategory} className="mb-8">
-          <h2 className="text-2xl font-bold mb-2">{subcategory}</h2>
-          {Object.entries(subcategoryAttributes).map(([attribute, values]) => (
-            <div key={attribute} className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">{attribute}</label>
-              <input
-                type="text"
-                value={Array.isArray(values) ? values.join(', ') : ''}
-                onChange={(e) => handleAttributeChange(subcategory, attribute, e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              />
-            </div>
-          ))}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div>
+          <label className="block mb-2">Main Category</label>
+          <select
+            className="w-full p-2 border rounded"
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+          >
+            <option value="">Select Main Category</option>
+            {Object.keys(categories).map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </div>
-      ))}
-      
-      <button
-        onClick={handleSaveAttributes}
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        disabled={loading}
-      >
-        {loading ? 'Saving...' : 'Save Attributes'}
-      </button>
+        {selectedCategory && (
+          <div>
+            <label className="block mb-2">Sub Category</label>
+            <select
+              className="w-full p-2 border rounded"
+              value={selectedSubCategory}
+              onChange={handleSubCategoryChange}
+            >
+              <option value="">Select Sub Category</option>
+              {Object.keys(categories[selectedCategory] || {}).map((subCategory) => (
+                <option key={subCategory} value={subCategory}>
+                  {subCategory}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+        {selectedSubCategory && (
+          <div>
+            <label className="block mb-2">Sub-Sub Category</label>
+            <select
+              className="w-full p-2 border rounded"
+              value={selectedSubSubCategory}
+              onChange={handleSubSubCategoryChange}
+            >
+              <option value="">Select Sub-Sub Category</option>
+              {Object.keys(categories[selectedCategory][selectedSubCategory] || {}).map((subSubCategory) => (
+                <option key={subSubCategory} value={subSubCategory}>
+                  {subSubCategory}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+      {selectedSubSubCategory && (
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Attributes</h2>
+          <ul className="mb-4">
+            {attributes.map((attr) => (
+              <li key={attr} className="flex items-center mb-2">
+                <span className="mr-2">{attr}</span>
+                <button
+                  onClick={() => handleRemoveAttribute(attr)}
+                  className="bg-red-500 text-white px-2 py-1 rounded"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+          <div className="flex mb-4">
+            <input
+              type="text"
+              value={newAttribute}
+              onChange={(e) => setNewAttribute(e.target.value)}
+              className="flex-grow p-2 border rounded-l"
+              placeholder="New attribute"
+            />
+            <button
+              onClick={handleAddAttribute}
+              className="bg-blue-500 text-white px-4 py-2 rounded-r"
+            >
+              Add
+            </button>
+          </div>
+          <button
+            onClick={handleSave}
+            className="bg-green-500 text-white px-4 py-2 rounded"
+          >
+            Save Changes
+          </button>
+        </div>
+      )}
+      {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
   );
 };
