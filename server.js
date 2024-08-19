@@ -36,21 +36,14 @@ async function initializeDatabase() {
     console.log('Database schema initialized successfully');
 
     // Initialize data
-    const subcategories = JSON.parse(fs.readFileSync('data/subcategories.json', 'utf8'));
-    for (const subcategory of subcategories) {
-      await client.query('INSERT INTO subcategories (name) VALUES ($1) ON CONFLICT (name) DO NOTHING', [subcategory.name]);
-    }
-
-    const attributes = JSON.parse(fs.readFileSync('data/attributes.json', 'utf8'));
-    for (const attribute of attributes) {
-      await client.query('INSERT INTO attributes (name, type) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [attribute.name, attribute.type]);
-    }
+    const attributes = JSON.parse(fs.readFileSync('data/product_attributes.json', 'utf8'));
+    await initializeAttributes(client, attributes);
 
     const products = JSON.parse(fs.readFileSync('data/products.json', 'utf8'));
     for (const product of products) {
       await client.query(
-        'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) ON CONFLICT (name) DO UPDATE SET subcategory = EXCLUDED.subcategory, attributes = EXCLUDED.attributes',
-        [product.name, product.subcategory, JSON.stringify(product.attributes)]
+        'INSERT INTO products (name, category, subcategory, attributes) VALUES ($1, $2, $3, $4) ON CONFLICT (name) DO UPDATE SET category = EXCLUDED.category, subcategory = EXCLUDED.subcategory, attributes = EXCLUDED.attributes',
+        [product.name, product.category, product.subcategory, JSON.stringify(product.attributes)]
       );
     }
 
@@ -64,7 +57,28 @@ async function initializeDatabase() {
   }
 }
 
-initializeDatabase();
+async function initializeAttributes(client, attributes, parentCategory = null, parentSubcategory = null) {
+  for (const [category, subcategories] of Object.entries(attributes)) {
+    const fullCategory = parentCategory ? `${parentCategory} > ${category}` : category;
+    await client.query('INSERT INTO categories (name, parent_category) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [fullCategory, parentCategory]);
+    
+    if (typeof subcategories === 'object' && !Array.isArray(subcategories)) {
+      await initializeAttributes(client, subcategories, fullCategory);
+    } else {
+      const fullSubcategory = parentSubcategory ? `${parentSubcategory} > ${category}` : category;
+      await client.query('INSERT INTO subcategories (name, category) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [fullSubcategory, fullCategory]);
+      
+      for (const attribute of subcategories) {
+        await client.query(
+          'INSERT INTO attributes (name, type, values, category, subcategory) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (name, category, subcategory) DO UPDATE SET type = EXCLUDED.type, values = EXCLUDED.values',
+          [attribute.name, attribute.type, JSON.stringify(attribute.values), fullCategory, fullSubcategory]
+        );
+      }
+    }
+  }
+}
+
+initializeDatabase().catch(console.error);
 
 // Debug endpoint to check database connection
 app.get('/api/debug', async (req, res) => {
@@ -224,11 +238,11 @@ app.get('/api/products', async (req, res) => {
 });
 
 app.post('/api/products', async (req, res) => {
-  const { name, subcategory, attributes } = req.body;
+  const { name, category, subcategory, attributes } = req.body;
   try {
     const result = await query(
-      'INSERT INTO products (name, subcategory, attributes) VALUES ($1, $2, $3) RETURNING *',
-      [name, subcategory, JSON.stringify(attributes)]
+      'INSERT INTO products (name, category, subcategory, attributes) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name, category, subcategory, JSON.stringify(attributes)]
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -239,11 +253,11 @@ app.post('/api/products', async (req, res) => {
 
 app.put('/api/products/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, subcategory, attributes, human_attributes, human_verified } = req.body;
+  const { name, category, subcategory, attributes, human_attributes, human_verified } = req.body;
   try {
     const result = await query(
-      'UPDATE products SET name = $1, subcategory = $2, attributes = $3, human_attributes = $4, human_verified = $5 WHERE id = $6 RETURNING *',
-      [name, subcategory, JSON.stringify(attributes), JSON.stringify(human_attributes), human_verified, id]
+      'UPDATE products SET name = $1, category = $2, subcategory = $3, attributes = $4, human_attributes = $5, human_verified = $6 WHERE id = $7 RETURNING *',
+      [name, category, subcategory, JSON.stringify(attributes), JSON.stringify(human_attributes), human_verified, id]
     );
     if (result.rows.length > 0) {
       res.json(result.rows[0]);
@@ -292,7 +306,19 @@ app.delete('/api/users/:id', async (req, res) => {
   }
 });
 
-//Subcategories endpoint
+// Categories endpoint
+app.get('/api/categories', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM categories');
+    res.json(result.rows);
+  }
+  catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Subcategories endpoint
 app.get('/api/subcategories', async (req, res) => {
   try {
     const result = await query('SELECT * FROM subcategories');
@@ -307,59 +333,65 @@ app.get('/api/subcategories', async (req, res) => {
 app.get('/api/attributes', async (req, res) => {
   try {
     const result = await query('SELECT * FROM attributes');
-    const attributes = result.rows.reduce((acc, attr) => {
-      if (!acc[attr.category]) {
-        acc[attr.category] = {};
-      }
-      if (!acc[attr.category][attr.subcategory]) {
-        acc[attr.category][attr.subcategory] = {};
-      }
-      acc[attr.category][attr.subcategory][attr.name] = attr.values;
-      return acc;
-    }, {});
-    res.json(attributes);
+    res.json(result.rows);
   } catch (error) {
     console.error('Error fetching attributes:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-app.put('/api/attributes', async (req, res) => {
-  const attributes = req.body;
-  const client = await pool.connect();
+app.post('/api/attributes', async (req, res) => {
+  const { name, type, values, category, subcategory } = req.body;
   try {
-    await client.query('BEGIN');
-    await client.query('DELETE FROM attributes');
-    for (const [category, subcategories] of Object.entries(attributes)) {
-      for (const [subcategory, attrs] of Object.entries(subcategories)) {
-        for (const [name, values] of Object.entries(attrs)) {
-          await client.query(
-            'INSERT INTO attributes (category, subcategory, name, values) VALUES ($1, $2, $3, $4)',
-            [category, subcategory, name, values]
-          );
-        }
-      }
-    }
-    await client.query('COMMIT');
-    res.json({ message: 'Attributes updated successfully' });
+    const result = await query(
+      'INSERT INTO attributes (name, type, values, category, subcategory) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, type, JSON.stringify(values), category, subcategory]
+    );
+    res.status(201).json(result.rows[0]);
   } catch (error) {
-    await client.query('ROLLBACK');
-    console.error('Error updating attributes:', error);
+    console.error('Error creating attribute:', error);
     res.status(500).json({ message: 'Internal server error' });
-  } finally {
-    client.release();
   }
 });
 
-// Get attributes for a specific subcategory
-app.get('/api/subcategory-attributes/:subcategory', async (req, res) => {
-  const { subcategory } = req.params;
+app.put('/api/attributes/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name, type, values, category, subcategory } = req.body;
   try {
-    const result = await query('SELECT DISTINCT jsonb_object_keys(attributes) as attribute FROM products WHERE subcategory = $1', [subcategory]);
-    const attributes = result.rows.map(row => row.attribute);
-    res.json(attributes);
+    const result = await query(
+      'UPDATE attributes SET name = $1, type = $2, values = $3, category = $4, subcategory = $5 WHERE id = $6 RETURNING *',
+      [name, type, JSON.stringify(values), category, subcategory, id]
+    );
+    if (result.rows.length > 0) {
+      res.json(result.rows[0]);
+    } else {
+      res.status(404).json({ message: 'Attribute not found' });
+    }
   } catch (error) {
-    console.error('Error fetching subcategory attributes:', error);
+    console.error('Error updating attribute:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.delete('/api/attributes/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await query('DELETE FROM attributes WHERE id = $1', [id]);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting attribute:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// Get attributes for a specific category and subcategory
+app.get('/api/attributes/:category/:subcategory', async (req, res) => {
+  const { category, subcategory } = req.params;
+  try {
+    const result = await query('SELECT * FROM attributes WHERE category = $1 AND subcategory = $2', [category, subcategory]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching attributes:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
 });
