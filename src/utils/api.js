@@ -151,9 +151,11 @@ export const gradeProduct = async (productId, grade) => {
   }
 };
 
-export const fetchAttributes = async () => {
+export const fetchAttributes = async (category, subcategory, searchTerm = '', page = 1, limit = 20) => {
   try {
-    const response = await api.get('/api/attributes');
+    const response = await api.get('/api/attributes', {
+      params: { category, subcategory, searchTerm, page, limit }
+    });
     console.log("Attributes response:", response.data);
     if (!Array.isArray(response.data)) {
       throw new Error('Received data is not in the expected format');
@@ -222,9 +224,9 @@ export const fetchCategories = async () => {
   }
 };
 
-export const fetchSubcategories = async () => {
+export const fetchSubcategories = async (category) => {
   try {
-    const response = await api.get('/api/subcategories');
+    const response = await api.get('/api/subcategories', { params: { category } });
     console.log("Subcategories response:", response.data);
     if (!Array.isArray(response.data)) {
       throw new Error('Received data is not in the expected format');
