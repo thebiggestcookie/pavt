@@ -155,7 +155,7 @@ export const fetchAttributes = async () => {
   try {
     const response = await api.get('/api/attributes');
     console.log("Attributes response:", response.data);
-    if (typeof response.data !== 'object') {
+    if (!Array.isArray(response.data)) {
       throw new Error('Received data is not in the expected format');
     }
     return response.data;
@@ -165,12 +165,31 @@ export const fetchAttributes = async () => {
   }
 };
 
-export const updateAttributes = async (attributes) => {
+export const createAttribute = async (attribute) => {
   try {
-    const response = await api.put('/api/attributes', attributes);
+    const response = await api.post('/api/attributes', attribute);
     return response.data;
   } catch (error) {
-    console.error("Error in updateAttributes:", error);
+    console.error("Error in createAttribute:", error);
+    throw error;
+  }
+};
+
+export const updateAttribute = async (id, attribute) => {
+  try {
+    const response = await api.put(`/api/attributes/${id}`, attribute);
+    return response.data;
+  } catch (error) {
+    console.error("Error in updateAttribute:", error);
+    throw error;
+  }
+};
+
+export const deleteAttribute = async (id) => {
+  try {
+    await api.delete(`/api/attributes/${id}`);
+  } catch (error) {
+    console.error("Error in deleteAttribute:", error);
     throw error;
   }
 };
@@ -189,6 +208,20 @@ export const fetchLLMConfigs = async () => {
   }
 };
 
+export const fetchCategories = async () => {
+  try {
+    const response = await api.get('/api/categories');
+    console.log("Categories response:", response.data);
+    if (!Array.isArray(response.data)) {
+      throw new Error('Received data is not in the expected format');
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error in fetchCategories:", error);
+    throw error;
+  }
+};
+
 export const fetchSubcategories = async () => {
   try {
     const response = await api.get('/api/subcategories');
@@ -196,7 +229,7 @@ export const fetchSubcategories = async () => {
     if (!Array.isArray(response.data)) {
       throw new Error('Received data is not in the expected format');
     }
-    return response.data.map(subcategory => subcategory.name);
+    return response.data;
   } catch (error) {
     console.error("Error in fetchSubcategories:", error);
     throw error;
