@@ -54,6 +54,3 @@ CREATE TABLE IF NOT EXISTS products (
     attributes JSONB NOT NULL,
     human_attributes JSONB,
     human_verified BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (category) REFERENCES categories(name) ON DELETE CASCADE,
-    FOREIGN KEY (subcategory) REFERENCES subcategories(name) ON DELETE CASCADE
-);
