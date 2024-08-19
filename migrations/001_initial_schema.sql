@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS subcategories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) UNIQUE NOT NULL,
     category VARCHAR(255) NOT NULL,
-    FOREIGN KEY (category) REFERENCES categories(name)
+    FOREIGN KEY (category) REFERENCES categories(name) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS attributes (
@@ -41,8 +41,8 @@ CREATE TABLE IF NOT EXISTS attributes (
     values JSONB,
     category VARCHAR(255) NOT NULL,
     subcategory VARCHAR(255) NOT NULL,
-    FOREIGN KEY (category) REFERENCES categories(name),
-    FOREIGN KEY (subcategory) REFERENCES subcategories(name),
+    FOREIGN KEY (category) REFERENCES categories(name) ON DELETE CASCADE,
+    FOREIGN KEY (subcategory) REFERENCES subcategories(name) ON DELETE CASCADE,
     UNIQUE (name, category, subcategory)
 );
 
@@ -54,7 +54,3 @@ CREATE TABLE IF NOT EXISTS products (
     attributes JSONB NOT NULL,
     human_attributes JSONB,
     human_verified BOOLEAN DEFAULT FALSE,
-    FOREIGN KEY (category) REFERENCES categories(name),
-    FOREIGN KEY (subcategory) REFERENCES subcategories(name)
-);
-
