@@ -1,10 +1,27 @@
 [
   {
     "id": 1,
-    "name": "Coffee Beans"
-  },
-  {
-    "id": 2,
-    "name": "Coffee Pods"
+    "name": "Food",
+    "subcategories": [
+      {
+        "id": 2,
+        "name": "Coffee",
+        "subcategories": [
+          {
+            "id": 3,
+            "name": "Coffee Beans"
+          },
+          {
+            "id": 4,
+            "name": "Coffee Pods"
+          },
+          {
+            "id": 5,
+            "name": "Coffee Makers"
+          }
+        ]
+      }
+    ]
   }
 ]
+
