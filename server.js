@@ -308,16 +308,46 @@ app.get('/api/attributes', async (req, res) => {
   try {
     const result = await query('SELECT * FROM attributes');
     const attributes = result.rows.reduce((acc, attr) => {
-      if (!acc[attr.subcategory]) {
-        acc[attr.subcategory] = [];
+      if (!acc[attr.category]) {
+        acc[attr.category] = {};
       }
-      acc[attr.subcategory].push(attr.name);
+      if (!acc[attr.category][attr.subcategory]) {
+        acc[attr.category][attr.subcategory] = {};
+      }
+      acc[attr.category][attr.subcategory][attr.name] = attr.values;
       return acc;
     }, {});
     res.json(attributes);
   } catch (error) {
     console.error('Error fetching attributes:', error);
     res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+app.put('/api/attributes', async (req, res) => {
+  const attributes = req.body;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('DELETE FROM attributes');
+    for (const [category, subcategories] of Object.entries(attributes)) {
+      for (const [subcategory, attrs] of Object.entries(subcategories)) {
+        for (const [name, values] of Object.entries(attrs)) {
+          await client.query(
+            'INSERT INTO attributes (category, subcategory, name, values) VALUES ($1, $2, $3, $4)',
+            [category, subcategory, name, values]
+          );
+        }
+      }
+    }
+    await client.query('COMMIT');
+    res.json({ message: 'Attributes updated successfully' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Error updating attributes:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  } finally {
+    client.release();
   }
 });
 
@@ -428,3 +458,4 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
