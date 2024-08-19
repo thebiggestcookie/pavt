@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { debug, getDebugLog } from '../utils/debug';
 import { fetchPrompts, generateProduct, saveProduct } from '../utils/api';
-import { attributes } from '../data/attributes';
 
 const ProductGenerator = () => {
   const [productName, setProductName] = useState('');
@@ -19,12 +18,24 @@ const ProductGenerator = () => {
   const [sampleProducts, setSampleProducts] = useState([]);
 
   useEffect(() => {
-    // Simulating prompt fetch from API
-    setPrompts(prevPrompts => ({
-      ...prevPrompts,
-      step2: prevPrompts.step2.replace('$subcategories', Object.keys(attributes).join(', '))
-    }));
+    fetchPromptsData();
   }, []);
+
+  const fetchPromptsData = async () => {
+    try {
+      const fetchedPrompts = await fetchPrompts();
+      setPrompts(prevPrompts => ({
+        ...prevPrompts,
+        ...fetchedPrompts.reduce((acc, prompt) => {
+          acc[`step${prompt.step}`] = prompt.content;
+          return acc;
+        }, {})
+      }));
+    } catch (error) {
+      console.error('Error fetching prompts:', error);
+      setError('Failed to fetch prompts: ' + error.message);
+    }
+  };
 
   const handleGenerateProduct = async () => {
     if (!productName) {
@@ -41,7 +52,7 @@ const ProductGenerator = () => {
       const step1Prompt = prompts.step1.replace('$productname', productName);
       debug('Step 1 prompt', step1Prompt);
       const step1Response = await generateProduct(step1Prompt);
-      const generatedSamples = JSON.parse(step1Response.data.response);
+      const generatedSamples = JSON.parse(step1Response.response);
       setSampleProducts(generatedSamples);
       debug('Generated sample products', generatedSamples);
       setDebugInfo(prevDebug => prevDebug + `Step 1 Response:\n${JSON.stringify(generatedSamples, null, 2)}\n\n`);
@@ -50,23 +61,18 @@ const ProductGenerator = () => {
       const step2Prompt = prompts.step2.replace('$sampleproducts', JSON.stringify(generatedSamples));
       debug('Step 2 prompt', step2Prompt);
       const step2Response = await generateProduct(step2Prompt);
-      const matchedSubcategory = step2Response.data.response.trim();
+      const matchedSubcategory = step2Response.response.trim();
       setSubcategory(matchedSubcategory);
       debug('Matched subcategory', matchedSubcategory);
       setDebugInfo(prevDebug => prevDebug + `Step 2 Response:\n${matchedSubcategory}\n\n`);
 
       // Step 3: Generate attributes
-      const subcategoryAttributes = attributes[matchedSubcategory];
-      const attributesPrompt = Object.entries(subcategoryAttributes)
-        .map(([key, values]) => `${key}: [${values.join(', ')}]`)
-        .join('\n');
       const step3Prompt = prompts.step3
         .replace('$productname', productName)
-        .replace('$subcategory', matchedSubcategory)
-        .replace('$attributes', attributesPrompt);
+        .replace('$subcategory', matchedSubcategory);
       debug('Step 3 prompt', step3Prompt);
       const step3Response = await generateProduct(step3Prompt);
-      const generatedAttributes = JSON.parse(step3Response.data.response);
+      const generatedAttributes = JSON.parse(step3Response.response);
       debug('Generated attributes', generatedAttributes);
       setDebugInfo(prevDebug => prevDebug + `Step 3 Response:\n${JSON.stringify(generatedAttributes, null, 2)}\n\n`);
 
@@ -197,4 +203,3 @@ const ProductGenerator = () => {
 };
 
 export default ProductGenerator;
-
