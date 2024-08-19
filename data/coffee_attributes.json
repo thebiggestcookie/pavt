@@ -1,0 +1,162 @@
+{
+  "Food": {
+    "Coffee": {
+      "Whole Bean": [
+        "Origin",
+        "Roast Level",
+        "Flavor Notes",
+        "Processing Method",
+        "Altitude",
+        "Variety",
+        "Certification",
+        "Bag Size",
+        "Roast Date"
+      ],
+      "Ground Coffee": [
+        "Origin",
+        "Roast Level",
+        "Grind Size",
+        "Flavor Notes",
+        "Processing Method",
+        "Certification",
+        "Bag Size",
+        "Roast Date"
+      ],
+      "Instant Coffee": [
+        "Origin",
+        "Roast Level",
+        "Flavor Notes",
+        "Serving Size",
+        "Packaging Type",
+        "Caffeine Content"
+      ],
+      "Coffee Pods": [
+        "Compatibility",
+        "Origin",
+        "Roast Level",
+        "Flavor Notes",
+        "Pod Count",
+        "Certification"
+      ],
+      "Cold Brew": [
+        "Origin",
+        "Roast Level",
+        "Flavor Notes",
+        "Concentrate Ratio",
+        "Bottle Size",
+        "Shelf Life"
+      ]
+    },
+    "Coffee Makers": {
+      "Drip Coffee Makers": [
+        "Capacity",
+        "Programmable",
+        "Brew Strength Control",
+        "Carafe Type",
+        "Water Filter",
+        "Dimensions",
+        "Warranty"
+      ],
+      "Espresso Machines": [
+        "Pump Pressure",
+        "Milk Frother",
+        "Water Tank Capacity",
+        "Grinder Included",
+        "Programmable Shots",
+        "Dimensions",
+        "Warranty"
+      ],
+      "French Press": [
+        "Capacity",
+        "Material",
+        "Filter Type",
+        "Dishwasher Safe",
+        "Dimensions"
+      ],
+      "Pour Over": [
+        "Material",
+        "Filter Type",
+        "Capacity",
+        "Dishwasher Safe",
+        "Dimensions"
+      ],
+      "Cold Brew Makers": [
+        "Capacity",
+        "Material",
+        "Filter Type",
+        "Brew Time",
+        "Dimensions",
+        "Dishwasher Safe"
+      ],
+      "Moka Pots": [
+        "Capacity",
+        "Material",
+        "Stovetop Compatibility",
+        "Dimensions"
+      ]
+    },
+    "Coffee Grinders": {
+      "Blade Grinders": [
+        "Capacity",
+        "Power",
+        "Material",
+        "Dimensions",
+        "Warranty"
+      ],
+      "Burr Grinders": [
+        "Grind Settings",
+        "Burr Material",
+        "Hopper Capacity",
+        "Dosing Options",
+        "Power",
+        "Dimensions",
+        "Warranty"
+      ],
+      "Manual Grinders": [
+        "Capacity",
+        "Burr Material",
+        "Grind Settings",
+        "Material",
+        "Dimensions"
+      ]
+    },
+    "Coffee Accessories": {
+      "Filters": [
+        "Compatibility",
+        "Material",
+        "Size",
+        "Quantity",
+        "Reusable"
+      ],
+      "Milk Frothers": [
+        "Type",
+        "Capacity",
+        "Power",
+        "Material",
+        "Dishwasher Safe"
+      ],
+      "Coffee Scales": [
+        "Capacity",
+        "Precision",
+        "Units",
+        "Battery Life",
+        "Dimensions"
+      ],
+      "Travel Mugs": [
+        "Capacity",
+        "Material",
+        "Insulation",
+        "Lid Type",
+        "Dishwasher Safe"
+      ],
+      "Coffee Storage": [
+        "Capacity",
+        "Material",
+        "Airtight Seal",
+        "UV Protection",
+        "Dimensions"
+      ]
+    }
+  }
+}
+
